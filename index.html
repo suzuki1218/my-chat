@@ -6,18 +6,18 @@
   <title>学習サポート掲示板</title>
   
   <style>
-    /* 生物（ナチュラル・ベージュ系）のカラー設定 */
+    /* アースカラー（ベージュ系）のカラー設定 */
     :root {
-      --bg-color: #f7f4ed;       /* 温かみのあるベージュ背景 */
-      --card-bg: #fdfcf7;        /* アイボリー調の白カード */
+      --bg-color: #f2ebd9;       /* しっかり見やすいナチュラルベージュ背景 */
+      --card-bg: #fffdf7;        /* カードは明るいアイボリー */
       --text-main: #332f2b;      /* 濃いブラウン */
       --text-sub: #7a7369;       /* アースグレー */
       --primary: #2e7d32;        /* ナチュラルグリーン */
       --success: #4caf50;        /* ライトグリーン */
       --danger: #d32f2f;         /* アースレッド */
-      --border: #e2ded4;         /* 境界線 */
+      --border: #dcd4c3;         /* 境界線（少し濃いめのベージュ） */
       --my-msg-bg: #81c784;      /* 自分の吹き出し（グリーン） */
-      --chat-bg: #e5dfcf;        /* トーク画面背景 */
+      --chat-bg: #e2d9c4;        /* トーク画面背景 */
     }
 
     body {
@@ -50,7 +50,7 @@
       background: var(--card-bg);
       padding: 20px;
       border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(60, 50, 30, 0.05);
+      box-shadow: 0 4px 16px rgba(60, 50, 30, 0.06);
       margin-bottom: 20px;
       border: 1px solid var(--border);
     }
@@ -62,7 +62,7 @@
       font-size: 16px;
       margin-bottom: 12px;
       box-sizing: border-box;
-      background-color: #f0ece1;
+      background-color: #e8e0ce;
       border: 1px solid var(--border);
       border-radius: 12px;
       color: var(--text-main);
@@ -231,13 +231,13 @@
 </head>
 <body>
 
-  <h1>生物 学習サポート掲示板</h1>
+  <h1>学習サポート掲示板</h1>
 
   <!-- ==================== 1. 一覧画面 ==================== -->
   <div id="matching-section">
     <div class="card">
       <h2>教えてほしいことを投稿しよう</h2>
-      <input type="text" id="reqSubject" placeholder="質問内容（例：光合成の暗反応が分からない）">
+      <input type="text" id="reqSubject" placeholder="質問内容（例：数学のP24の問3、英語の文法）">
       <button id="btn-create-request">投稿して質問する</button>
     </div>
 
@@ -319,7 +319,7 @@
         });
         document.getElementById("reqSubject").value = "";
         
-        // 投稿した人も自動でそのチャットルームへ移動！
+        // 投稿した人も自動でそのチャットルームへ移動
         openChat(roomId, subject, null);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
