@@ -6,17 +6,16 @@
   <title>学習サポート掲示板</title>
   
   <style>
-    /* アースカラー（ベージュ系）のカラー設定 */
     :root {
-      --bg-color: #f2ebd9;       /* しっかり見やすいナチュラルベージュ背景 */
-      --card-bg: #fffdf7;        /* カードは明るいアイボリー */
+      --bg-color: #f2ebd9;       /* ナチュラルベージュ背景 */
+      --card-bg: #fffdf7;        /* カードアイボリー */
       --text-main: #332f2b;      /* 濃いブラウン */
       --text-sub: #7a7369;       /* アースグレー */
       --primary: #2e7d32;        /* ナチュラルグリーン */
       --success: #4caf50;        /* ライトグリーン */
       --danger: #d32f2f;         /* アースレッド */
-      --border: #dcd4c3;         /* 境界線（少し濃いめのベージュ） */
-      --my-msg-bg: #81c784;      /* 自分の吹き出し（グリーン） */
+      --border: #dcd4c3;         /* 境界線 */
+      --my-msg-bg: #81c784;      /* 自分の吹き出し */
       --chat-bg: #e2d9c4;        /* トーク画面背景 */
     }
 
@@ -170,13 +169,15 @@
       border-radius: 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
 
     /* メッセージ行 */
     .msg-row {
       display: flex;
       width: 100%;
+      align-items: flex-end;
+      gap: 6px;
       animation: fadeIn 0.2s ease-in-out;
     }
 
@@ -185,14 +186,19 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .msg-row.my-msg { justify-content: flex-end; }
-    .msg-row.other-msg { justify-content: flex-start; }
+    .msg-row.my-msg {
+      flex-direction: row-reverse; /* 自分のメッセージは時間・既読を左に */
+    }
+
+    .msg-row.other-msg {
+      flex-direction: row;
+    }
 
     /* LINE風フキダシ */
     .msg-bubble {
       padding: 10px 14px;
       border-radius: 18px;
-      max-width: 78%;
+      max-width: 70%;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
       font-size: 0.95rem;
       line-height: 1.45;
@@ -210,6 +216,29 @@
       color: var(--text-main);
       border: 1px solid var(--border);
       border-bottom-left-radius: 4px;
+    }
+
+    /* 時刻と既読の情報領域 */
+    .msg-meta {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.7rem;
+      color: #666055;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+
+    .my-msg .msg-meta {
+      align-items: flex-end;
+    }
+
+    .other-msg .msg-meta {
+      align-items: flex-start;
+    }
+
+    .read-status {
+      color: #2e7d32;
+      font-weight: bold;
     }
 
     /* 入力エリア */
@@ -274,7 +303,7 @@
   <!-- Firebase (v10) SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp } 
+    import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, query, orderBy, onSnapshot, serverTimestamp } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -290,7 +319,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 端末ごとのユニークID
     let senderId = localStorage.getItem("senderId");
     if (!senderId) {
       senderId = "user_" + Math.random().toString(36).substring(2, 9);
@@ -318,8 +346,6 @@
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        
-        // 投稿した人も自動でそのチャットルームへ移動
         openChat(roomId, subject, null);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
@@ -391,7 +417,16 @@
       }
     }
 
-    // --- 5. リアルタイム・チャット受信 ---
+    // 時刻フォーマット関数 (HH:MM)
+    function formatTime(timestamp) {
+      if (!timestamp) return "";
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    // --- 5. リアルタイム・チャット受信（既読＆時間対応） ---
     function joinChatRoom(roomId) {
       const chatBox = document.getElementById("chat-box");
       chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>チャットに接続中...</p>";
@@ -413,16 +448,41 @@
 
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          
-          const rowDiv = document.createElement("div");
+          const msgId = docSnap.id;
           const isMyMsg = data.senderId === senderId;
+
+          // 相手からの未読メッセージがあれば既読に更新する
+          if (!isMyMsg && !data.read) {
+            updateDoc(doc(db, "rooms", roomId, "messages", msgId), {
+              read: true
+            });
+          }
+
+          const rowDiv = document.createElement("div");
           rowDiv.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
 
+          // メッセージ吹き出し
           const bubbleDiv = document.createElement("div");
           bubbleDiv.className = "msg-bubble";
           bubbleDiv.innerText = data.text;
 
+          // 時間・既読情報領域
+          const metaDiv = document.createElement("div");
+          metaDiv.className = "msg-meta";
+
+          const timeStr = formatTime(data.timestamp);
+          
+          if (isMyMsg) {
+            // 自分のメッセージには「既読」と「送信時間」を表示
+            const readHtml = data.read ? `<span class="read-status">既読</span>` : "";
+            metaDiv.innerHTML = `${readHtml}<span>${timeStr}</span>`;
+          } else {
+            // 相手のメッセージには「送信時間」のみ表示
+            metaDiv.innerHTML = `<span>${timeStr}</span>`;
+          }
+
           rowDiv.appendChild(bubbleDiv);
+          rowDiv.appendChild(metaDiv);
           chatBox.appendChild(rowDiv);
         });
         
@@ -430,7 +490,7 @@
       });
     }
 
-    // --- 6. 送信 ---
+    // --- 6. 送信（既読フラグ read: false を追加） ---
     async function sendMessage() {
       const text = document.getElementById("messageText").value.trim();
       if (!text || !currentRoomId) return;
@@ -439,6 +499,7 @@
         await addDoc(collection(db, "rooms", currentRoomId, "messages"), {
           text: text,
           senderId: senderId,
+          read: false,
           timestamp: serverTimestamp()
         });
         document.getElementById("messageText").value = "";
