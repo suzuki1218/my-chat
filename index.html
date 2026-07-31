@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>学習サポート掲示板</title>
   
+  <!-- Google Fonts: どうぶつの森風 丸ゴシック体 (Zen Maru Gothic) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --bg-color: #f2ebd9;       /* ナチュラルベージュ背景 */
@@ -20,7 +25,8 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+      font-weight: 700;          /* ポップで太めな文字に設定 */
       background-color: var(--bg-color);
       color: var(--text-main);
       max-width: 768px;
@@ -32,14 +38,16 @@
 
     h1 {
       text-align: center;
-      font-size: 1.4rem;
-      font-weight: bold;
+      font-size: 1.5rem;
+      font-weight: 900;
       margin-bottom: 20px;
       color: #1b5e20;
+      letter-spacing: 0.05em;
     }
 
     h2 {
-      font-size: 1.05rem;
+      font-size: 1.1rem;
+      font-weight: 700;
       margin-top: 0;
       margin-bottom: 12px;
       color: var(--text-main);
@@ -48,7 +56,7 @@
     .card {
       background: var(--card-bg);
       padding: 20px;
-      border-radius: 16px;
+      border-radius: 18px;
       box-shadow: 0 4px 16px rgba(60, 50, 30, 0.06);
       margin-bottom: 20px;
       border: 1px solid var(--border);
@@ -56,6 +64,8 @@
 
     /* フォーム要素 */
     input, textarea {
+      font-family: inherit;
+      font-weight: 700;
       width: 100%;
       padding: 14px 16px;
       font-size: 16px;
@@ -63,7 +73,7 @@
       box-sizing: border-box;
       background-color: #e8e0ce;
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       color: var(--text-main);
       outline: none;
     }
@@ -74,19 +84,23 @@
     }
 
     button {
+      font-family: inherit;
       width: 100%;
       padding: 14px;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       color: white;
       background-color: var(--primary);
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.1s;
     }
 
-    button:active { opacity: 0.8; }
+    button:active { 
+      opacity: 0.8; 
+      transform: scale(0.98);
+    }
 
     /* 募集一覧アイテム */
     .request-item {
@@ -104,7 +118,7 @@
     }
 
     .request-info { flex-grow: 1; }
-    .request-title { font-weight: bold; font-size: 1rem; margin-bottom: 4px; }
+    .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
 
     .btn-chat {
       background-color: var(--success);
@@ -146,19 +160,20 @@
       background: #e8f5e9;
       color: #2e7d32;
       border: 1px solid #a5d6a7;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       padding: 4px 12px;
       border-radius: 12px;
-      font-weight: bold;
+      font-weight: 700;
       margin-bottom: 8px;
     }
 
     #chat-title {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
+      font-weight: 900;
       margin-bottom: 12px;
     }
 
-    /* LINE風トーク画面 */
+    /* トーク画面 */
     #chat-box {
       border: 1px solid var(--border);
       height: 440px;
@@ -166,7 +181,7 @@
       padding: 16px;
       margin-bottom: 12px;
       background: var(--chat-bg);
-      border-radius: 16px;
+      border-radius: 18px;
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -187,22 +202,23 @@
     }
 
     .msg-row.my-msg {
-      flex-direction: row-reverse; /* 自分のメッセージは時間・既読を左に */
+      flex-direction: row-reverse;
     }
 
     .msg-row.other-msg {
       flex-direction: row;
     }
 
-    /* LINE風フキダシ */
+    /* フキダシ */
     .msg-bubble {
-      padding: 10px 14px;
+      padding: 10px 16px;
       border-radius: 18px;
       max-width: 70%;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
       font-size: 0.95rem;
-      line-height: 1.45;
+      line-height: 1.5;
       word-break: break-word;
+      font-weight: 500;
     }
 
     .my-msg .msg-bubble {
@@ -218,7 +234,7 @@
       border-bottom-left-radius: 4px;
     }
 
-    /* 時刻と既読の情報領域 */
+    /* 時刻表示領域 */
     .msg-meta {
       display: flex;
       flex-direction: column;
@@ -226,6 +242,7 @@
       color: #666055;
       line-height: 1.2;
       margin-bottom: 2px;
+      font-weight: 700;
     }
 
     .my-msg .msg-meta {
@@ -234,11 +251,6 @@
 
     .other-msg .msg-meta {
       align-items: flex-start;
-    }
-
-    .read-status {
-      color: #2e7d32;
-      font-weight: bold;
     }
 
     /* 入力エリア */
@@ -303,7 +315,7 @@
   <!-- Firebase (v10) SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, query, orderBy, onSnapshot, serverTimestamp } 
+    import { getFirestore, collection, addDoc, doc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -426,7 +438,7 @@
       return `${hours}:${minutes}`;
     }
 
-    // --- 5. リアルタイム・チャット受信（既読＆時間対応） ---
+    // --- 5. リアルタイム・チャット受信（送信時間のみ表示） ---
     function joinChatRoom(roomId) {
       const chatBox = document.getElementById("chat-box");
       chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>チャットに接続中...</p>";
@@ -448,15 +460,7 @@
 
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          const msgId = docSnap.id;
           const isMyMsg = data.senderId === senderId;
-
-          // 相手からの未読メッセージがあれば既読に更新する
-          if (!isMyMsg && !data.read) {
-            updateDoc(doc(db, "rooms", roomId, "messages", msgId), {
-              read: true
-            });
-          }
 
           const rowDiv = document.createElement("div");
           rowDiv.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
@@ -466,20 +470,12 @@
           bubbleDiv.className = "msg-bubble";
           bubbleDiv.innerText = data.text;
 
-          // 時間・既読情報領域
+          // 時間表示領域
           const metaDiv = document.createElement("div");
           metaDiv.className = "msg-meta";
 
           const timeStr = formatTime(data.timestamp);
-          
-          if (isMyMsg) {
-            // 自分のメッセージには「既読」と「送信時間」を表示
-            const readHtml = data.read ? `<span class="read-status">既読</span>` : "";
-            metaDiv.innerHTML = `${readHtml}<span>${timeStr}</span>`;
-          } else {
-            // 相手のメッセージには「送信時間」のみ表示
-            metaDiv.innerHTML = `<span>${timeStr}</span>`;
-          }
+          metaDiv.innerHTML = `<span>${timeStr}</span>`;
 
           rowDiv.appendChild(bubbleDiv);
           rowDiv.appendChild(metaDiv);
@@ -490,7 +486,7 @@
       });
     }
 
-    // --- 6. 送信（既読フラグ read: false を追加） ---
+    // --- 6. 送信 ---
     async function sendMessage() {
       const text = document.getElementById("messageText").value.trim();
       if (!text || !currentRoomId) return;
@@ -499,7 +495,6 @@
         await addDoc(collection(db, "rooms", currentRoomId, "messages"), {
           text: text,
           senderId: senderId,
-          read: false,
           timestamp: serverTimestamp()
         });
         document.getElementById("messageText").value = "";
