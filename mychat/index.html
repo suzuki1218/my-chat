@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>リアルタイムチャット テスト</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 0 10px; }
+    #chat-box { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
+    .msg { margin-bottom: 8px; }
+    .inputs { display: flex; gap: 5px; flex-direction: column; }
+    input, button { padding: 8px; font-size: 16px; margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+
+  <h2>ステップ1：部屋指定チャットテスト</h2>
+  
+  <div>
+    <label>部屋ID: </label>
+    <input type="text" id="roomId" value="room1">
+    <button id="btn-join">部屋に入る / 切替</button>
+  </div>
+  <hr>
+
+  <div id="chat-box"><b>Firebase 接続中...</b><br></div>
+
+  <div class="inputs">
+    <input type="text" id="senderName" placeholder="あなたの名前 (例: 生徒A)">
+    <input type="text" id="messageText" placeholder="メッセージを入力...">
+    <button id="btn-send">送信</button>
+  </div>
+
+  <!-- Firebase (v10) SDK の読み込み -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } 
+      from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // あなたのFirebase設定情報
+    const firebaseConfig = {
+      apiKey: "AIzaSyAkGHvYqrhlu3bF_P6LIXk0YjmSAfyFj08",
+      authDomain: "study-matching-test.firebaseapp.com",
+      projectId: "study-matching-test",
+      storageBucket: "study-matching-test.firebasestorage.app",
+      messagingSenderId: "720859286999",
+      appId: "1:720859286999:web:9f61a8a71989db79d94f92",
+      measurementId: "G-62FYMVGYFY"
+    };
+
+    // Firebaseの初期化
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let unsubscribe = null;
+
+    // 部屋に入ってメッセージを監視する機能
+    window.joinRoom = function() {
+      const roomId = document.getElementById("roomId").value;
+      if (!roomId) { alert("部屋IDを入力してください。"); return; }
+      const chatBox = document.getElementById("chat-box");
+      chatBox.innerHTML = `<b>【${roomId}】に入室しました...</b><br>`;
+
+      // 以前の部屋の監視を解除
+      if (unsubscribe) unsubscribe();
+
+      // Firestoreから特定部屋のメッセージを時間順にリアルタイム取得
+      const q = query(
+        collection(db, "rooms", roomId, "messages"), 
+        orderBy("timestamp", "asc")
+      );
+
+      // データが変更されるたびに自動で画面が更新される（リアルタイム同期！）
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        chatBox.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const div = document.createElement("div");
+          div.className = "msg";
+          div.innerHTML = `<strong>${data.name || '名無し'}:</strong> ${data.text}`;
+          chatBox.appendChild(div);
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, (error) => {
+        alert("データベース接続エラー: " + error.message + "\nFirestoreのテストモードが有効になっているか確認してください。");
+      });
+    };
+
+    // メッセージを送信する機能
+    window.sendMessage = async function() {
+      const roomId = document.getElementById("roomId").value;
+      const name = document.getElementById("senderName").value;
+      const text = document.getElementById("messageText").value;
+
+      if (!text) return;
+
+      try {
+        await addDoc(collection(db, "rooms", roomId, "messages"), {
+          name: name,
+          text: text,
+          timestamp: serverTimestamp()
+        });
+        document.getElementById("messageText").value = "";
+      } catch (error) {
+        alert("送信エラー: " + error.message);
+      }
+    };
+
+    // ボタンイベントの設定
+    document.getElementById("btn-join").addEventListener("click", window.joinRoom);
+    document.getElementById("btn-send").addEventListener("click", window.sendMessage);
+
+    // 初期実行（デフォルトでroom1に入る）
+    window.joinRoom();
+  </script>
+</body>
+</html>
