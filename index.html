@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>生物 学習サポート掲示板</title>
+  <title>学習サポート掲示板</title>
   
   <style>
     /* 生物（ナチュラル・ベージュ系）のカラー設定 */
     :root {
       --bg-color: #f7f4ed;       /* 温かみのあるベージュ背景 */
       --card-bg: #fdfcf7;        /* アイボリー調の白カード */
-      --text-main: #332f2b;      /* 濃いブラウン（文字色） */
-      --text-sub: #7a7369;       /* 落ちついたアースグレー（補助文字） */
-      --primary: #2e7d32;        /* ナチュラルグリーン（メイン） */
-      --success: #4caf50;        /* ライトグリーン（教えるボタン） */
-      --danger: #d32f2f;         /* アースレッド（解決・削除ボタン） */
-      --border: #e2ded4;         /* ベージュに馴染む境界線 */
-      --my-msg-bg: #81c784;      /* 自分のメッセージ（LINE風グリーン） */
+      --text-main: #332f2b;      /* 濃いブラウン */
+      --text-sub: #7a7369;       /* アースグレー */
+      --primary: #2e7d32;        /* ナチュラルグリーン */
+      --success: #4caf50;        /* ライトグリーン */
+      --danger: #d32f2f;         /* アースレッド */
+      --border: #e2ded4;         /* 境界線 */
+      --my-msg-bg: #81c784;      /* 自分の吹き出し（グリーン） */
+      --chat-bg: #e5dfcf;        /* トーク画面背景 */
     }
 
     body {
@@ -25,32 +26,32 @@
       color: var(--text-main);
       max-width: 768px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 16px;
       box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
     }
 
     h1 {
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: bold;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       color: #1b5e20;
     }
 
     h2 {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       margin-top: 0;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       color: var(--text-main);
     }
 
     .card {
       background: var(--card-bg);
-      padding: 24px;
+      padding: 20px;
       border-radius: 16px;
       box-shadow: 0 4px 16px rgba(60, 50, 30, 0.05);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       border: 1px solid var(--border);
     }
 
@@ -58,7 +59,7 @@
     input, textarea {
       width: 100%;
       padding: 14px 16px;
-      font-size: 16px; /* iPadでの自動ズーム防止 */
+      font-size: 16px;
       margin-bottom: 12px;
       box-sizing: border-box;
       background-color: #f0ece1;
@@ -66,7 +67,6 @@
       border-radius: 12px;
       color: var(--text-main);
       outline: none;
-      transition: border-color 0.2s, background-color 0.2s;
     }
 
     input:focus {
@@ -87,14 +87,12 @@
       transition: opacity 0.2s;
     }
 
-    button:active {
-      opacity: 0.8;
-    }
+    button:active { opacity: 0.8; }
 
     /* 募集一覧アイテム */
     .request-item {
       border-bottom: 1px solid var(--border);
-      padding: 16px 0;
+      padding: 14px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -107,13 +105,14 @@
     }
 
     .request-info { flex-grow: 1; }
-    .request-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 4px; }
+    .request-title { font-weight: bold; font-size: 1rem; margin-bottom: 4px; }
 
     .btn-chat {
       background-color: var(--success);
       width: auto;
-      padding: 10px 20px;
+      padding: 10px 18px;
       border-radius: 20px;
+      font-size: 0.9rem;
     }
 
     /* チャット画面 */
@@ -123,76 +122,89 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .btn-back {
       background-color: var(--text-sub);
       width: auto;
-      padding: 10px 16px;
+      padding: 8px 14px;
       border-radius: 20px;
+      font-size: 0.85rem;
     }
 
     .btn-resolve {
       background-color: var(--danger);
       width: auto;
-      padding: 10px 16px;
+      padding: 8px 14px;
       border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    /* チャットモード状態バッジ */
+    .mode-badge {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
 
     #chat-title {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
+      margin-bottom: 12px;
     }
 
-    /* LINE風チャット領域 */
+    /* LINE風トーク画面 */
     #chat-box {
       border: 1px solid var(--border);
-      height: 420px;
+      height: 440px;
       overflow-y: auto;
       padding: 16px;
-      margin-bottom: 16px;
-      background: #e8e3d5; /* トーク画面の背景 */
+      margin-bottom: 12px;
+      background: var(--chat-bg);
       border-radius: 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
-    /* メッセージの枠組み（左右振り分け） */
+    /* メッセージ行 */
     .msg-row {
       display: flex;
       width: 100%;
+      animation: fadeIn 0.2s ease-in-out;
     }
 
-    .msg-row.my-msg {
-      justify-content: flex-end; /* 自分のメッセージは右寄せ */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .msg-row.other-msg {
-      justify-content: flex-start; /* 相手のメッセージは左寄せ */
-    }
+    .msg-row.my-msg { justify-content: flex-end; }
+    .msg-row.other-msg { justify-content: flex-start; }
 
-    /* LINE風吹き出し */
+    /* LINE風フキダシ */
     .msg-bubble {
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: 18px;
-      max-width: 75%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      font-size: 0.98rem;
-      line-height: 1.4;
+      max-width: 78%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      font-size: 0.95rem;
+      line-height: 1.45;
       word-break: break-word;
     }
 
-    /* 自分の吹き出し */
     .my-msg .msg-bubble {
       background: var(--my-msg-bg);
-      color: #1a3e1c;
+      color: #113013;
       border-bottom-right-radius: 4px;
     }
 
-    /* 相手の吹き出し */
     .other-msg .msg-bubble {
       background: var(--card-bg);
       color: var(--text-main);
@@ -200,6 +212,7 @@
       border-bottom-left-radius: 4px;
     }
 
+    /* 入力エリア */
     .input-group {
       display: flex;
       gap: 8px;
@@ -212,7 +225,7 @@
     .input-group button {
       width: auto;
       white-space: nowrap;
-      padding: 0 24px;
+      padding: 0 20px;
     }
   </style>
 </head>
@@ -220,11 +233,11 @@
 
   <h1>生物 学習サポート掲示板</h1>
 
-  <!-- ==================== 1. マッチング画面 ==================== -->
+  <!-- ==================== 1. 一覧画面 ==================== -->
   <div id="matching-section">
     <div class="card">
       <h2>教えてほしいことを投稿しよう</h2>
-      <input type="text" id="reqSubject" placeholder="質問内容（例：光合成の反応式がわからない）">
+      <input type="text" id="reqSubject" placeholder="質問内容（例：光合成の暗反応が分からない）">
       <button id="btn-create-request">投稿して質問する</button>
     </div>
 
@@ -235,15 +248,19 @@
   </div>
 
 
-  <!-- ==================== 2. チャット画面 ==================== -->
+  <!-- ==================== 2. チャットモード画面 ==================== -->
   <div id="chat-section">
     <div class="chat-header">
-      <button id="btn-back-to-list" class="btn-back">← 戻る</button>
+      <button id="btn-back-to-list" class="btn-back">← 一覧に戻る</button>
       <button id="btn-resolve" class="btn-resolve">解決済みにする</button>
     </div>
 
     <div class="card">
-      <h2 id="chat-title">チャットルーム</h2>
+      <div style="text-align: center;">
+        <span class="mode-badge">🟢 チャットモード（リアルタイム対話中）</span>
+        <h2 id="chat-title">質問</h2>
+      </div>
+
       <div id="chat-box"></div>
       
       <div class="input-group">
@@ -260,7 +277,6 @@
     import { getFirestore, collection, addDoc, doc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Firebase設定情報
     const firebaseConfig = {
       apiKey: "AIzaSyAkGHvYqrhlu3bF_P6LIXk0YjmSAfyFj08",
       authDomain: "study-matching-test.firebaseapp.com",
@@ -274,7 +290,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ブラウザ・端末ごとにランダムな送信者IDを割り当て（自分/相手の判別用）
+    // 端末ごとのユニークID
     let senderId = localStorage.getItem("senderId");
     if (!senderId) {
       senderId = "user_" + Math.random().toString(36).substring(2, 9);
@@ -285,10 +301,9 @@
     let currentDocId = null;
     let unsubscribeChat = null;
 
-    // --- 1. リクエストを投稿する ---
+    // --- 1. 質問投稿 ---
     async function createRequest() {
       const subject = document.getElementById("reqSubject").value.trim();
-
       if (!subject) {
         alert("質問内容を入力してください。");
         return;
@@ -303,13 +318,15 @@
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        alert("質問を投稿しました！");
+        
+        // 投稿した人も自動でそのチャットルームへ移動！
+        openChat(roomId, subject, null);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
     }
 
-    // --- 2. 募集一覧をリアルタイム表示 ---
+    // --- 2. 一覧表示 ---
     const qRequests = query(collection(db, "requests"), orderBy("createdAt", "desc"));
     onSnapshot(qRequests, (snapshot) => {
       const listDiv = document.getElementById("request-list");
@@ -330,51 +347,54 @@
           <div class="request-info">
             <div class="request-title">${data.subject}</div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}')">教える</button>
+          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}')">教える / トークを開く</button>
         `;
         listDiv.appendChild(item);
       });
     });
 
-    // --- 3. チャット画面を開く ---
+    // --- 3. チャットモード開く ---
     window.openChat = function(roomId, subject, docId) {
       currentRoomId = roomId;
       currentDocId = docId;
 
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
-      document.getElementById("chat-title").innerText = `質問: ${subject}`;
+      document.getElementById("chat-title").innerText = `「${subject}」`;
 
       joinChatRoom(roomId);
     };
 
-    // 一覧に戻るボタン
     document.getElementById("btn-back-to-list").addEventListener("click", () => {
       if (unsubscribeChat) unsubscribeChat();
       document.getElementById("chat-section").style.display = "none";
       document.getElementById("matching-section").style.display = "block";
     });
 
-    // --- 4. 解決済みにする ---
+    // --- 4. 解決済み ---
     async function resolveRequest() {
-      if (!currentDocId) return;
+      if (!currentDocId) {
+        alert("一覧に戻ります。");
+        document.getElementById("btn-back-to-list").click();
+        return;
+      }
 
       const confirmResolve = confirm("この質問を「解決済み」にしますか？\n※一覧から削除されます");
       if (!confirmResolve) return;
 
       try {
         await deleteDoc(doc(db, "requests", currentDocId));
-        alert("解決済みにしました。");
+        alert("解決済みにしました！");
         document.getElementById("btn-back-to-list").click();
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
     }
 
-    // --- 5. チャット受信機能（LINE風） ---
+    // --- 5. リアルタイム・チャット受信 ---
     function joinChatRoom(roomId) {
       const chatBox = document.getElementById("chat-box");
-      chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>通信中...</p>";
+      chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>チャットに接続中...</p>";
 
       if (unsubscribeChat) unsubscribeChat();
 
@@ -385,11 +405,16 @@
 
       unsubscribeChat = onSnapshot(qMessages, (snapshot) => {
         chatBox.innerHTML = "";
+        
+        if (snapshot.empty) {
+          chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin-top: 20px;'>まだメッセージはありません。<br>メッセージを送って会話を始めましょう！</p>";
+          return;
+        }
+
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           
           const rowDiv = document.createElement("div");
-          // 自分が送ったメッセージか判定
           const isMyMsg = data.senderId === senderId;
           rowDiv.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
 
@@ -401,12 +426,11 @@
           chatBox.appendChild(rowDiv);
         });
         
-        // 最下部へ自動スクロール
         chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
 
-    // --- 6. メッセージ送信 ---
+    // --- 6. 送信 ---
     async function sendMessage() {
       const text = document.getElementById("messageText").value.trim();
       if (!text || !currentRoomId) return;
@@ -423,7 +447,6 @@
       }
     }
 
-    // イベントリスナー登録
     document.getElementById("btn-create-request").addEventListener("click", createRequest);
     document.getElementById("btn-send").addEventListener("click", sendMessage);
     document.getElementById("btn-resolve").addEventListener("click", resolveRequest);
