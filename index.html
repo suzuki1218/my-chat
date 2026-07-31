@@ -2,128 +2,119 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>レトロ学習マッチング</title>
-  <!-- レトロゲーム風フォント（Google Fonts） -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
-
+  <!-- iPadで入力時に画面が勝手にズームするのを防ぐ設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>学習サポート掲示板</title>
+  
   <style>
+    /* iPad (iOS) 風のカラーとデザイン設定 */
     :root {
-      --bg-color: #0f172a;       /* 暗い夜空・宇宙のような黒ネイビー */
-      --card-bg: #1e293b;        /* レトロ筐体風の濃いグラファイト */
-      --text-color: #f8fafc;     /* くっきりホワイト */
-      --primary: #f59e0b;        /* ピクセルゴールド（ボタン等） */
-      --primary-hover: #d97706;
-      --success: #10b981;        /* 蛍光グリーン（教えるボタン） */
-      --danger: #ef4444;         /* ドットレッド（解決ボタン） */
-      --accent: #38bdf8;         /* ネオンブルー（タイトル強調） */
-      --border-color: #000000;
+      --bg-color: #f5f5f7;       /* Apple風の薄いグレー背景 */
+      --card-bg: #ffffff;        /* 真っ白なカード */
+      --text-main: #1d1d1f;      /* 濃いグレー（文字色） */
+      --text-sub: #86868b;       /* 薄いグレー（補助テキスト） */
+      --primary: #007aff;        /* iOSブルー */
+      --success: #34c759;        /* iOSグリーン */
+      --danger: #ff3b30;         /* iOSレッド */
+      --border: #d2d2d7;         /* 境界線 */
     }
 
     body {
-      font-family: 'DotGothic16', "Courier New", monospace;
+      /* iPadで最も読みやすい標準フォント */
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg-color);
-      color: var(--text-color);
-      max-width: 650px;
+      color: var(--text-main);
+      max-width: 768px; /* iPadの縦向きにちょうどいい幅 */
       margin: 0 auto;
-      padding: 15px;
+      padding: 20px;
       box-sizing: border-box;
-      letter-spacing: 1px;
+      -webkit-font-smoothing: antialiased;
     }
 
     h1 {
       text-align: center;
-      color: var(--accent);
-      font-size: 1.8rem;
-      margin-bottom: 25px;
-      text-shadow: 3px 3px 0px #000, -2px -2px 0px #000;
-      border-bottom: 4px dashed var(--accent);
-      padding-bottom: 10px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 24px;
     }
 
     h2 {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       margin-top: 0;
-      margin-bottom: 15px;
-      color: var(--primary);
-      text-shadow: 2px 2px 0px #000;
+      margin-bottom: 16px;
+      color: var(--text-main);
     }
 
-    /* レトロゲーム風カードコンテナ（太枠＋ドット影） */
+    /* 角丸で影のあるキレイなカード */
     .card {
       background: var(--card-bg);
-      padding: 20px;
-      border: 4px solid var(--border-color);
-      box-shadow: 6px 6px 0px #000;
-      margin-bottom: 25px;
-      border-radius: 4px;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      margin-bottom: 24px;
     }
 
+    /* 入力欄（指でタップしやすい大きさ） */
     input, textarea {
       width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      font-family: 'DotGothic16', monospace;
+      padding: 14px 16px;
+      font-size: 16px; /* 16px未満だとiPadでズームされるため固定 */
       margin-bottom: 12px;
       box-sizing: border-box;
-      background-color: #000;
-      color: #00ff66; /* ドットPC風のグリーン文字 */
-      border: 3px solid #334155;
-      border-radius: 0px;
+      background-color: #f9f9f9;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       outline: none;
+      transition: border-color 0.2s;
     }
 
     input:focus {
-      border-color: var(--accent);
+      border-color: var(--primary);
+      background-color: #fff;
     }
 
-    /* レトロプッシュボタン */
+    /* ボタン（押しやすいサイズと色） */
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       font-size: 16px;
-      font-family: 'DotGothic16', monospace;
-      font-weight: bold;
-      color: #000;
+      font-weight: 600;
+      color: white;
       background-color: var(--primary);
-      border: 3px solid #000;
-      box-shadow: 4px 4px 0px #000;
+      border: none;
+      border-radius: 12px;
       cursor: pointer;
-      border-radius: 0px;
-      transition: all 0.1s;
+      transition: opacity 0.2s;
     }
 
     button:active {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0px #000;
+      opacity: 0.7;
     }
 
     /* 募集一覧アイテム */
     .request-item {
-      border: 3px solid #000;
-      background: #0f172a;
-      padding: 12px;
-      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      box-shadow: 3px 3px 0px #000;
+      gap: 12px;
+    }
+    
+    .request-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
     }
 
     .request-info { flex-grow: 1; }
-    .request-title { font-weight: bold; font-size: 1.1rem; color: #fff; margin-bottom: 4px; }
-    .request-author { font-size: 0.85rem; color: #94a3b8; }
+    .request-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 4px; }
+    .request-author { font-size: 0.9rem; color: var(--text-sub); }
 
     .btn-chat {
       background-color: var(--success);
-      color: #000;
       width: auto;
-      padding: 8px 16px;
-      font-size: 0.95rem;
-      white-space: nowrap;
+      padding: 10px 20px;
+      border-radius: 20px; /* 少し丸みを強く */
     }
 
     /* チャット画面 */
@@ -133,72 +124,77 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
-      gap: 10px;
+      margin-bottom: 16px;
     }
 
     .btn-back {
-      background-color: #64748b;
-      color: #fff;
+      background-color: var(--text-sub);
       width: auto;
-      padding: 8px 14px;
-      font-size: 0.9rem;
+      padding: 10px 16px;
+      border-radius: 20px;
     }
 
     .btn-resolve {
       background-color: var(--danger);
-      color: #fff;
       width: auto;
-      padding: 8px 14px;
-      font-size: 0.9rem;
+      padding: 10px 16px;
+      border-radius: 20px;
+    }
+
+    #chat-title {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
     }
 
     #chat-box {
-      border: 3px solid #000;
-      height: 320px;
+      border: 1px solid var(--border);
+      height: 400px;
       overflow-y: auto;
-      padding: 15px;
-      margin-bottom: 15px;
-      background: #000000;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: var(--bg-color);
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
-    /* メッセージフキダシ */
+    /* メッセージフキダシ（LINEやメッセージアプリ風） */
     .msg-bubble {
-      background: #1e293b;
-      padding: 10px 14px;
-      border: 2px solid #334155;
-      max-width: 85%;
-      box-shadow: 3px 3px 0px #000;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 16px;
+      max-width: 80%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      align-self: flex-start;
     }
 
-    .msg-name { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 4px; }
-    .msg-text { font-size: 1rem; color: #fff; word-break: break-all; }
+    .msg-name { font-size: 0.8rem; font-weight: bold; color: var(--text-sub); margin-bottom: 4px; }
+    .msg-text { font-size: 1rem; line-height: 1.4; word-break: break-all; }
 
     .input-group {
       display: flex;
-      gap: 8px;
       flex-direction: column;
+      gap: 8px;
     }
   </style>
 </head>
 <body>
 
-  <h1>🎮 レトロ学習マッチング 👾</h1>
+  <h1>学習サポート掲示板</h1>
 
   <!-- ==================== 1. マッチング画面 ==================== -->
   <div id="matching-section">
     <div class="card">
-      <h2>▶ おしえてほしい（クエスト投稿）</h2>
-      <input type="text" id="reqName" placeholder="プレイヤー名 (例: たろう)">
-      <input type="text" id="reqSubject" placeholder="クエスト内容 (例: 二次関数のグラフ)">
-      <button id="btn-create-request">★ 募集を投稿する</button>
+      <h2>教えてほしいことを投稿しよう</h2>
+      <input type="text" id="reqName" placeholder="あなたの名前（例：佐藤）">
+      <input type="text" id="reqSubject" placeholder="質問内容（例：数学のP24の問3）">
+      <button id="btn-create-request">投稿して先生を待つ</button>
     </div>
 
     <div class="card">
-      <h2>▶ 受付中のクエスト一覧</h2>
+      <h2>現在サポート待ちの質問</h2>
       <div id="request-list">読み込み中...</div>
     </div>
   </div>
@@ -207,8 +203,8 @@
   <!-- ==================== 2. チャット画面 ==================== -->
   <div id="chat-section">
     <div class="chat-header">
-      <button id="btn-back-to-list" class="btn-back">◀ もどる</button>
-      <button id="btn-resolve" class="btn-resolve">✖ クエストクリア（削除）</button>
+      <button id="btn-back-to-list" class="btn-back">← 戻る</button>
+      <button id="btn-resolve" class="btn-resolve">解決済みにする</button>
     </div>
 
     <div class="card">
@@ -218,7 +214,7 @@
       <div class="input-group">
         <input type="text" id="senderName" placeholder="送信者名">
         <input type="text" id="messageText" placeholder="メッセージを入力...">
-        <button id="btn-send">▶ 送信する</button>
+        <button id="btn-send">送信する</button>
       </div>
     </div>
   </div>
@@ -254,7 +250,7 @@
       const subject = document.getElementById("reqSubject").value.trim();
 
       if (!name || !subject) {
-        alert("名前とクエスト内容を入力してください！");
+        alert("名前と質問内容を入力してください。");
         return;
       }
 
@@ -268,7 +264,7 @@
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        alert("クエストを投稿しました！");
+        alert("質問を投稿しました！教えてくれる人を待ちましょう。");
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
@@ -281,7 +277,7 @@
       listDiv.innerHTML = "";
 
       if (snapshot.empty) {
-        listDiv.innerHTML = "<p style='color: #64748b; text-align: center;'>現在、クエストはありません。</p>";
+        listDiv.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin: 20px 0;'>現在、質問はありません。</p>";
         return;
       }
 
@@ -294,9 +290,9 @@
         item.innerHTML = `
           <div class="request-info">
             <div class="request-title">${data.subject}</div>
-            <div class="request-author">冒険者: ${data.name || '名無し'}</div>
+            <div class="request-author">質問者: ${data.name || '名無し'}</div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}')">助ける</button>
+          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}')">教える</button>
         `;
         listDiv.appendChild(item);
       });
@@ -309,7 +305,7 @@
 
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
-      document.getElementById("chat-title").innerText = `「${subject}」`;
+      document.getElementById("chat-title").innerText = `質問: ${subject}`;
 
       const reqName = document.getElementById("reqName").value.trim();
       if (reqName) document.getElementById("senderName").value = reqName;
@@ -328,12 +324,12 @@
     async function resolveRequest() {
       if (!currentDocId) return;
 
-      const confirmResolve = confirm("このクエストをクリア（削除）しますか？");
+      const confirmResolve = confirm("この質問を「解決済み」にしますか？\n※一覧から削除されます");
       if (!confirmResolve) return;
 
       try {
         await deleteDoc(doc(db, "requests", currentDocId));
-        alert("クエストをクリアしました！");
+        alert("解決済みにしました。お疲れ様でした！");
         document.getElementById("btn-back-to-list").click();
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
@@ -343,7 +339,7 @@
     // --- 5. チャット受信機能 ---
     function joinChatRoom(roomId) {
       const chatBox = document.getElementById("chat-box");
-      chatBox.innerHTML = "<p style='color: #64748b; text-align: center;'>通信中...</p>";
+      chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>通信中...</p>";
 
       if (unsubscribeChat) unsubscribeChat();
 
