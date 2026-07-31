@@ -3,41 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>リアルタイムチャット テスト</title>
+  <title>マッチング＆チャット</title>
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 0 10px; }
-    #chat-box { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; background-color: #f9f9f9; }
+    .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h2 { margin-top: 0; color: #333; }
+    input, textarea, button { width: 100%; padding: 10px; font-size: 15px; margin-bottom: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    button { background-color: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    .request-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+    .request-item:last-child { border-bottom: none; }
+    .btn-chat { background-color: #28a745; width: auto; padding: 6px 12px; margin: 0; }
+    #chat-section { display: none; } /* 初期状態は非表示 */
+    #chat-box { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: white; border-radius: 4px; }
     .msg { margin-bottom: 8px; }
-    .inputs { display: flex; gap: 5px; flex-direction: column; }
-    input, button { padding: 8px; font-size: 16px; margin-bottom: 5px; }
+    .btn-back { background-color: #6c757d; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
-  <h2>ステップ1：部屋指定チャットテスト</h2>
-  
-  <div>
-    <label>部屋ID: </label>
-    <input type="text" id="roomId" value="room1">
-    <button id="btn-join">部屋に入る / 切替</button>
-  </div>
-  <hr>
+  <!-- ==================== 1. マッチング画面 ==================== -->
+  <div id="matching-section">
+    <div class="card">
+      <h2>教えてほしい人を募集する</h2>
+      <input type="text" id="reqName" placeholder="あなたの名前 (例: 生徒A)">
+      <input type="text" id="reqSubject" placeholder="教えてほしいこと (例: 数学の二次関数)">
+      <button id="btn-create-request">投稿して募集する</button>
+    </div>
 
-  <div id="chat-box"><b>Firebase 接続中...</b><br></div>
-
-  <div class="inputs">
-    <input type="text" id="senderName" placeholder="あなたの名前 (例: 生徒A)">
-    <input type="text" id="messageText" placeholder="メッセージを入力...">
-    <button id="btn-send">送信</button>
+    <div class="card">
+      <h2>募集一覧 (教えたい人はこちらから)</h2>
+      <div id="request-list">読み込み中...</div>
+    </div>
   </div>
 
-  <!-- Firebase (v10) SDK の読み込み -->
+
+  <!-- ==================== 2. チャット画面 ==================== -->
+  <div id="chat-section">
+    <button id="btn-back-to-list" class="btn-back">← 一覧に戻る</button>
+    <div class="card">
+      <h2 id="chat-title">チャットルーム</h2>
+      <div id="chat-box"></div>
+      <div>
+        <input type="text" id="senderName" placeholder="あなたの名前">
+        <input type="text" id="messageText" placeholder="メッセージを入力...">
+        <button id="btn-send">送信</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // あなたのFirebase設定情報
+    // Firebase設定
     const firebaseConfig = {
       apiKey: "AIzaSyAkGHvYqrhlu3bF_P6LIXk0YjmSAfyFj08",
       authDomain: "study-matching-test.firebaseapp.com",
@@ -48,30 +70,100 @@
       measurementId: "G-62FYMVGYFY"
     };
 
-    // Firebaseの初期化
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let unsubscribe = null;
+    let currentRoomId = null;
+    let unsubscribeChat = null;
 
-    // 部屋に入ってメッセージを監視する機能
-    window.joinRoom = function() {
-      const roomId = document.getElementById("roomId").value;
-      if (!roomId) { alert("部屋IDを入力してください。"); return; }
+    // --- 1. リクエストを投稿する ---
+    async function createRequest() {
+      const name = document.getElementById("reqName").value;
+      const subject = document.getElementById("reqSubject").value;
+
+      if (!name || !subject) {
+        alert("名前と教えてほしいことを入力してください。");
+        return;
+      }
+
+      // ユニークな部屋IDを自動生成 (例: room_1716123456)
+      const roomId = "room_" + Date.now();
+
+      try {
+        await addDoc(collection(db, "requests"), {
+          name: name,
+          subject: subject,
+          roomId: roomId,
+          createdAt: serverTimestamp()
+        });
+        document.getElementById("reqSubject").value = "";
+        alert("募集を投稿しました！");
+      } catch (e) {
+        alert("投稿エラー: " + e.message);
+      }
+    }
+
+    // --- 2. 募集一覧をリアルタイム表示 ---
+    const qRequests = query(collection(db, "requests"), orderBy("createdAt", "desc"));
+    onSnapshot(qRequests, (snapshot) => {
+      const listDiv = document.getElementById("request-list");
+      listDiv.innerHTML = "";
+
+      if (snapshot.empty) {
+        listDiv.innerHTML = "<p>現在募集はありません。</p>";
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const item = document.createElement("div");
+        item.className = "request-item";
+        item.innerHTML = `
+          <div>
+            <strong>${data.subject}</strong><br>
+            <small>投稿者: ${data.name || '名無し'}</small>
+          </div>
+          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}')">教える (チャット)</button>
+        `;
+        listDiv.appendChild(item);
+      });
+    });
+
+    // --- 3. チャット画面を開く ---
+    window.openChat = function(roomId, subject) {
+      currentRoomId = roomId;
+      document.getElementById("matching-section").style.display = "none";
+      document.getElementById("chat-section").style.display = "block";
+      document.getElementById("chat-title").innerText = `「${subject}」のチャット`;
+
+      // 投稿時の名前が入力されていればチャットの名前欄に自動セット
+      const reqName = document.getElementById("reqName").value;
+      if (reqName) document.getElementById("senderName").value = reqName;
+
+      // チャット監視スタート
+      joinChatRoom(roomId);
+    };
+
+    // 一覧に戻るボタン
+    document.getElementById("btn-back-to-list").addEventListener("click", () => {
+      if (unsubscribeChat) unsubscribeChat();
+      document.getElementById("chat-section").style.display = "none";
+      document.getElementById("matching-section").style.display = "block";
+    });
+
+    // --- 4. チャット機能 ---
+    function joinChatRoom(roomId) {
       const chatBox = document.getElementById("chat-box");
-      chatBox.innerHTML = `<b>【${roomId}】に入室しました...</b><br>`;
+      chatBox.innerHTML = "読み込み中...";
 
-      // 以前の部屋の監視を解除
-      if (unsubscribe) unsubscribe();
+      if (unsubscribeChat) unsubscribeChat();
 
-      // Firestoreから特定部屋のメッセージを時間順にリアルタイム取得
-      const q = query(
-        collection(db, "rooms", roomId, "messages"), 
+      const qMessages = query(
+        collection(db, "rooms", roomId, "messages"),
         orderBy("timestamp", "asc")
       );
 
-      // データが変更されるたびに自動で画面が更新される（リアルタイム同期！）
-      unsubscribe = onSnapshot(q, (snapshot) => {
+      unsubscribeChat = onSnapshot(qMessages, (snapshot) => {
         chatBox.innerHTML = "";
         snapshot.forEach((doc) => {
           const data = doc.data();
@@ -81,37 +173,30 @@
           chatBox.appendChild(div);
         });
         chatBox.scrollTop = chatBox.scrollHeight;
-      }, (error) => {
-        alert("データベース接続エラー: " + error.message + "\nFirestoreのテストモードが有効になっているか確認してください。");
       });
-    };
+    }
 
-    // メッセージを送信する機能
-    window.sendMessage = async function() {
-      const roomId = document.getElementById("roomId").value;
+    // メッセージ送信
+    async function sendMessage() {
       const name = document.getElementById("senderName").value;
       const text = document.getElementById("messageText").value;
-
-      if (!text) return;
+      if (!text || !currentRoomId) return;
 
       try {
-        await addDoc(collection(db, "rooms", roomId, "messages"), {
+        await addDoc(collection(db, "rooms", currentRoomId, "messages"), {
           name: name,
           text: text,
           timestamp: serverTimestamp()
         });
         document.getElementById("messageText").value = "";
-      } catch (error) {
-        alert("送信エラー: " + error.message);
+      } catch (e) {
+        alert("送信エラー: " + e.message);
       }
-    };
+    }
 
-    // ボタンイベントの設定
-    document.getElementById("btn-join").addEventListener("click", window.joinRoom);
-    document.getElementById("btn-send").addEventListener("click", window.sendMessage);
-
-    // 初期実行（デフォルトでroom1に入る）
-    window.joinRoom();
+    // イベント登録
+    document.getElementById("btn-create-request").addEventListener("click", createRequest);
+    document.getElementById("btn-send").addEventListener("click", sendMessage);
   </script>
 </body>
 </html>
