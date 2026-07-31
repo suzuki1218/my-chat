@@ -3,36 +3,202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マッチング＆チャット</title>
+  <title>レトロ学習マッチング</title>
+  <!-- レトロゲーム風フォント（Google Fonts） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; background-color: #f9f9f9; }
-    .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    h2 { margin-top: 0; color: #333; }
-    input, textarea, button { width: 100%; padding: 10px; font-size: 15px; margin-bottom: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-    button { background-color: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-    button:hover { background-color: #0056b3; }
-    .request-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-    .request-item:last-child { border-bottom: none; }
-    .btn-chat { background-color: #28a745; width: auto; padding: 6px 12px; margin: 0; }
-    #chat-section { display: none; } /* 初期状態は非表示 */
-    #chat-box { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: white; border-radius: 4px; }
-    .msg { margin-bottom: 8px; }
-    .btn-back { background-color: #6c757d; margin-bottom: 10px; }
+    :root {
+      --bg-color: #0f172a;       /* 暗い夜空・宇宙のような黒ネイビー */
+      --card-bg: #1e293b;        /* レトロ筐体風の濃いグラファイト */
+      --text-color: #f8fafc;     /* くっきりホワイト */
+      --primary: #f59e0b;        /* ピクセルゴールド（ボタン等） */
+      --primary-hover: #d97706;
+      --success: #10b981;        /* 蛍光グリーン（教えるボタン） */
+      --danger: #ef4444;         /* ドットレッド（解決ボタン） */
+      --accent: #38bdf8;         /* ネオンブルー（タイトル強調） */
+      --border-color: #000000;
+    }
+
+    body {
+      font-family: 'DotGothic16', "Courier New", monospace;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 15px;
+      box-sizing: border-box;
+      letter-spacing: 1px;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--accent);
+      font-size: 1.8rem;
+      margin-bottom: 25px;
+      text-shadow: 3px 3px 0px #000, -2px -2px 0px #000;
+      border-bottom: 4px dashed var(--accent);
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--primary);
+      text-shadow: 2px 2px 0px #000;
+    }
+
+    /* レトロゲーム風カードコンテナ（太枠＋ドット影） */
+    .card {
+      background: var(--card-bg);
+      padding: 20px;
+      border: 4px solid var(--border-color);
+      box-shadow: 6px 6px 0px #000;
+      margin-bottom: 25px;
+      border-radius: 4px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-family: 'DotGothic16', monospace;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+      background-color: #000;
+      color: #00ff66; /* ドットPC風のグリーン文字 */
+      border: 3px solid #334155;
+      border-radius: 0px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+    }
+
+    /* レトロプッシュボタン */
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-family: 'DotGothic16', monospace;
+      font-weight: bold;
+      color: #000;
+      background-color: var(--primary);
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+      cursor: pointer;
+      border-radius: 0px;
+      transition: all 0.1s;
+    }
+
+    button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    /* 募集一覧アイテム */
+    .request-item {
+      border: 3px solid #000;
+      background: #0f172a;
+      padding: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 3px 3px 0px #000;
+    }
+
+    .request-info { flex-grow: 1; }
+    .request-title { font-weight: bold; font-size: 1.1rem; color: #fff; margin-bottom: 4px; }
+    .request-author { font-size: 0.85rem; color: #94a3b8; }
+
+    .btn-chat {
+      background-color: var(--success);
+      color: #000;
+      width: auto;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    /* チャット画面 */
+    #chat-section { display: none; }
+    
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .btn-back {
+      background-color: #64748b;
+      color: #fff;
+      width: auto;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+    }
+
+    .btn-resolve {
+      background-color: var(--danger);
+      color: #fff;
+      width: auto;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+    }
+
+    #chat-box {
+      border: 3px solid #000;
+      height: 320px;
+      overflow-y: auto;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #000000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* メッセージフキダシ */
+    .msg-bubble {
+      background: #1e293b;
+      padding: 10px 14px;
+      border: 2px solid #334155;
+      max-width: 85%;
+      box-shadow: 3px 3px 0px #000;
+    }
+
+    .msg-name { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 4px; }
+    .msg-text { font-size: 1rem; color: #fff; word-break: break-all; }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+      flex-direction: column;
+    }
   </style>
 </head>
 <body>
 
+  <h1>🎮 レトロ学習マッチング 👾</h1>
+
   <!-- ==================== 1. マッチング画面 ==================== -->
   <div id="matching-section">
     <div class="card">
-      <h2>教えてほしい人を募集する</h2>
-      <input type="text" id="reqName" placeholder="あなたの名前 (例: 生徒A)">
-      <input type="text" id="reqSubject" placeholder="教えてほしいこと (例: 数学の二次関数)">
-      <button id="btn-create-request">投稿して募集する</button>
+      <h2>▶ おしえてほしい（クエスト投稿）</h2>
+      <input type="text" id="reqName" placeholder="プレイヤー名 (例: たろう)">
+      <input type="text" id="reqSubject" placeholder="クエスト内容 (例: 二次関数のグラフ)">
+      <button id="btn-create-request">★ 募集を投稿する</button>
     </div>
 
     <div class="card">
-      <h2>募集一覧 (教えたい人はこちらから)</h2>
+      <h2>▶ 受付中のクエスト一覧</h2>
       <div id="request-list">読み込み中...</div>
     </div>
   </div>
@@ -40,26 +206,31 @@
 
   <!-- ==================== 2. チャット画面 ==================== -->
   <div id="chat-section">
-    <button id="btn-back-to-list" class="btn-back">← 一覧に戻る</button>
+    <div class="chat-header">
+      <button id="btn-back-to-list" class="btn-back">◀ もどる</button>
+      <button id="btn-resolve" class="btn-resolve">✖ クエストクリア（削除）</button>
+    </div>
+
     <div class="card">
       <h2 id="chat-title">チャットルーム</h2>
       <div id="chat-box"></div>
-      <div>
-        <input type="text" id="senderName" placeholder="あなたの名前">
+      
+      <div class="input-group">
+        <input type="text" id="senderName" placeholder="送信者名">
         <input type="text" id="messageText" placeholder="メッセージを入力...">
-        <button id="btn-send">送信</button>
+        <button id="btn-send">▶ 送信する</button>
       </div>
     </div>
   </div>
 
 
-  <!-- Firebase SDK -->
+  <!-- Firebase (v10) SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } 
+    import { getFirestore, collection, addDoc, doc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Firebase設定
+    // Firebase設定情報
     const firebaseConfig = {
       apiKey: "AIzaSyAkGHvYqrhlu3bF_P6LIXk0YjmSAfyFj08",
       authDomain: "study-matching-test.firebaseapp.com",
@@ -74,19 +245,19 @@
     const db = getFirestore(app);
 
     let currentRoomId = null;
+    let currentDocId = null;
     let unsubscribeChat = null;
 
     // --- 1. リクエストを投稿する ---
     async function createRequest() {
-      const name = document.getElementById("reqName").value;
-      const subject = document.getElementById("reqSubject").value;
+      const name = document.getElementById("reqName").value.trim();
+      const subject = document.getElementById("reqSubject").value.trim();
 
       if (!name || !subject) {
-        alert("名前と教えてほしいことを入力してください。");
+        alert("名前とクエスト内容を入力してください！");
         return;
       }
 
-      // ユニークな部屋IDを自動生成 (例: room_1716123456)
       const roomId = "room_" + Date.now();
 
       try {
@@ -97,9 +268,9 @@
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        alert("募集を投稿しました！");
+        alert("クエストを投稿しました！");
       } catch (e) {
-        alert("投稿エラー: " + e.message);
+        alert("エラーが発生しました: " + e.message);
       }
     }
 
@@ -110,37 +281,39 @@
       listDiv.innerHTML = "";
 
       if (snapshot.empty) {
-        listDiv.innerHTML = "<p>現在募集はありません。</p>";
+        listDiv.innerHTML = "<p style='color: #64748b; text-align: center;'>現在、クエストはありません。</p>";
         return;
       }
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const docId = docSnap.id;
+
         const item = document.createElement("div");
         item.className = "request-item";
         item.innerHTML = `
-          <div>
-            <strong>${data.subject}</strong><br>
-            <small>投稿者: ${data.name || '名無し'}</small>
+          <div class="request-info">
+            <div class="request-title">${data.subject}</div>
+            <div class="request-author">冒険者: ${data.name || '名無し'}</div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}')">教える (チャット)</button>
+          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}')">助ける</button>
         `;
         listDiv.appendChild(item);
       });
     });
 
     // --- 3. チャット画面を開く ---
-    window.openChat = function(roomId, subject) {
+    window.openChat = function(roomId, subject, docId) {
       currentRoomId = roomId;
+      currentDocId = docId;
+
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
-      document.getElementById("chat-title").innerText = `「${subject}」のチャット`;
+      document.getElementById("chat-title").innerText = `「${subject}」`;
 
-      // 投稿時の名前が入力されていればチャットの名前欄に自動セット
-      const reqName = document.getElementById("reqName").value;
+      const reqName = document.getElementById("reqName").value.trim();
       if (reqName) document.getElementById("senderName").value = reqName;
 
-      // チャット監視スタート
       joinChatRoom(roomId);
     };
 
@@ -151,10 +324,26 @@
       document.getElementById("matching-section").style.display = "block";
     });
 
-    // --- 4. チャット機能 ---
+    // --- 4. 解決済みにする ---
+    async function resolveRequest() {
+      if (!currentDocId) return;
+
+      const confirmResolve = confirm("このクエストをクリア（削除）しますか？");
+      if (!confirmResolve) return;
+
+      try {
+        await deleteDoc(doc(db, "requests", currentDocId));
+        alert("クエストをクリアしました！");
+        document.getElementById("btn-back-to-list").click();
+      } catch (e) {
+        alert("エラーが発生しました: " + e.message);
+      }
+    }
+
+    // --- 5. チャット受信機能 ---
     function joinChatRoom(roomId) {
       const chatBox = document.getElementById("chat-box");
-      chatBox.innerHTML = "読み込み中...";
+      chatBox.innerHTML = "<p style='color: #64748b; text-align: center;'>通信中...</p>";
 
       if (unsubscribeChat) unsubscribeChat();
 
@@ -165,21 +354,24 @@
 
       unsubscribeChat = onSnapshot(qMessages, (snapshot) => {
         chatBox.innerHTML = "";
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
           const div = document.createElement("div");
-          div.className = "msg";
-          div.innerHTML = `<strong>${data.name || '名無し'}:</strong> ${data.text}`;
+          div.className = "msg-bubble";
+          div.innerHTML = `
+            <div class="msg-name">${data.name || '名無し'}</div>
+            <div class="msg-text">${data.text}</div>
+          `;
           chatBox.appendChild(div);
         });
         chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
 
-    // メッセージ送信
+    // --- 6. メッセージ送信 ---
     async function sendMessage() {
-      const name = document.getElementById("senderName").value;
-      const text = document.getElementById("messageText").value;
+      const name = document.getElementById("senderName").value.trim() || "名無し";
+      const text = document.getElementById("messageText").value.trim();
       if (!text || !currentRoomId) return;
 
       try {
@@ -194,9 +386,14 @@
       }
     }
 
-    // イベント登録
+    // イベントリスナー登録
     document.getElementById("btn-create-request").addEventListener("click", createRequest);
     document.getElementById("btn-send").addEventListener("click", sendMessage);
+    document.getElementById("btn-resolve").addEventListener("click", resolveRequest);
+    
+    document.getElementById("messageText").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
   </script>
 </body>
 </html>
