@@ -24,6 +24,7 @@
       --my-msg-bg: #81c784;      /* 自分の吹き出し */
       --chat-bg: #e2d9c4;        /* トーク画面背景 */
       --gold: #fbc02d;            /* ベストアンサー用カラー */
+      --my-card-bg: #eaf5ea;     /* 自分の投稿カード背景 */
     }
 
     body {
@@ -210,17 +211,37 @@
     /* 募集一覧アイテム */
     .request-item {
       border-bottom: 1px solid var(--border);
-      padding: 14px 0;
+      padding: 14px 12px;
+      margin: 0 -12px;
+      border-radius: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      transition: opacity 0.3s;
+      transition: background-color 0.2s, opacity 0.3s;
     }
     
     .request-item:last-child {
       border-bottom: none;
-      padding-bottom: 0;
+    }
+
+    /* 自分の投稿カードのスタイル定義 */
+    .request-item.my-request {
+      background-color: var(--my-card-bg);
+      border-left: 4px solid var(--primary);
+      padding-left: 10px;
+    }
+
+    /* 自分の投稿を表す「自分」バッジ */
+    .my-badge {
+      background-color: var(--primary);
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-right: 6px;
+      vertical-align: middle;
+      font-weight: bold;
     }
 
     /* 解決済みアイテムの文章部分を薄暗くするスタイル */
@@ -528,11 +549,11 @@
   <div id="matching-section">
     <div class="card">
       <h2>質問・相談を投稿する</h2>
-      <input type="text" id="reqSubject" placeholder="質問内容を入力">
+      <input type="text" id="reqSubject" placeholder="質問内容（例：数学P24の問3、英語の文法）">
       
       <!-- 緊急チェックボックス -->
       <label class="urgent-option-label">
-        <input type="checkbox" id="reqIsUrgent"> 緊急（&lt;緊急&gt;マークをつける）
+        <input type="checkbox" id="reqIsUrgent"> 緊急で教えてほしい（&lt;緊急&gt;マークをつける）
       </label>
 
       <button id="btn-create-request">投稿して質問する</button>
@@ -555,7 +576,7 @@
       <div style="text-align: center;">
         <h2 id="chat-title">質問</h2>
         <p id="chat-sub-hint" style="font-size:0.8rem; color:var(--text-sub); margin:-8px 0 12px 0; display:none;">
-          質問者は解決したら「ベストアンサーに選ぶ」を押してください
+          ヒント: 質問者は一番参考になった回答の「ベストアンサーに選ぶ」を押してください
         </p>
       </div>
 
@@ -811,16 +832,21 @@
         const author = data.authorName || "ゲスト";
         const isSolved = data.isSolved || false;
         const isUrgent = data.isUrgent || false;
+        const isMyPost = data.ownerId === senderId; // 自分の投稿かどうかを判定
 
         const item = document.createElement("div");
-        item.className = `request-item ${isSolved ? "solved" : ""}`;
+        // 自分の投稿なら my-request クラスを付与
+        item.className = `request-item ${isSolved ? "solved" : ""} ${isMyPost ? "my-request" : ""}`;
 
-        // ラベルの組み立て（<緊急> または <解決済み>）
+        // ラベルの組み立て（<自分>、<緊急> または <解決済み>）
         let statusPrefix = "";
+        if (isMyPost) {
+          statusPrefix += `<span class="my-badge">自分</span>`;
+        }
         if (isSolved) {
-          statusPrefix = `<span class="solved-label">&lt;解決済み&gt;</span>`;
+          statusPrefix += `<span class="solved-label">&lt;解決済み&gt;</span>`;
         } else if (isUrgent) {
-          statusPrefix = `<span class="urgent-label">&lt;緊急&gt;</span>`;
+          statusPrefix += `<span class="urgent-label">&lt;緊急&gt;</span>`;
         }
 
         const btnText = isSolved ? "閲覧する" : "見にいく";
@@ -852,10 +878,13 @@
       document.getElementById("chat-section").style.display = "block";
       
       let titlePrefix = "";
+      if (ownerId === senderId) {
+        titlePrefix += `<span class="my-badge" style="font-size:0.8rem; padding:3px 8px;">自分</span> `;
+      }
       if (isSolved) {
-        titlePrefix = `<span style="color: var(--danger);">&lt;解決済み&gt;</span> `;
+        titlePrefix += `<span style="color: var(--danger);">&lt;解決済み&gt;</span> `;
       } else if (isUrgent) {
-        titlePrefix = `<span style="color: var(--danger); font-weight:900;">&lt;緊急&gt;</span> `;
+        titlePrefix += `<span style="color: var(--danger); font-weight:900;">&lt;緊急&gt;</span> `;
       }
 
       document.getElementById("chat-title").innerHTML = `${titlePrefix}「${subject}」`;
