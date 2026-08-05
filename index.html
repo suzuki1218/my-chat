@@ -19,11 +19,11 @@
       --primary: #2e7d32;        /* ナチュラルグリーン */
       --primary-light: #e8f5e9;
       --success: #4caf50;        /* ライトグリーン */
-      --danger: #d32f2f;         /* アースレッド */
-      --border: #dcd4c3;         /* 境界線 */
+      --danger: #d32f2f;          /* アースレッド */
+      --border: #dcd4c3;          /* 境界線 */
       --my-msg-bg: #81c784;      /* 自分の吹き出し */
       --chat-bg: #e2d9c4;        /* トーク画面背景 */
-      --gold: #fbc02d;           /* ベストアンサー用カラー */
+      --gold: #fbc02d;            /* ベストアンサー用カラー */
     }
 
     body {
@@ -435,11 +435,11 @@
       background-color: #e8e0ce;
       color: var(--text-main);
       border: 1px solid var(--border);
-      width: 60px;
+      width: 44px;
       height: 44px;
-      padding: 0 8px;
+      padding: 0;
       border-radius: 12px;
-      font-size: 0.8rem;
+      font-size: 1.3rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -463,7 +463,6 @@
       <img id="badge-icon" class="badge-avatar-img" src="icon1.png" alt="icon">
       <span id="badge-name">ゲスト</span>
       <span id="badge-solve-count" class="solve-count-tag">解決: 0</span>
-      <span style="font-size:0.75rem; color:var(--text-sub);">[設定]</span>
     </div>
   </header>
 
@@ -541,7 +540,7 @@
         <div class="input-group">
           <!-- 非表示のファイル選択インプット -->
           <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
-          <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を添付">画像選択</button>
+          <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を添付">＋</button>
           
           <input type="text" id="messageText" placeholder="メッセージを入力...">
           <button id="btn-send" class="btn-send-msg">送信</button>
