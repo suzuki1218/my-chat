@@ -70,6 +70,14 @@
       object-fit: cover;
     }
 
+    .solve-count-tag {
+      background: #2e7d32;
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
     h2 {
       font-size: 1.1rem;
       font-weight: 700;
@@ -140,6 +148,12 @@
       gap: 16px;
       margin-bottom: 20px;
       justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .icon-wrapper {
+      position: relative;
+      display: inline-block;
     }
 
     .icon-option {
@@ -159,6 +173,22 @@
       background: #ffffff;
       transform: scale(1.1);
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .icon-option.locked {
+      filter: grayscale(100%) opacity(0.5);
+      cursor: not-allowed;
+    }
+
+    .lock-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #333;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 8px;
     }
 
     /* 募集一覧アイテム */
@@ -367,6 +397,7 @@
     <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
       <img id="badge-icon" class="badge-avatar-img" src="icon1.png" alt="icon">
       <span id="badge-name">ゲスト</span>
+      <span id="badge-solve-count" class="solve-count-tag">解決: 0</span>
       <span style="font-size:0.7rem; color:var(--text-sub);">⚙️</span>
     </div>
   </header>
@@ -375,13 +406,29 @@
   <div id="login-section">
     <div class="card" style="text-align: center; max-width: 400px; margin: 40px auto;">
       <h2>アイコンと名前を選ぼう</h2>
-      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 20px;">使用するアイコン画像と名前（または出席番号）を設定してね！</p>
+      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;">解決数が増えると使えるアイコンがアンロックされます！</p>
       
+      <p style="font-weight:bold; color:var(--primary); margin-bottom:16px;">現在の解決数: <span id="user-solve-display">0</span> 回</p>
+
       <span class="icon-selector-label">アイコンを選択：</span>
       <div class="icon-selector" id="login-icon-selector">
-        <!-- 初期2種類の画像アイコン -->
-        <img class="icon-option selected" src="icon1.png" onclick="selectLoginIcon('icon1.png', this)" alt="アイコン1">
-        <img class="icon-option" src="icon2.png" onclick="selectLoginIcon('icon2.png', this)" alt="アイコン2">
+        <!-- 初期アイコン（誰でもOK） -->
+        <div class="icon-wrapper">
+          <img class="icon-option selected" src="icon1.png" data-min="0" onclick="selectLoginIcon('icon1.png', this)" alt="アイコン1">
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option" src="icon2.png" data-min="0" onclick="selectLoginIcon('icon2.png', this)" alt="アイコン2">
+        </div>
+
+        <!-- 解放アイコン（解決数に応じてロック解除） -->
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon3.png" data-min="1" onclick="selectLoginIcon('icon3.png', this)" alt="アイコン3">
+          <span class="lock-badge" id="lock-icon3">1回〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon4.png" data-min="3" onclick="selectLoginIcon('icon4.png', this)" alt="アイコン4">
+          <span class="lock-badge" id="lock-icon4">3回〜</span>
+        </div>
       </div>
 
       <input type="text" id="userNameInput" placeholder="名前または出席番号（例：12番 たろう）">
@@ -431,7 +478,7 @@
   <!-- Firebase (v10) SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp } 
+    import { getFirestore, collection, addDoc, doc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, setDoc, getDoc, updateDoc, increment } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -454,17 +501,54 @@
       localStorage.setItem("senderId", senderId);
     }
 
-    // 保存されたユーザー設定情報（初期値は icon1.png）
     let myIcon = localStorage.getItem("myIcon") || "icon1.png";
     let myName = localStorage.getItem("myName") || "";
+    let mySolveCount = 0;
 
     let currentRoomId = null;
     let currentDocId = null;
     let currentOwnerId = null;
     let unsubscribeChat = null;
 
+    // --- ユーザーデータ（解決数）の取得・同期 ---
+    async function loadUserData() {
+      const userRef = doc(db, "users", senderId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        mySolveCount = userSnap.data().solveCount || 0;
+      } else {
+        await setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() });
+        mySolveCount = 0;
+      }
+      updateUIWithUserData();
+    }
+
+    function updateUIWithUserData() {
+      document.getElementById("user-solve-display").innerText = mySolveCount;
+      document.getElementById("badge-solve-count").innerText = `解決: ${mySolveCount}`;
+
+      // アイコンのロック状態更新
+      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
+        const minReq = parseInt(opt.getAttribute("data-min") || "0", 10);
+        if (mySolveCount >= minReq) {
+          opt.classList.remove('locked');
+          const badge = opt.parentElement.querySelector('.lock-badge');
+          if (badge) badge.style.display = 'none';
+        } else {
+          opt.classList.add('locked');
+        }
+      });
+    }
+
     // --- ログイン・設定画面制御 ---
     window.selectLoginIcon = function(iconSrc, element) {
+      const minReq = parseInt(element.getAttribute("data-min") || "0", 10);
+      if (mySolveCount < minReq) {
+        alert(`このアイコンを使うには「質問解決数」が ${minReq} 回以上必要です！（現在の解決数: ${mySolveCount} 回）`);
+        return;
+      }
+
       myIcon = iconSrc;
       document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
         opt.classList.remove('selected');
@@ -473,6 +557,7 @@
     };
 
     window.showLoginScreen = function() {
+      updateUIWithUserData();
       document.getElementById("login-section").style.display = "block";
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "none";
@@ -503,14 +588,17 @@
       document.getElementById("matching-section").style.display = "block";
     }
 
-    if (!myName) {
-      showLoginScreen();
-    } else {
-      document.getElementById("badge-icon").src = myIcon;
-      document.getElementById("badge-name").innerText = myName;
-      document.getElementById("user-badge").style.display = "flex";
-      document.getElementById("matching-section").style.display = "block";
-    }
+    // 初回ロード
+    loadUserData().then(() => {
+      if (!myName) {
+        showLoginScreen();
+      } else {
+        document.getElementById("badge-icon").src = myIcon;
+        document.getElementById("badge-name").innerText = myName;
+        document.getElementById("user-badge").style.display = "flex";
+        document.getElementById("matching-section").style.display = "block";
+      }
+    });
 
     // --- 1. 質問投稿 ---
     async function createRequest() {
@@ -597,7 +685,7 @@
       document.getElementById("matching-section").style.display = "block";
     });
 
-    // --- 4. 解決済み ---
+    // --- 4. 解決済み（カウント加算処理つき） ---
     async function resolveRequest() {
       if (senderId !== currentOwnerId) {
         alert("質問を投稿した本人だけが解決済みにできます。");
@@ -609,12 +697,23 @@
         return;
       }
 
-      const confirmResolve = confirm("この質問を「解決済み」にしますか？\n※一覧から削除されます");
+      const confirmResolve = confirm("この質問を「解決済み」にしますか？\n※あなたの解決数が +1 されます！");
       if (!confirmResolve) return;
 
       try {
+        // 投稿を削除
         await deleteDoc(doc(db, "requests", currentDocId));
-        alert("解決済みにしました！");
+        
+        // 解決数を +1 加算
+        const userRef = doc(db, "users", senderId);
+        await updateDoc(userRef, {
+          solveCount: increment(1)
+        });
+
+        mySolveCount += 1;
+        updateUIWithUserData();
+
+        alert("解決済みにしました！🎉 解決数が +1 されました！");
         document.getElementById("btn-back-to-list").click();
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
