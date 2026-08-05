@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>学習サポート掲示板＆ペアチャット</title>
+  <title>学習サポート掲示板</title>
   
   <!-- Google Fonts: Zen Maru Gothic -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,40 +110,6 @@
       border-radius: 14px;
       color: var(--text-main);
       outline: none;
-    }
-
-    .mode-select-box {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .mode-card {
-      flex: 1;
-      border: 2px solid var(--border);
-      background: #e8e0ce;
-      border-radius: 14px;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .mode-card.active {
-      border-color: var(--primary);
-      background: #ffffff;
-      color: var(--primary);
-    }
-
-    .mode-card-title {
-      font-weight: 900;
-      font-size: 0.95rem;
-      margin-bottom: 4px;
-    }
-
-    .mode-card-desc {
-      font-size: 0.75rem;
-      color: var(--text-sub);
     }
 
     button {
@@ -253,16 +219,6 @@
 
     .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
     .request-meta { font-size: 0.75rem; color: var(--text-sub); display: flex; gap: 8px; align-items: center; }
-
-    .tag-mode {
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      font-weight: 900;
-    }
-
-    .tag-open { background: #e3f2fd; color: #1565c0; }
-    .tag-pair { background: #fbe9e7; color: #d84315; }
 
     .btn-chat {
       background-color: var(--success);
@@ -407,7 +363,7 @@
 <body>
 
   <header id="main-header">
-    <h1>学習サポート</h1>
+    <h1>学習サポート掲示板</h1>
     <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
       <img id="badge-icon" class="badge-avatar-img" src="icon1.png" alt="icon">
       <span id="badge-name">ゲスト</span>
@@ -443,7 +399,7 @@
       </div>
 
       <input type="text" id="userNameInput" placeholder="名前または出席番号（例：12番 たろう）">
-      <button id="btn-login-submit">学習サポートにはいる</button>
+      <button id="btn-login-submit">掲示板にはいる</button>
     </div>
   </div>
 
@@ -452,24 +408,12 @@
   <div id="matching-section">
     <div class="card">
       <h2>質問・相談を投稿する</h2>
-      
-      <div class="mode-select-box">
-        <div class="mode-card active" id="mode-open" onclick="switchPostMode('open')">
-          <div class="mode-card-title">🌐 掲示板モード</div>
-          <div class="mode-card-desc">全員で会話・みんなに質問</div>
-        </div>
-        <div class="mode-card" id="mode-pair" onclick="switchPostMode('pair')">
-          <div class="mode-card-title">🤝 ペアモード</div>
-          <div class="mode-card-desc">1対1でじっくり教わる</div>
-        </div>
-      </div>
-
       <input type="text" id="reqSubject" placeholder="質問内容（例：数学P24の問3、英語の文法）">
       <button id="btn-create-request">投稿して質問する</button>
     </div>
 
     <div class="card">
-      <h2>サポート募集中の質問一覧</h2>
+      <h2>質問一覧</h2>
       <div id="request-list">読み込み中...</div>
     </div>
   </div>
@@ -526,21 +470,11 @@
     let myIcon = localStorage.getItem("myIcon") || "icon1.png";
     let myName = localStorage.getItem("myName") || "";
     let mySolveCount = 0;
-    let currentPostMode = 'open'; // 'open' または 'pair'
 
     let currentRoomId = null;
     let currentDocId = null;
     let currentOwnerId = null;
-    let currentHelperId = null;
-    let currentType = 'open';
     let unsubscribeChat = null;
-
-    // モード切替
-    window.switchPostMode = function(mode) {
-      currentPostMode = mode;
-      document.getElementById("mode-open").classList.toggle("active", mode === 'open');
-      document.getElementById("mode-pair").classList.toggle("active", mode === 'pair');
-    };
 
     // ユーザーデータ（解決数）取得
     async function loadUserData() {
@@ -647,12 +581,10 @@
           ownerId: senderId,
           authorName: myName,
           icon: myIcon,
-          type: currentPostMode, // 'open' or 'pair'
-          helperId: null,
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        openChat(roomId, subject, docRef.id, senderId, null, currentPostMode);
+        openChat(roomId, subject, docRef.id, senderId);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
@@ -674,19 +606,9 @@
         const docId = docSnap.id;
         const icon = data.icon || "icon1.png";
         const author = data.authorName || "ゲスト";
-        const type = data.type || "open";
-
-        // ペアモードで既に誰かとマッチング済みの場合は他の人には非表示
-        if (type === "pair" && data.helperId && data.ownerId !== senderId && data.helperId !== senderId) {
-          return;
-        }
 
         const item = document.createElement("div");
         item.className = "request-item";
-
-        const tagHtml = type === "pair" 
-          ? '<span class="tag-mode tag-pair">1対1ペア</span>' 
-          : '<span class="tag-mode tag-open">掲示板</span>';
 
         item.innerHTML = `
           <div class="request-info">
@@ -694,36 +616,21 @@
             <div>
               <div class="request-title">${data.subject}</div>
               <div class="request-meta">
-                ${tagHtml}
                 <span>質問者: ${author}</span>
               </div>
             </div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}', '${data.ownerId}', '${data.helperId || ''}', '${type}')">参加する</button>
+          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}', '${data.ownerId}')">見にいく</button>
         `;
         listDiv.appendChild(item);
       });
     });
 
     // --- 3. チャット画面を開く ---
-    window.openChat = async function(roomId, subject, docId, ownerId, helperId, type) {
+    window.openChat = function(roomId, subject, docId, ownerId) {
       currentRoomId = roomId;
       currentDocId = docId;
       currentOwnerId = ownerId;
-      currentHelperId = helperId;
-      currentType = type;
-
-      // ペアモードの処理（他人が入ってきたらマッチング成立）
-      if (type === "pair" && !helperId && senderId !== ownerId) {
-        try {
-          await updateDoc(doc(db, "requests", docId), {
-            helperId: senderId
-          });
-          currentHelperId = senderId;
-        } catch (e) {
-          console.error("Helper update failed:", e);
-        }
-      }
 
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
@@ -763,21 +670,16 @@
       try {
         const helpers = new Set();
 
-        if (currentType === "pair") {
-          // ペアモードの場合：マッチング相手に付与
-          if (currentHelperId) helpers.add(currentHelperId);
-        } else {
-          // 掲示板モードの場合：自分以外で返信をくれた全員に付与
-          const msgSnap = await getDocs(collection(db, "rooms", currentRoomId, "messages"));
-          msgSnap.forEach((msgDoc) => {
-            const msgData = msgDoc.data();
-            if (msgData.senderId && msgData.senderId !== senderId) {
-              helpers.add(msgData.senderId);
-            }
-          });
-        }
+        // 掲示板内で自分以外にメッセージを送った回答者を取得
+        const msgSnap = await getDocs(collection(db, "rooms", currentRoomId, "messages"));
+        msgSnap.forEach((msgDoc) => {
+          const msgData = msgDoc.data();
+          if (msgData.senderId && msgData.senderId !== senderId) {
+            helpers.add(msgData.senderId);
+          }
+        });
 
-        // ポイント(+1)を更新
+        // ポイント(+1)を各回答者に加算
         const updatePromises = Array.from(helpers).map(helperId => {
           const helperRef = doc(db, "users", helperId);
           return updateDoc(helperRef, {
@@ -829,7 +731,7 @@
         chatBox.innerHTML = "";
         
         if (snapshot.empty) {
-          chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin-top: 20px;'>まだメッセージはありません。<br>メッセージを送って会話を始めましょう！</p>";
+          chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin-top: 20px;'>まだメッセージはありません。<br>メッセージを送って回答・コメントしましょう！</p>";
           return;
         }
 
