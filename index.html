@@ -111,9 +111,32 @@
       outline: none;
     }
 
-    input:focus, select:focus {
+    /* モード選択ラジオボタンのスタイル */
+    .mode-select-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .mode-option {
+      flex: 1;
+      text-align: center;
+      padding: 12px 8px;
+      background: #e8e0ce;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .mode-option input { display: none; }
+
+    .mode-option.selected {
+      background: #ffffff;
       border-color: var(--primary);
-      background-color: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
     button {
@@ -221,16 +244,33 @@
       border: 1px solid var(--border);
     }
 
-    .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
+    .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
     .request-author { font-size: 0.75rem; color: var(--text-sub); }
+
+    .tag-mode {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-left: 6px;
+      font-weight: bold;
+    }
+    .tag-open { background: #e3f2fd; color: #1976d2; }
+    .tag-private { background: #fbe9e7; color: #d84315; }
+    .tag-matched { background: #e8f5e9; color: #2e7d32; }
 
     .btn-chat {
       background-color: var(--success);
       width: auto;
-      padding: 10px 18px;
+      padding: 10px 16px;
       border-radius: 20px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       white-space: nowrap;
+    }
+
+    .btn-chat.disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
     }
 
     /* チャット画面 */
@@ -412,15 +452,12 @@
 
       <span class="icon-selector-label">アイコンを選択：</span>
       <div class="icon-selector" id="login-icon-selector">
-        <!-- 初期アイコン（誰でもOK） -->
         <div class="icon-wrapper">
           <img class="icon-option selected" src="icon1.png" data-min="0" onclick="selectLoginIcon('icon1.png', this)" alt="アイコン1">
         </div>
         <div class="icon-wrapper">
           <img class="icon-option" src="icon2.png" data-min="0" onclick="selectLoginIcon('icon2.png', this)" alt="アイコン2">
         </div>
-
-        <!-- 解放アイコン（解決数に応じてロック解除） -->
         <div class="icon-wrapper">
           <img class="icon-option locked" src="icon3.png" data-min="1" onclick="selectLoginIcon('icon3.png', this)" alt="アイコン3">
           <span class="lock-badge" id="lock-icon3">1回〜</span>
@@ -442,6 +479,19 @@
     <div class="card">
       <h2>教えてほしいことを投稿しよう</h2>
       <input type="text" id="reqSubject" placeholder="質問内容（例：数学のP24の問3、英語の文法）">
+      
+      <!-- モード選択ラジオボタン -->
+      <div class="mode-select-group">
+        <label class="mode-option selected" id="label-mode-open" onclick="switchModeOption('open')">
+          <input type="radio" name="postMode" value="open" checked>
+          📢 掲示板<br><span style="font-size:0.75rem; color:var(--text-sub);">みんなで会話</span>
+        </label>
+        <label class="mode-option" id="label-mode-private" onclick="switchModeOption('private')">
+          <input type="radio" name="postMode" value="private">
+          🔒 1対1<br><span style="font-size:0.75rem; color:var(--text-sub);">ペアで教わる</span>
+        </label>
+      </div>
+
       <button id="btn-create-request">投稿して質問する</button>
     </div>
 
@@ -461,7 +511,7 @@
 
     <div class="card">
       <div style="text-align: center;">
-        <span class="mode-badge">🟢 チャットモード（リアルタイム対話中）</span>
+        <span class="mode-badge" id="chat-mode-badge">🟢 チャットモード</span>
         <h2 id="chat-title">質問</h2>
       </div>
 
@@ -508,7 +558,24 @@
     let currentRoomId = null;
     let currentDocId = null;
     let currentOwnerId = null;
+    let currentPartnerId = null;
+    let currentMode = "open";
     let unsubscribeChat = null;
+
+    // --- 投稿モードラジオボタン切り替え UI ---
+    window.switchModeOption = function(mode) {
+      const openLabel = document.getElementById("label-mode-open");
+      const privateLabel = document.getElementById("label-mode-private");
+      if (mode === 'open') {
+        openLabel.classList.add('selected');
+        privateLabel.classList.remove('selected');
+        openLabel.querySelector('input').checked = true;
+      } else {
+        privateLabel.classList.add('selected');
+        openLabel.classList.remove('selected');
+        privateLabel.querySelector('input').checked = true;
+      }
+    };
 
     // --- ユーザーデータ（解決数）の取得・同期 ---
     async function loadUserData() {
@@ -528,7 +595,6 @@
       document.getElementById("user-solve-display").innerText = mySolveCount;
       document.getElementById("badge-solve-count").innerText = `解決: ${mySolveCount}`;
 
-      // アイコンのロック状態更新
       document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
         const minReq = parseInt(opt.getAttribute("data-min") || "0", 10);
         if (mySolveCount >= minReq) {
@@ -588,7 +654,6 @@
       document.getElementById("matching-section").style.display = "block";
     }
 
-    // 初回ロード
     loadUserData().then(() => {
       if (!myName) {
         showLoginScreen();
@@ -608,6 +673,7 @@
         return;
       }
 
+      const postMode = document.querySelector('input[name="postMode"]:checked').value;
       const roomId = "room_" + Date.now();
 
       try {
@@ -617,10 +683,12 @@
           ownerId: senderId,
           authorName: myName,
           icon: myIcon,
+          mode: postMode,          // "open" or "private"
+          partnerId: null,         // 1対1の場合の相手のID
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        openChat(roomId, subject, docRef.id, senderId);
+        openChat(roomId, subject, docRef.id, senderId, postMode, null);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
@@ -642,6 +710,36 @@
         const docId = docSnap.id;
         const icon = data.icon || "icon1.png";
         const author = data.authorName || "ゲスト";
+        const mode = data.mode || "open";
+        const partnerId = data.partnerId || null;
+
+        // タグとボタンの制御
+        let modeTagHtml = "";
+        let btnHtml = "";
+
+        if (mode === "open") {
+          modeTagHtml = `<span class="tag-mode tag-open">📢 掲示板</span>`;
+          btnHtml = `<button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}', '${data.ownerId}', 'open', null)">参加する</button>`;
+        } else {
+          // 1対1モード
+          if (!partnerId) {
+            // まだペアが決まっていない
+            modeTagHtml = `<span class="tag-mode tag-private">🔒 1対1(受付中)</span>`;
+            if (senderId === data.ownerId) {
+              btnHtml = `<button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}', '${data.ownerId}', 'private', null)">自分の部屋</button>`;
+            } else {
+              btnHtml = `<button class="btn-chat" onclick="joinPrivateRoom('${docId}', '${data.roomId}', '${data.subject}', '${data.ownerId}')">教えてあげる</button>`;
+            }
+          } else {
+            // ペア決定済み
+            modeTagHtml = `<span class="tag-mode tag-matched">🔒 1対1(対話中)</span>`;
+            if (senderId === data.ownerId || senderId === partnerId) {
+              btnHtml = `<button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}', '${data.ownerId}', 'private', '${partnerId}')">チャットを開く</button>`;
+            } else {
+              btnHtml = `<button class="btn-chat disabled" disabled>他の人が対話中</button>`;
+            }
+          }
+        }
 
         const item = document.createElement("div");
         item.className = "request-item";
@@ -649,25 +747,51 @@
           <div class="request-info">
             <img class="request-avatar-img" src="${icon}" alt="icon">
             <div>
-              <div class="request-title">${data.subject}</div>
+              <div class="request-title">${data.subject} ${modeTagHtml}</div>
               <div class="request-author">質問者: ${author}</div>
             </div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}', '${data.ownerId}')">教える / チャット</button>
+          ${btnHtml}
         `;
         listDiv.appendChild(item);
       });
     });
 
+    // --- 1対1に「教えてあげる」として参加 ---
+    window.joinPrivateRoom = async function(docId, roomId, subject, ownerId) {
+      try {
+        const reqRef = doc(db, "requests", docId);
+        await updateDoc(reqRef, {
+          partnerId: senderId
+        });
+        openChat(roomId, subject, docId, ownerId, "private", senderId);
+      } catch (e) {
+        alert("参加できませんでした: " + e.message);
+      }
+    };
+
     // --- 3. チャットモード開く ---
-    window.openChat = function(roomId, subject, docId, ownerId) {
+    window.openChat = function(roomId, subject, docId, ownerId, mode, partnerId) {
       currentRoomId = roomId;
       currentDocId = docId;
       currentOwnerId = ownerId;
+      currentMode = mode;
+      currentPartnerId = partnerId;
 
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
       document.getElementById("chat-title").innerText = `「${subject}」`;
+
+      const modeBadge = document.getElementById("chat-mode-badge");
+      if (mode === "open") {
+        modeBadge.innerText = "📢 掲示板モード（みんなで会話）";
+        modeBadge.style.background = "#e3f2fd";
+        modeBadge.style.color = "#1976d2";
+      } else {
+        modeBadge.innerText = "🔒 1対1モード（ペア個別トーク）";
+        modeBadge.style.background = "#fbe9e7";
+        modeBadge.style.color = "#d84315";
+      }
 
       const resolveBtn = document.getElementById("btn-resolve");
       if (senderId === ownerId) {
@@ -685,7 +809,7 @@
       document.getElementById("matching-section").style.display = "block";
     });
 
-    // --- 4. 解決済み（カウント加算処理つき） ---
+    // --- 4. 解決済み（自己自得防止・パートナーへのみポイント加算） ---
     async function resolveRequest() {
       if (senderId !== currentOwnerId) {
         alert("質問を投稿した本人だけが解決済みにできます。");
@@ -697,23 +821,24 @@
         return;
       }
 
-      const confirmResolve = confirm("この質問を「解決済み」にしますか？\n※あなたの解決数が +1 されます！");
+      const confirmResolve = confirm("この質問を「解決済み」にしますか？\n※1対1で教えてくれた相手に解決ポイントがプレゼントされます！");
       if (!confirmResolve) return;
 
       try {
         // 投稿を削除
         await deleteDoc(doc(db, "requests", currentDocId));
         
-        // 解決数を +1 加算
-        const userRef = doc(db, "users", senderId);
-        await updateDoc(userRef, {
-          solveCount: increment(1)
-        });
+        // 自分で自分を解決していない、かつ1対1のパートナーが存在する場合のみパートナーへ加算
+        if (currentPartnerId && currentPartnerId !== senderId) {
+          const partnerRef = doc(db, "users", currentPartnerId);
+          await updateDoc(partnerRef, {
+            solveCount: increment(1)
+          });
+          alert("解決済みにしました！🎉 教えてくれたパートナーにポイントがプレゼントされました！");
+        } else {
+          alert("解決済みにしました！");
+        }
 
-        mySolveCount += 1;
-        updateUIWithUserData();
-
-        alert("解決済みにしました！🎉 解決数が +1 されました！");
         document.getElementById("btn-back-to-list").click();
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
