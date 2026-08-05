@@ -196,11 +196,28 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
+      transition: opacity 0.3s;
     }
     
     .request-item:last-child {
       border-bottom: none;
       padding-bottom: 0;
+    }
+
+    /* 解決済みアイテムの薄暗くするスタイル */
+    .request-item.solved {
+      opacity: 0.55;
+      background-color: rgba(0, 0, 0, 0.02);
+      padding-left: 8px;
+      padding-right: 8px;
+      border-radius: 8px;
+    }
+
+    .solved-label {
+      color: var(--danger);
+      font-weight: bold;
+      margin-right: 6px;
+      font-size: 0.9rem;
     }
 
     .request-info { 
@@ -228,6 +245,10 @@
       border-radius: 20px;
       font-size: 0.85rem;
       white-space: nowrap;
+    }
+
+    .btn-chat.solved-btn {
+      background-color: var(--text-sub);
     }
 
     /* チャット画面 */
@@ -509,7 +530,7 @@
 
       <div id="chat-box"></div>
 
-      <div class="chat-input-area">
+      <div class="chat-input-area" id="chat-input-wrapper">
         <!-- 画像プレビュー表示枠 -->
         <div id="image-preview-container" class="image-preview-container">
           <img id="image-preview-thumb" class="image-preview-thumb" src="" alt="preview">
@@ -533,7 +554,7 @@
   <!-- Firebase (v10) SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc, setDoc, updateDoc, increment } 
+    import { getFirestore, collection, addDoc, doc, updateDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc, setDoc, increment } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -563,6 +584,7 @@
     let currentRoomId = null;
     let currentDocId = null;
     let currentOwnerId = null;
+    let currentIsSolved = false;
     let unsubscribeChat = null;
     let selectedBase64Image = null; // 選択された画像データ
 
@@ -715,16 +737,17 @@
           ownerId: senderId,
           authorName: myName,
           icon: myIcon,
+          isSolved: false, // 初期設定は未解決
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        openChat(roomId, subject, docRef.id, senderId);
+        openChat(roomId, subject, docRef.id, senderId, false);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
     }
 
-    // --- 2. 一覧表示 ---
+    // --- 2. 一覧表示（未解決を上、解決済みを下にソート） ---
     const qRequests = query(collection(db, "requests"), orderBy("createdAt", "desc"));
     onSnapshot(qRequests, (snapshot) => {
       const listDiv = document.getElementById("request-list");
@@ -735,43 +758,65 @@
         return;
       }
 
+      const activeRequests = [];
+      const solvedRequests = [];
+
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        const docId = docSnap.id;
+        data.docId = docSnap.id;
+        if (data.isSolved) {
+          solvedRequests.push(data);
+        } else {
+          activeRequests.push(data);
+        }
+      });
+
+      // 未解決を上、解決済みを下に統合
+      const allRequests = [...activeRequests, ...solvedRequests];
+
+      allRequests.forEach((data) => {
         const icon = data.icon || "icon1.png";
         const author = data.authorName || "ゲスト";
+        const isSolved = data.isSolved || false;
 
         const item = document.createElement("div");
-        item.className = "request-item";
+        item.className = `request-item ${isSolved ? "solved" : ""}`;
+
+        const solvedPrefix = isSolved ? `<span class="solved-label">&lt;解決済み&gt;</span>` : "";
+        const btnText = isSolved ? "閲覧する" : "見にいく";
+        const btnClass = isSolved ? "btn-chat solved-btn" : "btn-chat";
 
         item.innerHTML = `
           <div class="request-info">
             <img class="request-avatar-img" src="${icon}" alt="icon">
             <div>
-              <div class="request-title">${data.subject}</div>
+              <div class="request-title">${solvedPrefix}${data.subject}</div>
               <div class="request-meta">
                 <span>質問者: ${author}</span>
               </div>
             </div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}', '${data.ownerId}')">見にいく</button>
+          <button class="${btnClass}" onclick="openChat('${data.roomId}', '${data.subject}', '${data.docId}', '${data.ownerId}', ${isSolved})">${btnText}</button>
         `;
         listDiv.appendChild(item);
       });
     });
 
     // --- 3. チャット画面を開く ---
-    window.openChat = function(roomId, subject, docId, ownerId) {
+    window.openChat = function(roomId, subject, docId, ownerId, isSolved) {
       currentRoomId = roomId;
       currentDocId = docId;
       currentOwnerId = ownerId;
+      currentIsSolved = isSolved;
 
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
-      document.getElementById("chat-title").innerText = `「${subject}」`;
+      
+      const titlePrefix = isSolved ? "<解決済み> " : "";
+      document.getElementById("chat-title").innerText = `${titlePrefix}「${subject}」`;
 
       const subHint = document.getElementById("chat-sub-hint");
-      if (senderId === ownerId) {
+      if (senderId === ownerId && !isSolved) {
         subHint.style.display = "block";
       } else {
         subHint.style.display = "none";
@@ -793,7 +838,12 @@
         return;
       }
 
-      const confirmBest = confirm(`【${helperName}】さんをベストアンサーに選びますか？\n※解決ポイント(+1pt)が送られ、質問が解決済みになります！`);
+      if (currentIsSolved) {
+        alert("この質問はすでに解決済みです。");
+        return;
+      }
+
+      const confirmBest = confirm(`【${helperName}】さんをベストアンサーに選びますか？\n※解決ポイント(+1pt)が送られ、解決済みマークがつきます！`);
       if (!confirmBest) return;
 
       try {
@@ -805,9 +855,11 @@
           await setDoc(helperRef, { solveCount: 1, createdAt: serverTimestamp() }, { merge: true });
         });
 
-        // 投稿を削除（解決済み）
+        // 質問データを「解決済み(isSolved: true)」に更新
         if (currentDocId) {
-          await deleteDoc(doc(db, "requests", currentDocId));
+          await updateDoc(doc(db, "requests", currentDocId), {
+            isSolved: true
+          });
         }
 
         alert(`${helperName} さんをベストアンサーに選びました！\n質問を解決済みに変更しました。`);
@@ -886,8 +938,8 @@
           contentWrapper.appendChild(nameDiv);
           contentWrapper.appendChild(bubbleDiv);
 
-          // 質問者が自分以外の回答メッセージを見た時に「ベストアンサーボタン」を表示
-          if (isOwner && data.senderId !== currentOwnerId) {
+          // 未解決＆質問者の場合のみベストアンサーボタンを表示
+          if (isOwner && !currentIsSolved && data.senderId !== currentOwnerId) {
             const bestBtn = document.createElement("button");
             bestBtn.className = "btn-best-answer";
             bestBtn.innerText = "ベストアンサーに選ぶ";
