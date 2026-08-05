@@ -26,7 +26,7 @@
 
     body {
       font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
-      font-weight: 700;          /* ポップで太めな文字に設定 */
+      font-weight: 700;
       background-color: var(--bg-color);
       color: var(--text-main);
       max-width: 768px;
@@ -36,13 +36,31 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    h1 {
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 900;
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 900;
+      margin: 0;
       color: #1b5e20;
       letter-spacing: 0.05em;
+    }
+
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #e8e0ce;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
     }
 
     h2 {
@@ -63,7 +81,7 @@
     }
 
     /* フォーム要素 */
-    input, textarea {
+    input, textarea, select {
       font-family: inherit;
       font-weight: 700;
       width: 100%;
@@ -78,7 +96,7 @@
       outline: none;
     }
 
-    input:focus {
+    input:focus, select:focus {
       border-color: var(--primary);
       background-color: #ffffff;
     }
@@ -102,6 +120,40 @@
       transform: scale(0.98);
     }
 
+    /* アイコン選択ラジオエリア */
+    .icon-selector-label {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .icon-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .icon-option {
+      font-size: 2rem;
+      padding: 10px 14px;
+      background: #e8e0ce;
+      border-radius: 16px;
+      cursor: pointer;
+      border: 3px solid transparent;
+      user-select: none;
+      transition: all 0.2s;
+    }
+
+    .icon-option.selected {
+      border-color: var(--primary);
+      background: #ffffff;
+      transform: scale(1.15);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
     /* 募集一覧アイテム */
     .request-item {
       border-bottom: 1px solid var(--border);
@@ -117,8 +169,20 @@
       padding-bottom: 0;
     }
 
-    .request-info { flex-grow: 1; }
-    .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .request-info { 
+      flex-grow: 1; 
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .request-avatar {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
+    .request-author { font-size: 0.75rem; color: var(--text-sub); }
 
     .btn-chat {
       background-color: var(--success);
@@ -126,10 +190,11 @@
       padding: 10px 18px;
       border-radius: 20px;
       font-size: 0.9rem;
+      white-space: nowrap;
     }
 
     /* チャット画面 */
-    #chat-section { display: none; }
+    #chat-section, #login-section, #matching-section { display: none; }
     
     .chat-header {
       display: flex;
@@ -152,9 +217,9 @@
       padding: 8px 14px;
       border-radius: 20px;
       font-size: 0.85rem;
+      display: none; /* デフォルト非表示 */
     }
 
-    /* チャットモード状態バッジ */
     .mode-badge {
       display: inline-block;
       background: #e8f5e9;
@@ -192,7 +257,7 @@
       display: flex;
       width: 100%;
       align-items: flex-end;
-      gap: 6px;
+      gap: 8px;
       animation: fadeIn 0.2s ease-in-out;
     }
 
@@ -209,11 +274,31 @@
       flex-direction: row;
     }
 
+    .msg-avatar {
+      font-size: 1.6rem;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .msg-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      max-width: 70%;
+    }
+
+    .msg-sender-name {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+      margin-bottom: 2px;
+      padding: 0 4px;
+    }
+
+    .my-msg .msg-sender-name { text-align: right; }
+
     /* フキダシ */
     .msg-bubble {
       padding: 10px 16px;
       border-radius: 18px;
-      max-width: 70%;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
       font-size: 0.95rem;
       line-height: 1.5;
@@ -245,14 +330,6 @@
       font-weight: 700;
     }
 
-    .my-msg .msg-meta {
-      align-items: flex-end;
-    }
-
-    .other-msg .msg-meta {
-      align-items: flex-start;
-    }
-
     /* 入力エリア */
     .input-group {
       display: flex;
@@ -272,7 +349,38 @@
 </head>
 <body>
 
-  <h1>学習サポート掲示板</h1>
+  <header id="main-header">
+    <h1>学習サポート掲示板</h1>
+    <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
+      <span id="badge-icon">🐱</span>
+      <span id="badge-name">ゲスト</span>
+      <span style="font-size:0.7rem; color:var(--text-sub);">⚙️</span>
+    </div>
+  </header>
+
+  <!-- ==================== 0. ログイン / プロフィール設定画面 ==================== -->
+  <div id="login-section">
+    <div class="card" style="text-align: center; max-width: 400px; margin: 40px auto;">
+      <h2>アバターと名前をえらぼう</h2>
+      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 20px;">授業でつかう自分のアイコンと名前（または出席番号）を入力してね！</p>
+      
+      <span class="icon-selector-label">好きな動物アイコンを選択：</span>
+      <div class="icon-selector" id="login-icon-selector">
+        <span class="icon-option selected" onclick="selectLoginIcon('🐱', this)">🐱</span>
+        <span class="icon-option" onclick="selectLoginIcon('🐶', this)">🐶</span>
+        <span class="icon-option" onclick="selectLoginIcon('🐻', this)">🐻</span>
+        <span class="icon-option" onclick="selectLoginIcon('🐰', this)">🐰</span>
+        <span class="icon-option" onclick="selectLoginIcon('🦊', this)">🦊</span>
+        <span class="icon-option" onclick="selectLoginIcon('🐼', this)">🐼</span>
+        <span class="icon-option" onclick="selectLoginIcon('🦁', this)">🦁</span>
+        <span class="icon-option" onclick="selectLoginIcon('🐧', this)">🐧</span>
+      </div>
+
+      <input type="text" id="userNameInput" placeholder="名前または出席番号（例：12番 たろう）">
+      <button id="btn-login-submit">掲示板にはいる</button>
+    </div>
+  </div>
+
 
   <!-- ==================== 1. 一覧画面 ==================== -->
   <div id="matching-section">
@@ -303,7 +411,7 @@
       </div>
 
       <div id="chat-box"></div>
-      
+
       <div class="input-group">
         <input type="text" id="messageText" placeholder="メッセージを入力...">
         <button id="btn-send">送信</button>
@@ -331,15 +439,74 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // ユーザー識別用ID
     let senderId = localStorage.getItem("senderId");
     if (!senderId) {
       senderId = "user_" + Math.random().toString(36).substring(2, 9);
       localStorage.setItem("senderId", senderId);
     }
 
+    // 保存されたユーザー設定情報
+    let myIcon = localStorage.getItem("myIcon") || "🐱";
+    let myName = localStorage.getItem("myName") || "";
+
     let currentRoomId = null;
     let currentDocId = null;
+    let currentOwnerId = null;
     let unsubscribeChat = null;
+
+    // --- ログイン・設定画面制御 ---
+    window.selectLoginIcon = function(icon, element) {
+      myIcon = icon;
+      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      element.classList.add('selected');
+    };
+
+    window.showLoginScreen = function() {
+      document.getElementById("login-section").style.display = "block";
+      document.getElementById("matching-section").style.display = "none";
+      document.getElementById("chat-section").style.display = "none";
+      document.getElementById("user-badge").style.display = "none";
+      
+      document.getElementById("userNameInput").value = myName;
+      // アイコンの選択状態を更新
+      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
+        if (opt.innerText === myIcon) opt.classList.add('selected');
+        else opt.classList.remove('selected');
+      });
+    };
+
+    function saveProfileAndStart() {
+      const nameVal = document.getElementById("userNameInput").value.trim();
+      if (!nameVal) {
+        alert("名前または出席番号を入力してください。");
+        return;
+      }
+      myName = nameVal;
+      localStorage.setItem("myIcon", myIcon);
+      localStorage.setItem("myName", myName);
+
+      // バッジ表示更新
+      document.getElementById("badge-icon").innerText = myIcon;
+      document.getElementById("badge-name").innerText = myName;
+      document.getElementById("user-badge").style.display = "flex";
+
+      // メイン画面（一覧）を表示
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("matching-section").style.display = "block";
+    }
+
+    // 初回起動時のチェック
+    if (!myName) {
+      showLoginScreen();
+    } else {
+      document.getElementById("badge-icon").innerText = myIcon;
+      document.getElementById("badge-name").innerText = myName;
+      document.getElementById("user-badge").style.display = "flex";
+      document.getElementById("matching-section").style.display = "block";
+    }
 
     // --- 1. 質問投稿 ---
     async function createRequest() {
@@ -355,10 +522,13 @@
         await addDoc(collection(db, "requests"), {
           subject: subject,
           roomId: roomId,
+          ownerId: senderId,
+          authorName: myName,
+          icon: myIcon,
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        openChat(roomId, subject, null);
+        openChat(roomId, subject, null, senderId);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
@@ -378,27 +548,42 @@
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const docId = docSnap.id;
+        const icon = data.icon || "🐱";
+        const author = data.authorName || "ゲスト";
 
         const item = document.createElement("div");
         item.className = "request-item";
         item.innerHTML = `
           <div class="request-info">
-            <div class="request-title">${data.subject}</div>
+            <span class="request-avatar">${icon}</span>
+            <div>
+              <div class="request-title">${data.subject}</div>
+              <div class="request-author">質問者: ${author}</div>
+            </div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}')">教える / トークを開く</button>
+          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${docId}', '${data.ownerId}')">教える / チャット</button>
         `;
         listDiv.appendChild(item);
       });
     });
 
     // --- 3. チャットモード開く ---
-    window.openChat = function(roomId, subject, docId) {
+    window.openChat = function(roomId, subject, docId, ownerId) {
       currentRoomId = roomId;
       currentDocId = docId;
+      currentOwnerId = ownerId;
 
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
       document.getElementById("chat-title").innerText = `「${subject}」`;
+
+      // 投稿主だけに「解決済みにする」ボタンを表示
+      const resolveBtn = document.getElementById("btn-resolve");
+      if (senderId === ownerId) {
+        resolveBtn.style.display = "block";
+      } else {
+        resolveBtn.style.display = "none";
+      }
 
       joinChatRoom(roomId);
     };
@@ -411,8 +596,12 @@
 
     // --- 4. 解決済み ---
     async function resolveRequest() {
+      if (senderId !== currentOwnerId) {
+        alert("質問を投稿した本人だけが解決済みにできます。");
+        return;
+      }
+
       if (!currentDocId) {
-        alert("一覧に戻ります。");
         document.getElementById("btn-back-to-list").click();
         return;
       }
@@ -421,7 +610,7 @@
       if (!confirmResolve) return;
 
       try {
-        await deleteDoc(doc(db, "requests", currentDocId));
+        await deleteDoc(doc(doc(db, "requests", currentDocId)));
         alert("解決済みにしました！");
         document.getElementById("btn-back-to-list").click();
       } catch (e) {
@@ -438,7 +627,7 @@
       return `${hours}:${minutes}`;
     }
 
-    // --- 5. リアルタイム・チャット受信（送信時間のみ表示） ---
+    // --- 5. リアルタイム・チャット受信 ---
     function joinChatRoom(roomId) {
       const chatBox = document.getElementById("chat-box");
       chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>チャットに接続中...</p>";
@@ -461,14 +650,31 @@
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           const isMyMsg = data.senderId === senderId;
+          const msgIcon = data.icon || "🐱";
+          const senderName = data.senderName || "ゲスト";
 
           const rowDiv = document.createElement("div");
           rowDiv.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
 
-          // メッセージ吹き出し
+          // アバター
+          const avatarDiv = document.createElement("div");
+          avatarDiv.className = "msg-avatar";
+          avatarDiv.innerText = msgIcon;
+
+          // メッセージ本体＋名前
+          const contentWrapper = document.createElement("div");
+          contentWrapper.className = "msg-content-wrapper";
+
+          const nameDiv = document.createElement("div");
+          nameDiv.className = "msg-sender-name";
+          nameDiv.innerText = senderName;
+
           const bubbleDiv = document.createElement("div");
           bubbleDiv.className = "msg-bubble";
           bubbleDiv.innerText = data.text;
+
+          contentWrapper.appendChild(nameDiv);
+          contentWrapper.appendChild(bubbleDiv);
 
           // 時間表示領域
           const metaDiv = document.createElement("div");
@@ -477,7 +683,8 @@
           const timeStr = formatTime(data.timestamp);
           metaDiv.innerHTML = `<span>${timeStr}</span>`;
 
-          rowDiv.appendChild(bubbleDiv);
+          rowDiv.appendChild(avatarDiv);
+          rowDiv.appendChild(contentWrapper);
           rowDiv.appendChild(metaDiv);
           chatBox.appendChild(rowDiv);
         });
@@ -495,6 +702,8 @@
         await addDoc(collection(db, "rooms", currentRoomId, "messages"), {
           text: text,
           senderId: senderId,
+          senderName: myName,
+          icon: myIcon,
           timestamp: serverTimestamp()
         });
         document.getElementById("messageText").value = "";
@@ -503,6 +712,8 @@
       }
     }
 
+    // イベントリスナー
+    document.getElementById("btn-login-submit").addEventListener("click", saveProfileAndStart);
     document.getElementById("btn-create-request").addEventListener("click", createRequest);
     document.getElementById("btn-send").addEventListener("click", sendMessage);
     document.getElementById("btn-resolve").addEventListener("click", resolveRequest);
