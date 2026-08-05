@@ -204,13 +204,9 @@
       padding-bottom: 0;
     }
 
-    /* 解決済みアイテムの薄暗くするスタイル */
-    .request-item.solved {
+    /* 解決済みアイテムの文章部分を薄暗くするスタイル */
+    .request-item.solved .request-info {
       opacity: 0.55;
-      background-color: rgba(0, 0, 0, 0.02);
-      padding-left: 8px;
-      padding-right: 8px;
-      border-radius: 8px;
     }
 
     .solved-label {
@@ -218,6 +214,7 @@
       font-weight: bold;
       margin-right: 6px;
       font-size: 0.9rem;
+      opacity: 1 !important; /* ラベル部分はクリアに見せる */
     }
 
     .request-info { 
@@ -245,10 +242,7 @@
       border-radius: 20px;
       font-size: 0.85rem;
       white-space: nowrap;
-    }
-
-    .btn-chat.solved-btn {
-      background-color: var(--text-sub);
+      opacity: 1 !important; /* ボタンは薄暗くしない */
     }
 
     /* チャット画面 */
@@ -516,14 +510,14 @@
   <!-- ==================== 2. チャット画面 ==================== -->
   <div id="chat-section">
     <div class="chat-header">
-      <button id="btn-back-to-list" class="btn-back">一覧に戻る</button>
+      <button id="btn-back-to-list" class="btn-back">← 一覧に戻る</button>
     </div>
 
     <div class="card">
       <div style="text-align: center;">
         <h2 id="chat-title">質問</h2>
         <p id="chat-sub-hint" style="font-size:0.8rem; color:var(--text-sub); margin:-8px 0 12px 0; display:none;">
-           質問者は解決したらお礼の言葉とともに一番参考になった回答の「ベストアンサーに選ぶ」を選択する
+          ヒント: 質問者は一番参考になった回答の「ベストアンサーに選ぶ」を押してください
         </p>
       </div>
 
@@ -783,7 +777,6 @@
 
         const solvedPrefix = isSolved ? `<span class="solved-label">&lt;解決済み&gt;</span>` : "";
         const btnText = isSolved ? "閲覧する" : "見にいく";
-        const btnClass = isSolved ? "btn-chat solved-btn" : "btn-chat";
 
         item.innerHTML = `
           <div class="request-info">
@@ -795,7 +788,7 @@
               </div>
             </div>
           </div>
-          <button class="${btnClass}" onclick="openChat('${data.roomId}', '${data.subject}', '${data.docId}', '${data.ownerId}', ${isSolved})">${btnText}</button>
+          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${data.docId}', '${data.ownerId}', ${isSolved})">${btnText}</button>
         `;
         listDiv.appendChild(item);
       });
@@ -811,8 +804,8 @@
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
       
-      const titlePrefix = isSolved ? "<解決済み> " : "";
-      document.getElementById("chat-title").innerText = `${titlePrefix}「${subject}」`;
+      const titlePrefix = isSolved ? `<span style="color: var(--danger);">&lt;解決済み&gt;</span> ` : "";
+      document.getElementById("chat-title").innerHTML = `${titlePrefix}「${subject}」`;
 
       const subHint = document.getElementById("chat-sub-hint");
       if (senderId === ownerId && !isSolved) {
