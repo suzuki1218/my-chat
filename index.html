@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>学習サポート掲示板</title>
   
-  <!-- Google Fonts: どうぶつの森風 丸ゴシック体 (Zen Maru Gothic) -->
+  <!-- Google Fonts: Zen Maru Gothic -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
@@ -54,13 +54,20 @@
     .user-profile-badge {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       background: #e8e0ce;
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.85rem;
       cursor: pointer;
       border: 1px solid var(--border);
+    }
+
+    .badge-avatar-img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
     }
 
     h2 {
@@ -120,38 +127,38 @@
       transform: scale(0.98);
     }
 
-    /* アイコン選択ラジオエリア */
+    /* 画像アイコン選択エリア */
     .icon-selector-label {
       font-size: 0.9rem;
       color: var(--text-sub);
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       display: block;
     }
 
     .icon-selector {
       display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
       justify-content: center;
     }
 
     .icon-option {
-      font-size: 2rem;
-      padding: 10px 14px;
+      width: 60px;
+      height: 60px;
+      padding: 4px;
       background: #e8e0ce;
-      border-radius: 16px;
+      border-radius: 50%;
       cursor: pointer;
       border: 3px solid transparent;
-      user-select: none;
       transition: all 0.2s;
+      object-fit: cover;
     }
 
     .icon-option.selected {
       border-color: var(--primary);
       background: #ffffff;
-      transform: scale(1.15);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transform: scale(1.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
     /* 募集一覧アイテム */
@@ -173,12 +180,15 @@
       flex-grow: 1; 
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
     
-    .request-avatar {
-      font-size: 1.8rem;
-      line-height: 1;
+    .request-avatar-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border);
     }
 
     .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
@@ -217,7 +227,7 @@
       padding: 8px 14px;
       border-radius: 20px;
       font-size: 0.85rem;
-      display: none; /* デフォルト非表示 */
+      display: none;
     }
 
     .mode-badge {
@@ -274,10 +284,13 @@
       flex-direction: row;
     }
 
-    .msg-avatar {
-      font-size: 1.6rem;
-      line-height: 1;
+    .msg-avatar-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
       margin-bottom: 2px;
+      border: 1px solid var(--border);
     }
 
     .msg-content-wrapper {
@@ -352,7 +365,7 @@
   <header id="main-header">
     <h1>学習サポート掲示板</h1>
     <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
-      <span id="badge-icon">🐱</span>
+      <img id="badge-icon" class="badge-avatar-img" src="icon1.png" alt="icon">
       <span id="badge-name">ゲスト</span>
       <span style="font-size:0.7rem; color:var(--text-sub);">⚙️</span>
     </div>
@@ -361,19 +374,14 @@
   <!-- ==================== 0. ログイン / プロフィール設定画面 ==================== -->
   <div id="login-section">
     <div class="card" style="text-align: center; max-width: 400px; margin: 40px auto;">
-      <h2>アバターと名前をえらぼう</h2>
-      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 20px;">授業でつかう自分のアイコンと名前（または出席番号）を入力してね！</p>
+      <h2>アイコンと名前を選ぼう</h2>
+      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 20px;">使用するアイコン画像と名前（または出席番号）を設定してね！</p>
       
-      <span class="icon-selector-label">好きな動物アイコンを選択：</span>
+      <span class="icon-selector-label">アイコンを選択：</span>
       <div class="icon-selector" id="login-icon-selector">
-        <span class="icon-option selected" onclick="selectLoginIcon('🐱', this)">🐱</span>
-        <span class="icon-option" onclick="selectLoginIcon('🐶', this)">🐶</span>
-        <span class="icon-option" onclick="selectLoginIcon('🐻', this)">🐻</span>
-        <span class="icon-option" onclick="selectLoginIcon('🐰', this)">🐰</span>
-        <span class="icon-option" onclick="selectLoginIcon('🦊', this)">🦊</span>
-        <span class="icon-option" onclick="selectLoginIcon('🐼', this)">🐼</span>
-        <span class="icon-option" onclick="selectLoginIcon('🦁', this)">🦁</span>
-        <span class="icon-option" onclick="selectLoginIcon('🐧', this)">🐧</span>
+        <!-- 初期2種類の画像アイコン -->
+        <img class="icon-option selected" src="icon1.png" onclick="selectLoginIcon('icon1.png', this)" alt="アイコン1">
+        <img class="icon-option" src="icon2.png" onclick="selectLoginIcon('icon2.png', this)" alt="アイコン2">
       </div>
 
       <input type="text" id="userNameInput" placeholder="名前または出席番号（例：12番 たろう）">
@@ -446,8 +454,8 @@
       localStorage.setItem("senderId", senderId);
     }
 
-    // 保存されたユーザー設定情報
-    let myIcon = localStorage.getItem("myIcon") || "🐱";
+    // 保存されたユーザー設定情報（初期値は icon1.png）
+    let myIcon = localStorage.getItem("myIcon") || "icon1.png";
     let myName = localStorage.getItem("myName") || "";
 
     let currentRoomId = null;
@@ -456,8 +464,8 @@
     let unsubscribeChat = null;
 
     // --- ログイン・設定画面制御 ---
-    window.selectLoginIcon = function(icon, element) {
-      myIcon = icon;
+    window.selectLoginIcon = function(iconSrc, element) {
+      myIcon = iconSrc;
       document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
         opt.classList.remove('selected');
       });
@@ -471,9 +479,8 @@
       document.getElementById("user-badge").style.display = "none";
       
       document.getElementById("userNameInput").value = myName;
-      // アイコンの選択状態を更新
       document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
-        if (opt.innerText === myIcon) opt.classList.add('selected');
+        if (opt.getAttribute("src") === myIcon) opt.classList.add('selected');
         else opt.classList.remove('selected');
       });
     };
@@ -488,21 +495,18 @@
       localStorage.setItem("myIcon", myIcon);
       localStorage.setItem("myName", myName);
 
-      // バッジ表示更新
-      document.getElementById("badge-icon").innerText = myIcon;
+      document.getElementById("badge-icon").src = myIcon;
       document.getElementById("badge-name").innerText = myName;
       document.getElementById("user-badge").style.display = "flex";
 
-      // メイン画面（一覧）を表示
       document.getElementById("login-section").style.display = "none";
       document.getElementById("matching-section").style.display = "block";
     }
 
-    // 初回起動時のチェック
     if (!myName) {
       showLoginScreen();
     } else {
-      document.getElementById("badge-icon").innerText = myIcon;
+      document.getElementById("badge-icon").src = myIcon;
       document.getElementById("badge-name").innerText = myName;
       document.getElementById("user-badge").style.display = "flex";
       document.getElementById("matching-section").style.display = "block";
@@ -519,7 +523,7 @@
       const roomId = "room_" + Date.now();
 
       try {
-        await addDoc(collection(db, "requests"), {
+        const docRef = await addDoc(collection(db, "requests"), {
           subject: subject,
           roomId: roomId,
           ownerId: senderId,
@@ -528,7 +532,7 @@
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        openChat(roomId, subject, null, senderId);
+        openChat(roomId, subject, docRef.id, senderId);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
@@ -548,14 +552,14 @@
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const docId = docSnap.id;
-        const icon = data.icon || "🐱";
+        const icon = data.icon || "icon1.png";
         const author = data.authorName || "ゲスト";
 
         const item = document.createElement("div");
         item.className = "request-item";
         item.innerHTML = `
           <div class="request-info">
-            <span class="request-avatar">${icon}</span>
+            <img class="request-avatar-img" src="${icon}" alt="icon">
             <div>
               <div class="request-title">${data.subject}</div>
               <div class="request-author">質問者: ${author}</div>
@@ -577,7 +581,6 @@
       document.getElementById("chat-section").style.display = "block";
       document.getElementById("chat-title").innerText = `「${subject}」`;
 
-      // 投稿主だけに「解決済みにする」ボタンを表示
       const resolveBtn = document.getElementById("btn-resolve");
       if (senderId === ownerId) {
         resolveBtn.style.display = "block";
@@ -610,7 +613,7 @@
       if (!confirmResolve) return;
 
       try {
-        await deleteDoc(doc(doc(db, "requests", currentDocId)));
+        await deleteDoc(doc(db, "requests", currentDocId));
         alert("解決済みにしました！");
         document.getElementById("btn-back-to-list").click();
       } catch (e) {
@@ -650,18 +653,16 @@
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           const isMyMsg = data.senderId === senderId;
-          const msgIcon = data.icon || "🐱";
+          const msgIcon = data.icon || "icon1.png";
           const senderName = data.senderName || "ゲスト";
 
           const rowDiv = document.createElement("div");
           rowDiv.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
 
-          // アバター
-          const avatarDiv = document.createElement("div");
-          avatarDiv.className = "msg-avatar";
-          avatarDiv.innerText = msgIcon;
+          const avatarImg = document.createElement("img");
+          avatarImg.className = "msg-avatar-img";
+          avatarImg.src = msgIcon;
 
-          // メッセージ本体＋名前
           const contentWrapper = document.createElement("div");
           contentWrapper.className = "msg-content-wrapper";
 
@@ -676,14 +677,13 @@
           contentWrapper.appendChild(nameDiv);
           contentWrapper.appendChild(bubbleDiv);
 
-          // 時間表示領域
           const metaDiv = document.createElement("div");
           metaDiv.className = "msg-meta";
 
           const timeStr = formatTime(data.timestamp);
           metaDiv.innerHTML = `<span>${timeStr}</span>`;
 
-          rowDiv.appendChild(avatarDiv);
+          rowDiv.appendChild(avatarImg);
           rowDiv.appendChild(contentWrapper);
           rowDiv.appendChild(metaDiv);
           chatBox.appendChild(rowDiv);
