@@ -98,7 +98,7 @@
     }
 
     /* フォーム要素 */
-    input, textarea, select {
+    input[type="text"], textarea, select {
       font-family: inherit;
       font-weight: 700;
       width: 100%;
@@ -111,6 +111,25 @@
       border-radius: 14px;
       color: var(--text-main);
       outline: none;
+    }
+
+    /* 緊急チェックボックスのスタイル */
+    .urgent-option-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+      color: var(--danger);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .urgent-option-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--danger);
+      cursor: pointer;
     }
 
     button {
@@ -214,7 +233,20 @@
       font-weight: bold;
       margin-right: 6px;
       font-size: 0.9rem;
-      opacity: 1 !important; /* ラベル部分はクリアに見せる */
+      opacity: 1 !important;
+    }
+
+    .urgent-label {
+      color: var(--danger);
+      font-weight: 900;
+      margin-right: 6px;
+      font-size: 0.95rem;
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.8; }
+      to { opacity: 1; }
     }
 
     .request-info { 
@@ -242,7 +274,7 @@
       border-radius: 20px;
       font-size: 0.85rem;
       white-space: nowrap;
-      opacity: 1 !important; /* ボタンは薄暗くしない */
+      opacity: 1 !important;
     }
 
     /* チャット画面 */
@@ -497,6 +529,12 @@
     <div class="card">
       <h2>質問・相談を投稿する</h2>
       <input type="text" id="reqSubject" placeholder="質問内容（例：数学P24の問3、英語の文法）">
+      
+      <!-- 緊急チェックボックス -->
+      <label class="urgent-option-label">
+        <input type="checkbox" id="reqIsUrgent"> 緊急で教えてほしい（&lt;緊急&gt;マークをつける）
+      </label>
+
       <button id="btn-create-request">投稿して質問する</button>
     </div>
 
@@ -534,7 +572,7 @@
         <div class="input-group">
           <!-- 非表示のファイル選択インプット -->
           <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
-          <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を添付">＋</button>
+          <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を添付">+</button>
           
           <input type="text" id="messageText" placeholder="メッセージを入力...">
           <button id="btn-send" class="btn-send-msg">送信</button>
@@ -678,7 +716,6 @@
       reader.onload = function(event) {
         const img = new Image();
         img.onload = function() {
-          // 画像の軽量化（最大幅800pxにリサイズ）
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
@@ -697,7 +734,6 @@
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          // JPEGに変換（品質0.7）
           selectedBase64Image = canvas.toDataURL("image/jpeg", 0.7);
           document.getElementById("image-preview-thumb").src = selectedBase64Image;
           document.getElementById("image-preview-container").style.display = "flex";
@@ -716,6 +752,8 @@
     // --- 1. 質問投稿 ---
     async function createRequest() {
       const subject = document.getElementById("reqSubject").value.trim();
+      const isUrgent = document.getElementById("reqIsUrgent").checked;
+
       if (!subject) {
         alert("質問内容を入力してください。");
         return;
@@ -730,11 +768,13 @@
           ownerId: senderId,
           authorName: myName,
           icon: myIcon,
-          isSolved: false, // 初期設定は未解決
+          isSolved: false,
+          isUrgent: isUrgent, // 緊急フラグの保存
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        openChat(roomId, subject, docRef.id, senderId, false);
+        document.getElementById("reqIsUrgent").checked = false; // チェック解除
+        openChat(roomId, subject, docRef.id, senderId, false, isUrgent);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
       }
@@ -764,38 +804,45 @@
         }
       });
 
-      // 未解決を上、解決済みを下に統合
       const allRequests = [...activeRequests, ...solvedRequests];
 
       allRequests.forEach((data) => {
         const icon = data.icon || "icon1.png";
         const author = data.authorName || "ゲスト";
         const isSolved = data.isSolved || false;
+        const isUrgent = data.isUrgent || false;
 
         const item = document.createElement("div");
         item.className = `request-item ${isSolved ? "solved" : ""}`;
 
-        const solvedPrefix = isSolved ? `<span class="solved-label">&lt;解決済み&gt;</span>` : "";
+        // ラベルの組み立て（<緊急> または <解決済み>）
+        let statusPrefix = "";
+        if (isSolved) {
+          statusPrefix = `<span class="solved-label">&lt;解決済み&gt;</span>`;
+        } else if (isUrgent) {
+          statusPrefix = `<span class="urgent-label">&lt;緊急&gt;</span>`;
+        }
+
         const btnText = isSolved ? "閲覧する" : "見にいく";
 
         item.innerHTML = `
           <div class="request-info">
             <img class="request-avatar-img" src="${icon}" alt="icon">
             <div>
-              <div class="request-title">${solvedPrefix}${data.subject}</div>
+              <div class="request-title">${statusPrefix}${data.subject}</div>
               <div class="request-meta">
                 <span>質問者: ${author}</span>
               </div>
             </div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${data.docId}', '${data.ownerId}', ${isSolved})">${btnText}</button>
+          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${data.docId}', '${data.ownerId}', ${isSolved}, ${isUrgent})">${btnText}</button>
         `;
         listDiv.appendChild(item);
       });
     });
 
     // --- 3. チャット画面を開く ---
-    window.openChat = function(roomId, subject, docId, ownerId, isSolved) {
+    window.openChat = function(roomId, subject, docId, ownerId, isSolved, isUrgent) {
       currentRoomId = roomId;
       currentDocId = docId;
       currentOwnerId = ownerId;
@@ -804,7 +851,13 @@
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
       
-      const titlePrefix = isSolved ? `<span style="color: var(--danger);">&lt;解決済み&gt;</span> ` : "";
+      let titlePrefix = "";
+      if (isSolved) {
+        titlePrefix = `<span style="color: var(--danger);">&lt;解決済み&gt;</span> `;
+      } else if (isUrgent) {
+        titlePrefix = `<span style="color: var(--danger); font-weight:900;">&lt;緊急&gt;</span> `;
+      }
+
       document.getElementById("chat-title").innerHTML = `${titlePrefix}「${subject}」`;
 
       const subHint = document.getElementById("chat-sub-hint");
@@ -839,7 +892,6 @@
       if (!confirmBest) return;
 
       try {
-        // ベストアンサーのユーザーに解決ポイント +1
         const helperRef = doc(db, "users", helperId);
         await updateDoc(helperRef, {
           solveCount: increment(1)
@@ -847,7 +899,6 @@
           await setDoc(helperRef, { solveCount: 1, createdAt: serverTimestamp() }, { merge: true });
         });
 
-        // 質問データを「解決済み(isSolved: true)」に更新
         if (currentDocId) {
           await updateDoc(doc(db, "requests", currentDocId), {
             isSolved: true
@@ -861,7 +912,6 @@
       }
     };
 
-    // 時刻フォーマット (HH:MM)
     function formatTime(timestamp) {
       if (!timestamp) return "";
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -930,7 +980,6 @@
           contentWrapper.appendChild(nameDiv);
           contentWrapper.appendChild(bubbleDiv);
 
-          // 未解決＆質問者の場合のみベストアンサーボタンを表示
           if (isOwner && !currentIsSolved && data.senderId !== currentOwnerId) {
             const bestBtn = document.createElement("button");
             bestBtn.className = "btn-best-answer";
