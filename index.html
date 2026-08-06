@@ -517,25 +517,25 @@
   <div id="login-section">
     <div class="card" style="text-align: center; max-width: 400px; margin: 40px auto;">
       <h2>アイコンと名前を選ぼう</h2>
-      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;">教えてベストアンサーに選ばれるとアイコンが増えます！</p>
+      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;">ベストアンサーに選ばれるとアイコンが増えます！</p>
       
-      <p style="font-weight:bold; color:var(--primary); margin-bottom:16px;">現在の解決ポイント: <span id="user-solve-display">0</span> 回</p>
+      <p style="font-weight:bold; color:var(--primary); margin-bottom:16px;">現在の解決pt: <span id="user-solve-display">0</span> pt</p>
 
       <span class="icon-selector-label">アイコンを選択：</span>
       <div class="icon-selector" id="login-icon-selector">
         <div class="icon-wrapper">
-          <img class="icon-option selected" src="icon1.png" data-min="0" onclick="selectLoginIcon('icon1.png', this)" alt="アイコン1">
+          <img class="icon-option selected" src="icon01.png" data-min="0" onclick="selectLoginIcon('icon01.png', this)" alt="アイコン1">
         </div>
         <div class="icon-wrapper">
-          <img class="icon-option" src="icon2.png" data-min="0" onclick="selectLoginIcon('icon2.png', this)" alt="アイコン2">
+          <img class="icon-option" src="icon02.png" data-min="0" onclick="selectLoginIcon('icon02.png', this)" alt="アイコン2">
         </div>
         <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon3.png" data-min="1" onclick="selectLoginIcon('icon3.png', this)" alt="アイコン3">
-          <span class="lock-badge" id="lock-icon3">1回〜</span>
+          <img class="icon-option locked" src="icon03.png" data-min="1" onclick="selectLoginIcon('icon03.png', this)" alt="アイコン3">
+          <span class="lock-badge" id="lock-icon03">1回〜</span>
         </div>
         <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon4.png" data-min="3" onclick="selectLoginIcon('icon4.png', this)" alt="アイコン4">
-          <span class="lock-badge" id="lock-icon4">3回〜</span>
+          <img class="icon-option locked" src="icon04.png" data-min="3" onclick="selectLoginIcon('icon04.png', this)" alt="アイコン4">
+          <span class="lock-badge" id="lock-icon04">3回〜</span>
         </div>
       </div>
 
@@ -553,7 +553,7 @@
       
       <!-- 緊急チェックボックス -->
       <label class="urgent-option-label">
-        <input type="checkbox" id="reqIsUrgent"> 緊急で教えてほしい（&lt;緊急&gt;マークをつける）
+        <input type="checkbox" id="reqIsUrgent"> 緊急（&lt;緊急&gt;マークをつける）
       </label>
 
       <button id="btn-create-request">投稿して質問する</button>
@@ -576,7 +576,7 @@
       <div style="text-align: center;">
         <h2 id="chat-title">質問</h2>
         <p id="chat-sub-hint" style="font-size:0.8rem; color:var(--text-sub); margin:-8px 0 12px 0; display:none;">
-          ヒント: 質問者は一番参考になった回答の「ベストアンサーに選ぶ」を押してください
+          ヒント: 質問者は一番参考になった「ベストアンサー」を押してください
         </p>
       </div>
 
@@ -674,7 +674,7 @@
     window.selectLoginIcon = function(iconSrc, element) {
       const minReq = parseInt(element.getAttribute("data-min") || "0", 10);
       if (mySolveCount < minReq) {
-        alert(`このアイコンを使うには「解決数」が ${minReq} 回以上必要です！（現在の解決数: ${mySolveCount} 回）`);
+        alert(`このアイコンを使うには「解決pt」が ${minReq} pt以上必要です！（現在の解決pt: ${mySolveCount} pt）`);
         return;
       }
 
