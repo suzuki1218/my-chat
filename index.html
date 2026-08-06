@@ -147,7 +147,12 @@
       transition: opacity 0.2s, transform 0.1s;
     }
 
-    button:active { 
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button:active:not(:disabled) { 
       opacity: 0.8; 
       transform: scale(0.98);
     }
@@ -507,7 +512,7 @@
   <header id="main-header">
     <h1>学習サポート掲示板</h1>
     <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
-      <img id="badge-icon" class="badge-avatar-img" src="icon1.png" alt="icon">
+      <img id="badge-icon" class="badge-avatar-img" src="icon01.png" alt="icon">
       <span id="badge-name">ゲスト</span>
       <span id="badge-solve-count" class="solve-count-tag">解決: 0</span>
     </div>
@@ -530,12 +535,24 @@
           <img class="icon-option" src="icon02.png" data-min="0" onclick="selectLoginIcon('icon02.png', this)" alt="アイコン2">
         </div>
         <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon03.png" data-min="1" onclick="selectLoginIcon('icon03.png', this)" alt="アイコン3">
-          <span class="lock-badge" id="lock-icon03">1回〜</span>
+          <img class="icon-option locked" src="icon03.png" data-min="20" onclick="selectLoginIcon('icon03.png', this)" alt="アイコン3">
+          <span class="lock-badge" id="lock-icon03">20pt〜</span>
         </div>
         <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon04.png" data-min="3" onclick="selectLoginIcon('icon04.png', this)" alt="アイコン4">
-          <span class="lock-badge" id="lock-icon04">3回〜</span>
+          <img class="icon-option locked" src="icon04.png" data-min="40" onclick="selectLoginIcon('icon04.png', this)" alt="アイコン4">
+          <span class="lock-badge" id="lock-icon04">40pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon05.png" data-min="60" onclick="selectLoginIcon('icon05.png', this)" alt="アイコン5">
+          <span class="lock-badge" id="lock-icon05">60pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon06.png" data-min="80" onclick="selectLoginIcon('icon06.png', this)" alt="アイコン6">
+          <span class="lock-badge" id="lock-icon06">80pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon07.png" data-min="100" onclick="selectLoginIcon('icon07.png', this)" alt="アイコン7">
+          <span class="lock-badge" id="lock-icon07">100pt〜</span>
         </div>
       </div>
 
@@ -629,7 +646,7 @@
       localStorage.setItem("senderId", senderId);
     }
 
-    let myIcon = localStorage.getItem("myIcon") || "icon1.png";
+    let myIcon = localStorage.getItem("myIcon") || "icon01.png";
     let myName = localStorage.getItem("myName") || "";
     let mySolveCount = 0;
 
@@ -740,7 +757,7 @@
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
-          const maxDim = 800;
+          const maxDim = 600; // 軽量化のため600pxに制限
 
           if (width > height && width > maxDim) {
             height *= maxDim / width;
@@ -755,7 +772,7 @@
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          selectedBase64Image = canvas.toDataURL("image/jpeg", 0.7);
+          selectedBase64Image = canvas.toDataURL("image/jpeg", 0.6); // 圧縮率0.6で容量安全圏へ
           document.getElementById("image-preview-thumb").src = selectedBase64Image;
           document.getElementById("image-preview-container").style.display = "flex";
         };
@@ -774,12 +791,14 @@
     async function createRequest() {
       const subject = document.getElementById("reqSubject").value.trim();
       const isUrgent = document.getElementById("reqIsUrgent").checked;
+      const btn = document.getElementById("btn-create-request");
 
       if (!subject) {
         alert("質問内容を入力してください。");
         return;
       }
 
+      btn.disabled = true; // 連打防止
       const roomId = "room_" + Date.now();
 
       try {
@@ -790,14 +809,16 @@
           authorName: myName,
           icon: myIcon,
           isSolved: false,
-          isUrgent: isUrgent, // 緊急フラグの保存
+          isUrgent: isUrgent,
           createdAt: serverTimestamp()
         });
         document.getElementById("reqSubject").value = "";
-        document.getElementById("reqIsUrgent").checked = false; // チェック解除
+        document.getElementById("reqIsUrgent").checked = false;
         openChat(roomId, subject, docRef.id, senderId, false, isUrgent);
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
+      } finally {
+        btn.disabled = false;
       }
     }
 
@@ -828,17 +849,15 @@
       const allRequests = [...activeRequests, ...solvedRequests];
 
       allRequests.forEach((data) => {
-        const icon = data.icon || "icon1.png";
+        const icon = data.icon || "icon01.png";
         const author = data.authorName || "ゲスト";
         const isSolved = data.isSolved || false;
         const isUrgent = data.isUrgent || false;
-        const isMyPost = data.ownerId === senderId; // 自分の投稿かどうかを判定
+        const isMyPost = data.ownerId === senderId;
 
         const item = document.createElement("div");
-        // 自分の投稿なら my-request クラスを付与
         item.className = `request-item ${isSolved ? "solved" : ""} ${isMyPost ? "my-request" : ""}`;
 
-        // ラベルの組み立て（<自分>、<緊急> または <解決済み>）
         let statusPrefix = "";
         if (isMyPost) {
           statusPrefix += `<span class="my-badge">自分</span>`;
@@ -973,7 +992,7 @@
           const data = docSnap.data();
           const isMyMsg = data.senderId === senderId;
           const isOwner = senderId === currentOwnerId;
-          const msgIcon = data.icon || "icon1.png";
+          const msgIcon = data.icon || "icon01.png";
           const senderName = data.senderName || "ゲスト";
 
           const rowDiv = document.createElement("div");
@@ -1033,8 +1052,13 @@
 
     // --- 6. メッセージ送信 ---
     async function sendMessage() {
-      const text = document.getElementById("messageText").value.trim();
+      const textInput = document.getElementById("messageText");
+      const text = textInput.value.trim();
+      const sendBtn = document.getElementById("btn-send");
+
       if ((!text && !selectedBase64Image) || !currentRoomId) return;
+
+      sendBtn.disabled = true; // 連打防止
 
       const payload = {
         senderId: senderId,
@@ -1048,10 +1072,12 @@
 
       try {
         await addDoc(collection(db, "rooms", currentRoomId, "messages"), payload);
-        document.getElementById("messageText").value = "";
+        textInput.value = "";
         clearSelectedImage();
       } catch (e) {
         alert("送信エラー: " + e.message);
+      } finally {
+        sendBtn.disabled = false;
       }
     }
 
