@@ -12,19 +12,19 @@
 
   <style>
     :root {
-      --bg-color: #f2ebd9;       /* ナチュラルベージュ背景 */
-      --card-bg: #fffdf7;        /* カードアイボリー */
-      --text-main: #332f2b;      /* 濃いブラウン */
-      --text-sub: #7a7369;       /* アースグレー */
-      --primary: #2e7d32;        /* ナチュラルグリーン */
+      --bg-color: #f2ebd9;        /* ナチュラルベージュ背景 */
+      --card-bg: #fffdf7;         /* カードアイボリー */
+      --text-main: #332f2b;       /* 濃いブラウン */
+      --text-sub: #7a7369;        /* アースグレー */
+      --primary: #2e7d32;         /* ナチュラルグリーン */
       --primary-light: #e8f5e9;
-      --success: #4caf50;        /* ライトグリーン */
+      --success: #4caf50;         /* ライトグリーン */
       --danger: #d32f2f;          /* アースレッド */
       --border: #dcd4c3;          /* 境界線 */
-      --my-msg-bg: #81c784;      /* 自分の吹き出し */
-      --chat-bg: #e2d9c4;        /* トーク画面背景 */
-      --gold: #fbc02d;            /* ベストアンサー用カラー */
-      --my-card-bg: #eaf5ea;     /* 自分の投稿カード背景 */
+      --my-msg-bg: #81c784;       /* 自分の吹き出し */
+      --chat-bg: #e2d9c4;         /* トーク画面背景 */
+      --gold: #fbc02d;             /* ベストアンサー用カラー */
+      --my-card-bg: #eaf5ea;      /* 自分の投稿カード背景 */
     }
 
     body {
@@ -293,14 +293,31 @@
     .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
     .request-meta { font-size: 0.75rem; color: var(--text-sub); display: flex; gap: 8px; align-items: center; }
 
+    .request-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
     .btn-chat {
       background-color: var(--success);
       width: auto;
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: 20px;
       font-size: 0.85rem;
       white-space: nowrap;
       opacity: 1 !important;
+    }
+
+    /* 削除ボタン */
+    .btn-delete {
+      background-color: var(--danger);
+      width: auto;
+      padding: 10px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      opacity: 0.9;
     }
 
     /* チャット画面 */
@@ -319,6 +336,14 @@
       padding: 8px 14px;
       border-radius: 20px;
       font-size: 0.85rem;
+    }
+
+    .btn-chat-delete {
+      background-color: var(--danger);
+      width: auto;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
     }
 
     #chat-title {
@@ -587,6 +612,7 @@
   <div id="chat-section">
     <div class="chat-header">
       <button id="btn-back-to-list" class="btn-back">← 一覧に戻る</button>
+      <button id="btn-chat-delete" class="btn-chat-delete" style="display:none;" onclick="deleteCurrentRequest()">この質問を削除 (1pt)</button>
     </div>
 
     <div class="card">
@@ -623,7 +649,7 @@
   <!-- Firebase (v10) SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, updateDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc, setDoc, increment } 
+    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc, setDoc, increment } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -638,6 +664,9 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // 削除に必要なポイント数
+    const DELETE_COST = 1;
 
     // ユーザー識別用ID
     let senderId = localStorage.getItem("senderId");
@@ -787,6 +816,51 @@
       document.getElementById("image-preview-container").style.display = "none";
     };
 
+    // --- 質問削除処理 (pt消費) ---
+    window.deleteRequest = async function(docId, ownerId) {
+      if (ownerId !== senderId) {
+        alert("自分の質問しか削除できません。");
+        return;
+      }
+
+      if (mySolveCount < DELETE_COST) {
+        alert(`質問を削除するには ${DELETE_COST} pt 必要です。（現在の所持pt: ${mySolveCount} pt）`);
+        return;
+      }
+
+      const confirmDelete = confirm(`${DELETE_COST} pt を消費して、この質問を削除しますか？\n（現在の所持pt: ${mySolveCount} pt）`);
+      if (!confirmDelete) return;
+
+      try {
+        // 1. ポイント減算
+        const userRef = doc(db, "users", senderId);
+        await updateDoc(userRef, {
+          solveCount: increment(-DELETE_COST)
+        });
+        mySolveCount -= DELETE_COST;
+        updateUIWithUserData();
+
+        // 2. 質問データの削除
+        await deleteDoc(doc(db, "requests", docId));
+
+        alert("質問を削除しました。");
+
+        // もしチャット画面を開いている最中なら一覧に戻る
+        if (currentDocId === docId) {
+          document.getElementById("btn-back-to-list").click();
+        }
+      } catch (e) {
+        alert("削除処理中にエラーが発生しました: " + e.message);
+      }
+    };
+
+    // チャット画面のヘッダーにある削除ボタン用
+    window.deleteCurrentRequest = function() {
+      if (currentDocId && currentOwnerId) {
+        deleteRequest(currentDocId, currentOwnerId);
+      }
+    };
+
     // --- 1. 質問投稿 ---
     async function createRequest() {
       const subject = document.getElementById("reqSubject").value.trim();
@@ -870,6 +944,12 @@
 
         const btnText = isSolved ? "閲覧する" : "見にいく";
 
+        // 削除ボタン（本人の場合のみ生成）
+        let deleteBtnHtml = "";
+        if (isMyPost) {
+          deleteBtnHtml = `<button class="btn-delete" onclick="deleteRequest('${data.docId}', '${data.ownerId}')">削除 (1pt)</button>`;
+        }
+
         item.innerHTML = `
           <div class="request-info">
             <img class="request-avatar-img" src="${icon}" alt="icon">
@@ -880,7 +960,10 @@
               </div>
             </div>
           </div>
-          <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${data.docId}', '${data.ownerId}', ${isSolved}, ${isUrgent})">${btnText}</button>
+          <div class="request-actions">
+            ${deleteBtnHtml}
+            <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${data.docId}', '${data.ownerId}', ${isSolved}, ${isUrgent})">${btnText}</button>
+          </div>
         `;
         listDiv.appendChild(item);
       });
@@ -907,6 +990,14 @@
       }
 
       document.getElementById("chat-title").innerHTML = `${titlePrefix}「${subject}」`;
+
+      // チャット内削除ボタンの表示制御（本人のみ表示）
+      const chatDeleteBtn = document.getElementById("btn-chat-delete");
+      if (ownerId === senderId) {
+        chatDeleteBtn.style.display = "inline-block";
+      } else {
+        chatDeleteBtn.style.display = "none";
+      }
 
       const subHint = document.getElementById("chat-sub-hint");
       if (senderId === ownerId && !isSolved) {
@@ -1075,19 +1166,23 @@
         textInput.value = "";
         clearSelectedImage();
       } catch (e) {
-        alert("送信エラー: " + e.message);
+        alert("送信に失敗しました: " + e.message);
       } finally {
         sendBtn.disabled = false;
       }
     }
 
-    // イベントリスナー
+    // --- 7. イベントリスナーの設定 ---
     document.getElementById("btn-login-submit").addEventListener("click", saveProfileAndStart);
     document.getElementById("btn-create-request").addEventListener("click", createRequest);
     document.getElementById("btn-send").addEventListener("click", sendMessage);
-    
+
+    // Enterキーでメッセージ送信
     document.getElementById("messageText").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendMessage();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
     });
   </script>
 </body>
