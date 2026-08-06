@@ -392,6 +392,11 @@
       border: 1px solid var(--border);
     }
 
+    /* 自分のメッセージのアイコンだけを左右反転 */
+    .msg-row.my-msg .msg-avatar-img {
+      transform: scaleX(-1);
+    }
+
     .msg-content-wrapper {
       display: flex;
       flex-direction: column;
@@ -684,20 +689,26 @@
     let currentOwnerId = null;
     let currentIsSolved = false;
     let unsubscribeChat = null;
+    let unsubscribeUser = null;
     let selectedBase64Image = null; // 選択された画像データ
 
-    // ユーザーデータ（解決数）取得
-    async function loadUserData() {
+    // ユーザーデータ（解決数）をリアルタイムで監視・取得
+    function listenUserData() {
       const userRef = doc(db, "users", senderId);
-      const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists()) {
-        mySolveCount = userSnap.data().solveCount || 0;
-      } else {
-        await setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() });
-        mySolveCount = 0;
-      }
-      updateUIWithUserData();
+      if (unsubscribeUser) unsubscribeUser();
+
+      unsubscribeUser = onSnapshot(userRef, async (userSnap) => {
+        if (userSnap.exists()) {
+          mySolveCount = userSnap.data().solveCount || 0;
+        } else {
+          // ドキュメントが存在しない初期状態の場合のみ作成
+          await setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() });
+          mySolveCount = 0;
+        }
+        // ポイント変動時に自動でUIを更新
+        updateUIWithUserData();
+      });
     }
 
     function updateUIWithUserData() {
@@ -763,16 +774,17 @@
       document.getElementById("matching-section").style.display = "block";
     }
 
-    loadUserData().then(() => {
-      if (!myName) {
-        showLoginScreen();
-      } else {
-        document.getElementById("badge-icon").src = myIcon;
-        document.getElementById("badge-name").innerText = myName;
-        document.getElementById("user-badge").style.display = "flex";
-        document.getElementById("matching-section").style.display = "block";
-      }
-    });
+    // 起動時にリアルタイム監視を開始
+    listenUserData();
+
+    if (!myName) {
+      showLoginScreen();
+    } else {
+      document.getElementById("badge-icon").src = myIcon;
+      document.getElementById("badge-name").innerText = myName;
+      document.getElementById("user-badge").style.display = "flex";
+      document.getElementById("matching-section").style.display = "block";
+    }
 
     // --- 画像選択＆圧縮処理 ---
     window.handleImageSelect = function(e) {
@@ -837,8 +849,6 @@
         await updateDoc(userRef, {
           solveCount: increment(-DELETE_COST)
         });
-        mySolveCount -= DELETE_COST;
-        updateUIWithUserData();
 
         // 2. 質問データの削除
         await deleteDoc(doc(db, "requests", docId));
