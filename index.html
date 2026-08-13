@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>クラス別サポート掲示板</title>
+  <title>掲示板</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
@@ -155,12 +155,12 @@
 </head>
 <body>
 
-  <h1>🍃 クラスサポート掲示板 🍃</h1>
+  <h1>掲示板</h1>
 
   <!-- 1. 先生用コントロールパネル（パスワード保護簡易付き） -->
   <div class="teacher-box">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-weight: 800;">⚙️ 先生用設定</span>
+      <span style="font-weight: 800;">先生用設定</span>
       <button id="toggleTeacherModeBtn" class="btn-sub" style="margin:0;">先生モード表示</button>
     </div>
 
@@ -172,13 +172,13 @@
 
   <!-- 2. ユーザー設定パネル -->
   <div id="user-section" class="box">
-    <h2>プロフィールを教えてね</h2>
+    <h2>プロフィールをおしえてね</h2>
     <label for="userName">おなまえ</label>
     <input type="text" id="userName" placeholder="なまえを入力">
 
     <label for="classSelect">クラス</label>
     <select id="classSelect">
-      <option value="">えらんでね</option>
+      <option value="">クラスせんたく</option>
       <option value="105">1年5组 (105)</option> <!--[cite: 1] -->
       <option value="106">1年6組 (106)</option> <!--[cite: 1] -->
       <option value="107">1年7組 (107)</option> <!--[cite: 1] -->
@@ -213,7 +213,7 @@
     
     <div style="margin-top: 10px;">
       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
-        <input type="checkbox" id="isUrgent" style="width: 20px; height: 20px;"> 🚨 【きんきゅう】たすけて！(解決したら3pt)
+        <input type="checkbox" id="isUrgent" style="width: 20px; height: 20px;">  緊急
       </label>
     </div>
 
