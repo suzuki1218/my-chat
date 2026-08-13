@@ -13,17 +13,17 @@
   <style>
     :root {
       --bg-color: #f2ebd9;        /* ナチュラルベージュ背景 */
-      --card-bg: #fffdf7;         /* カードアイボリー */
-      --text-main: #332f2b;       /* 濃いブラウン */
-      --text-sub: #7a7369;        /* アースグレー */
-      --primary: #2e7d32;         /* ナチュラルグリーン */
+      --card-bg: #fffdf7;          /* カードアイボリー */
+      --text-main: #332f2b;        /* 濃いブラウン */
+      --text-sub: #7a7369;         /* アースグレー */
+      --primary: #2e7d32;          /* ナチュラルグリーン */
       --primary-light: #e8f5e9;
-      --success: #4caf50;         /* ライトグリーン */
-      --danger: #d32f2f;          /* アースレッド */
-      --border: #dcd4c3;          /* 境界線 */
+      --success: #4caf50;          /* ライトグリーン */
+      --danger: #d32f2f;           /* アースレッド */
+      --border: #dcd4c3;           /* 境界線 */
       --my-msg-bg: #81c784;       /* 自分の吹き出し */
-      --chat-bg: #e2d9c4;         /* トーク画面背景 */
-      --gold: #fbc02d;             /* ベストアンサー用カラー */
+      --chat-bg: #e2d9c4;          /* トーク画面背景 */
+      --gold: #fbc02d;              /* ベストアンサー用カラー */
       --my-card-bg: #eaf5ea;      /* 自分の投稿カード背景 */
     }
 
@@ -535,6 +535,29 @@
       padding: 0 18px; 
       height: 44px;
     }
+
+    /* 画像拡大用モーダル */
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .image-modal img {
+      max-width: 95%;
+      max-height: 90vh;
+      border-radius: 12px;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
@@ -650,11 +673,16 @@
     </div>
   </div>
 
+  <!-- 画像拡大プレビュー用モーダル -->
+  <div id="image-modal" class="image-modal" onclick="closeImageModal()">
+    <img id="modal-image" src="" alt="拡大表示">
+  </div>
+
 
   <!-- Firebase (v10) SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc, setDoc, increment } 
+    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, setDoc, increment } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -1092,106 +1120,131 @@
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           const isMyMsg = data.senderId === senderId;
-          const isOwner = senderId === currentOwnerId;
-          const msgIcon = data.icon || "icon01.png";
-          const senderName = data.senderName || "ゲスト";
+          const msgIcon = data.senderIcon || "icon01.png";
+          const msgName = data.senderName || "ゲスト";
+          const msgText = data.text || "";
+          const msgImage = data.image || null;
+          const msgTime = formatTime(data.timestamp);
 
-          const rowDiv = document.createElement("div");
-          rowDiv.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
+          const msgRow = document.createElement("div");
+          msgRow.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
 
-          const avatarImg = document.createElement("img");
-          avatarImg.className = "msg-avatar-img";
-          avatarImg.src = msgIcon;
-
-          const contentWrapper = document.createElement("div");
-          contentWrapper.className = "msg-content-wrapper";
-
-          const nameDiv = document.createElement("div");
-          nameDiv.className = "msg-sender-name";
-          nameDiv.innerText = senderName;
-
-          const bubbleDiv = document.createElement("div");
-          bubbleDiv.className = "msg-bubble";
-          
-          if (data.text) {
-            const textNode = document.createTextNode(data.text);
-            bubbleDiv.appendChild(textNode);
+          // 画像HTMLの構築
+          let imageHtml = "";
+          if (msgImage) {
+            imageHtml = `<img src="${msgImage}" class="msg-image" onclick="openImageModal('${msgImage}')" alt="添付画像">`;
           }
 
-          if (data.image) {
-            const imgElem = document.createElement("img");
-            imgElem.className = "msg-image";
-            imgElem.src = data.image;
-            imgElem.onclick = () => window.open(data.image, '_blank');
-            bubbleDiv.appendChild(imgElem);
+          // ベストアンサーボタン（質問者本人 ＆ 他人のメッセージ ＆ 未解決の場合のみ表示）
+          let bestAnswerBtnHtml = "";
+          if (senderId === currentOwnerId && !isMyMsg && !currentIsSolved) {
+            bestAnswerBtnHtml = `
+              <button class="btn-best-answer" onclick="selectBestAnswer('${data.senderId}', '${msgName.replace(/'/g, "\\'")}')">
+                ★ ベストアンサーに選ぶ
+              </button>
+            `;
           }
 
-          contentWrapper.appendChild(nameDiv);
-          contentWrapper.appendChild(bubbleDiv);
+          msgRow.innerHTML = `
+            <img class="msg-avatar-img" src="${msgIcon}" alt="icon">
+            <div class="msg-content-wrapper">
+              <div class="msg-sender-name">${msgName}</div>
+              <div class="msg-bubble">
+                ${msgText ? `<div>${escapeHtml(msgText)}</div>` : ""}
+                ${imageHtml}
+              </div>
+              ${bestAnswerBtnHtml}
+            </div>
+            <div class="msg-meta">
+              <span>${msgTime}</span>
+            </div>
+          `;
 
-          if (isOwner && !currentIsSolved && data.senderId !== currentOwnerId) {
-            const bestBtn = document.createElement("button");
-            bestBtn.className = "btn-best-answer";
-            bestBtn.innerText = "ベストアンサーに選ぶ";
-            bestBtn.onclick = () => selectBestAnswer(data.senderId, senderName);
-            contentWrapper.appendChild(bestBtn);
-          }
-
-          const metaDiv = document.createElement("div");
-          metaDiv.className = "msg-meta";
-          metaDiv.innerHTML = `<span>${formatTime(data.timestamp)}</span>`;
-
-          rowDiv.appendChild(avatarImg);
-          rowDiv.appendChild(contentWrapper);
-          rowDiv.appendChild(metaDiv);
-          chatBox.appendChild(rowDiv);
+          chatBox.appendChild(msgRow);
         });
-        
+
+        // 最新のメッセージまでスクロール
         chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
 
-    // --- 6. メッセージ送信 ---
+    // XSS対策用テキストエスケープ
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+        .replace(/\n/g, "<br>");
+    }
+
+    // --- 6. メッセージ送信処理 ---
     async function sendMessage() {
-      const textInput = document.getElementById("messageText");
-      const text = textInput.value.trim();
-      const sendBtn = document.getElementById("btn-send");
+      const msgInput = document.getElementById("messageText");
+      const text = msgInput.value.trim();
+      const btnSend = document.getElementById("btn-send");
 
-      if ((!text && !selectedBase64Image) || !currentRoomId) return;
+      if (!text && !selectedBase64Image) {
+        return;
+      }
 
-      sendBtn.disabled = true; // 連打防止
+      if (!currentRoomId) return;
 
-      const payload = {
-        senderId: senderId,
-        senderName: myName,
-        icon: myIcon,
-        timestamp: serverTimestamp()
-      };
-
-      if (text) payload.text = text;
-      if (selectedBase64Image) payload.image = selectedBase64Image;
+      btnSend.disabled = true; // 連打防止
 
       try {
-        await addDoc(collection(db, "rooms", currentRoomId, "messages"), payload);
-        textInput.value = "";
+        await addDoc(collection(db, "rooms", currentRoomId, "messages"), {
+          text: text,
+          image: selectedBase64Image || null,
+          senderId: senderId,
+          senderName: myName,
+          senderIcon: myIcon,
+          timestamp: serverTimestamp()
+        });
+
+        msgInput.value = "";
         clearSelectedImage();
       } catch (e) {
         alert("送信に失敗しました: " + e.message);
       } finally {
-        sendBtn.disabled = false;
+        btnSend.disabled = false;
       }
     }
 
-    // --- 7. イベントリスナーの設定 ---
+    // 画像拡大モーダルの制御
+    window.openImageModal = function(src) {
+      const modal = document.getElementById("image-modal");
+      const modalImg = document.getElementById("modal-image");
+      modalImg.src = src;
+      modal.style.display = "flex";
+    };
+
+    window.closeImageModal = function() {
+      document.getElementById("image-modal").style.display = "none";
+    };
+
+    // --- イベントリスナー設定 ---
     document.getElementById("btn-login-submit").addEventListener("click", saveProfileAndStart);
     document.getElementById("btn-create-request").addEventListener("click", createRequest);
     document.getElementById("btn-send").addEventListener("click", sendMessage);
 
-    // Enterキーでメッセージ送信
+    // Enterキー送信対応
     document.getElementById("messageText").addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
-        e.preventDefault();
         sendMessage();
+      }
+    });
+
+    document.getElementById("userNameInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        saveProfileAndStart();
+      }
+    });
+
+    document.getElementById("reqSubject").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        createRequest();
       }
     });
   </script>
