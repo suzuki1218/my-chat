@@ -4,225 +4,382 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>掲示板</title>
+  <!-- フォント読み込み -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg-color: #f2f7eb;
-      --main-green: #58b05c;
-      --accent-yellow: #f8e16c;
-      --card-bg: #fffdf7;
-      --board-border: #e2d2ac;
-      --text-color: #534537;
-      --urgent-red: #ff7675;
-      --disabled-gray: #a0a0a0;
+      --bg-color: #f2ebd9;        /* ナチュラルベージュ背景 */
+      --card-bg: #fffdf7;         /* カードアイボリー */
+      --text-main: #332f2b;       /* 濃いブラウン */
+      --text-sub: #7a7369;        /* アースグレー */
+      --primary: #2e7d32;         /* ナチュラルグリーン */
+      --primary-light: #e8f5e9;
+      --success: #4caf50;         /* ライトグリーン */
+      --danger: #d32f2f;          /* アースレッド */
+      --border: #dcd4c3;          /* 境界線 */
+      --my-msg-bg: #81c784;       /* 自分の吹き出し */
+      --chat-bg: #e2d9c4;         /* トーク画面背景 */
+      --gold: #fbc02d;             /* ベストアンサー用カラー */
+      --my-card-bg: #eaf5ea;      /* 自分の投稿カード背景 */
     }
 
     body {
       font-family: 'M PLUS Rounded 1c', sans-serif;
       background-color: var(--bg-color);
-      color: var(--text-color);
-      max-width: 650px;
-      margin: 20px auto;
-      padding: 0 15px;
+      color: var(--text-main);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 10px;
+      padding-bottom: 120px; /* 下部固定フォーム用余白 */
     }
 
     h1 {
       text-align: center;
-      color: var(--main-green);
+      color: var(--primary);
       font-weight: 800;
       text-shadow: 2px 2px 0px #fff;
-      font-size: 1.8rem;
+      font-size: 1.5rem;
+      margin: 10px 0;
     }
 
     .box {
       background-color: var(--card-bg);
-      border: 4px solid var(--board-border);
+      border: 3px solid var(--border);
       border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 25px;
-      box-shadow: 0 6px 0px var(--board-border);
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 0px var(--border);
     }
 
     /* 先生用コントロールパネル */
     .teacher-box {
-      background-color: #fff9e6;
-      border: 4px solid var(--accent-yellow);
+      background-color: #fff8e1;
+      border: 3px solid var(--gold);
       border-radius: 20px;
-      padding: 15px 20px;
-      margin-bottom: 20px;
+      padding: 12px 15px;
+      margin-bottom: 15px;
     }
 
-    h2, h3 { color: var(--main-green); font-weight: 700; margin-top: 0; }
+    label { display: block; margin-top: 10px; font-weight: 700; color: var(--text-main); }
 
-    label { display: block; margin-top: 12px; font-weight: 700; }
-
-    input[type="text"], select, textarea {
+    input[type="text"], select {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       margin-top: 6px;
-      border: 3px solid var(--board-border);
+      border: 2px solid var(--border);
       border-radius: 12px;
       background-color: #fff;
       font-family: 'M PLUS Rounded 1c', sans-serif;
       font-size: 1rem;
-      color: var(--text-color);
+      color: var(--text-main);
       box-sizing: border-box;
-      outline: none;
+    }
+
+    /* アイコン選択エリア */
+    .icon-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .icon-option {
+      width: 45px;
+      height: 45px;
+      padding: 2px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      cursor: pointer;
+      background-color: #fff;
+      object-fit: cover;
+      transition: all 0.2s;
+    }
+
+    .icon-option.selected {
+      border-color: var(--primary);
+      background-color: var(--primary-light);
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .avatar-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
     button {
-      background-color: var(--main-green);
+      background-color: var(--primary);
       color: white;
       border: none;
       border-radius: 25px;
-      padding: 12px 20px;
-      font-size: 1rem;
+      padding: 10px 18px;
+      font-size: 0.95rem;
       font-weight: 800;
       font-family: 'M PLUS Rounded 1c', sans-serif;
       cursor: pointer;
-      box-shadow: 0 4px 0px #3d8841;
-      width: 100%;
-      margin-top: 15px;
+      box-shadow: 0 3px 0px #1b5e20;
       transition: all 0.1s ease;
     }
 
     button:active {
-      box-shadow: 0 0px 0px #3d8841;
-      transform: translateY(4px);
+      box-shadow: 0 0px 0px #1b5e20;
+      transform: translateY(3px);
     }
 
     button:disabled {
-      background-color: var(--disabled-gray) !important;
-      box-shadow: 0 4px 0px #707070 !important;
+      background-color: var(--text-sub) !important;
+      box-shadow: 0 3px 0px #504b44 !important;
       cursor: not-allowed;
     }
 
     .btn-sub {
-      background-color: #a0a0a0;
-      box-shadow: 0 4px 0px #707070;
-      width: auto;
-      padding: 6px 15px;
-      font-size: 0.85rem;
+      background-color: var(--text-sub);
+      box-shadow: 0 3px 0px #504b44;
+      padding: 5px 12px;
+      font-size: 0.8rem;
     }
 
-    /* 先生用スイッチボタン */
-    .btn-toggle-on {
-      background-color: #ff7675;
-      box-shadow: 0 4px 0px #d63031;
-    }
-    .btn-toggle-off {
-      background-color: var(--main-green);
-      box-shadow: 0 4px 0px #3d8841;
-    }
+    .btn-toggle-on { background-color: var(--danger); box-shadow: 0 3px 0px #b71c1c; }
+    .btn-toggle-off { background-color: var(--primary); box-shadow: 0 3px 0px #1b5e20; }
 
-    /* ロック中のオーバーレイ表示 */
     .status-banner {
-      background-color: #ffeaa7;
-      color: #d63031;
-      padding: 10px;
+      background-color: #ffebee;
+      color: var(--danger);
+      border: 2px solid var(--danger);
+      padding: 8px;
       border-radius: 12px;
       font-weight: 800;
       text-align: center;
-      margin-bottom: 15px;
-    }
-
-    .post {
-      background-color: #ffffff;
-      border: 3px solid #e2e8f0;
-      border-radius: 15px;
-      padding: 15px;
       margin-bottom: 12px;
+      font-size: 0.85rem;
     }
 
-    .urgent { border-color: var(--urgent-red); background-color: #fff5f5; }
+    /* LINE風チャット領域 */
+    .chat-container {
+      background-color: var(--chat-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 12px;
+      min-height: 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-    .badge {
+    /* メッセージ全体の枠 */
+    .chat-message {
+      display: flex;
+      gap: 8px;
+      max-width: 85%;
+    }
+
+    /* 相手のメッセージ（左配置） */
+    .chat-message.other {
+      align-self: flex-start;
+    }
+
+    /* 自分のメッセージ（右配置） */
+    .chat-message.my {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-message.my .message-content {
+      align-items: flex-end;
+    }
+
+    .author-name {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-bottom: 3px;
+      margin-left: 2px;
+    }
+
+    /* 吹き出し本体 */
+    .bubble {
+      position: relative;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background-color: #fff;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      line-height: 1.4;
+      word-break: break-word;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .chat-message.other .bubble {
+      border-top-left-radius: 2px;
+    }
+
+    .chat-message.my .bubble {
+      background-color: var(--my-msg-bg);
+      border-top-right-radius: 2px;
+    }
+
+    .chat-message.urgent .bubble {
+      border: 2px solid var(--danger);
+      background-color: #fff5f5;
+    }
+
+    .urgent-badge {
       display: inline-block;
-      background-color: var(--accent-yellow);
-      color: var(--text-color);
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      font-weight: 700;
+      background-color: var(--danger);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 8px;
+      margin-bottom: 4px;
     }
 
-    .urgent-badge { background-color: var(--urgent-red); color: white; }
+    /* 下部固定入力エリア */
+    .input-fixed-area {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 600px;
+      background-color: var(--card-bg);
+      border-top: 3px solid var(--border);
+      padding: 10px 15px;
+      box-sizing: border-box;
+      z-index: 100;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .input-wrapper textarea {
+      flex: 1;
+      height: 42px;
+      padding: 8px 12px;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .input-wrapper textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .urgent-check-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: var(--danger);
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+
     .hidden { display: none; }
   </style>
 </head>
 <body>
 
-  <h1>掲示板</h1>
+  <h1>🍃 クラスサポート掲示板 🍃</h1>
 
-  <!-- 1. 先生用コントロールパネル（パスワード保護簡易付き） -->
+  <!-- 1. 先生用コントロールパネル -->
   <div class="teacher-box">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-weight: 800;">先生用設定</span>
-      <button id="toggleTeacherModeBtn" class="btn-sub" style="margin:0;">先生モード表示</button>
+      <span style="font-weight: 800; font-size:0.9rem;">先生用設定</span>
+      <button id="toggleTeacherModeBtn" class="btn-sub">先生モード表示</button>
     </div>
 
-    <div id="teacherControls" class="hidden" style="margin-top: 15px;">
-      <p style="margin: 0 0 10px 0; font-size: 0.9rem;">現在の状態: <strong id="currentStatusText">読み込み中...</strong></p>
-      <button id="toggleBoardBtn" class="btn-toggle-on">掲示板の受付を停止する</button>
+    <div id="teacherControls" class="hidden" style="margin-top: 10px;">
+      <p style="margin: 0 0 8px 0; font-size: 0.85rem;">現在の状態: <strong id="currentStatusText">読み込み中...</strong></p>
+      <button id="toggleBoardBtn" class="btn-toggle-on" style="width:100%;">掲示板の受付を停止する</button>
     </div>
   </div>
 
   <!-- 2. ユーザー設定パネル -->
   <div id="user-section" class="box">
-    <h2>プロフィールをおしえてね</h2>
-    <label for="userName">おなまえ</label>
-    <input type="text" id="userName" placeholder="なまえを入力">
+    <h2 style="font-size:1.2rem; color:var(--primary); margin-top:0;">プロフィール</h2>
+    
+    <label for="userName">なまえ</label>
+    <input type="text" id="userName" placeholder="名前を入力">
+
+    <label>自分のアイコン</label>
+    <div class="icon-selector" id="iconSelector">
+      <img src="icon01.png" class="icon-option selected" data-icon="icon01.png" alt="icon01">
+      <img src="icon02.png" class="icon-option" data-icon="icon02.png" alt="icon02">
+      <img src="icon03.png" class="icon-option" data-icon="icon03.png" alt="icon03">
+      <img src="icon04.png" class="icon-option" data-icon="icon04.png" alt="icon04">
+      <img src="icon05.png" class="icon-option" data-icon="icon05.png" alt="icon05">
+      <img src="icon06.png" class="icon-option" data-icon="icon06.png" alt="icon06">
+      <img src="icon07.png" class="icon-option" data-icon="icon07.png" alt="icon07">
+      <img src="icon08.png" class="icon-option" data-icon="icon08.png" alt="icon08">
+    </div>
 
     <label for="classSelect">クラス</label>
     <select id="classSelect">
-      <option value="">クラスせんたく</option>
-      <option value="105">1年5组 (105)</option> <!--[cite: 1] -->
-      <option value="106">1年6組 (106)</option> <!--[cite: 1] -->
-      <option value="107">1年7組 (107)</option> <!--[cite: 1] -->
-      <option value="108">1年8組 (108)</option> <!--[cite: 1] -->
-      <option value="109">1年9組 (109)</option> <!--[cite: 1] -->
-      <option value="110">1年10組 (110)</option> <!--[cite: 1] -->
-      <option value="310">3年10組 (310)</option> <!--[cite: 1] -->
-      <option value="311">3年11組 (311)</option> <!--[cite: 1] -->
+      <option value="">選択</option>
+      <option value="105">1年5組 (105)</option>[cite: 1]
+      <option value="106">1年6組 (106)</option>[cite: 1]
+      <option value="107">1年7組 (107)</option>[cite: 1]
+      <option value="108">1年8組 (108)</option>[cite: 1]
+      <option value="109">1年9組 (109)</option>[cite: 1]
+      <option value="110">1年10組 (110)</option>[cite: 1]
+      <option value="310">3年10組 (310)</option>[cite: 1]
+      <option value="311">3年11組 (311)</option>[cite: 1]
     </select>
 
-    <button id="saveUserBtn">けいじばんに入る！</button>
+    <button id="saveUserBtn" style="width:100%; margin-top:15px;">掲示板に入る</button>
   </div>
 
-  <!-- 3. 掲示板メイン画面 -->
-  <div id="board-section" class="box hidden">
+  <!-- 3. 掲示板メイン画面（LINE風トーク画面） -->
+  <div id="board-section" class="hidden">
+    <!-- ヘッダー情報 -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-      <h2><span id="displayClassName"></span> の掲示板</h2>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <img id="displayUserIcon" class="avatar-img" src="" alt="icon">
+        <span style="font-weight: bold;"><span id="displayClassName"></span> (<span id="displayName"></span>)</span>
+      </div>
       <button id="changeClassBtn" class="btn-sub">クラスへんこう</button>
     </div>
-    <p style="margin-top:0;">こんにちは、<strong id="displayName"></strong> さん！</p>
 
     <!-- 利用停止中の注意メッセージ -->
-    <div id="statusBanner" class="statusBanner hidden">
-      🔒 ただいま掲示板は【利用停止中】です。授業中・放課後まで待ってね！
+    <div id="statusBanner" class="status-banner hidden">
+       ただいま掲示板は【利用停止中】です。
     </div>
 
-    <hr style="border: none; border-top: 2px dashed var(--board-border); margin: 20px 0;">
+    <!-- チャット表示エリア -->
+    <div class="chat-container" id="postsContainer">
+      読み込み中...
+    </div>
 
-    <!-- 投稿フォーム -->
-    <h3>質問やメッセージを書く</h3>
-    <textarea id="postContent" rows="3" placeholder="ここにメッセージをかいてね"></textarea>
-    
-    <div style="margin-top: 10px;">
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
-        <input type="checkbox" id="isUrgent" style="width: 20px; height: 20px;">  緊急
+    <!-- 固定送信エリア -->
+    <div class="input-fixed-area">
+      <label class="urgent-check-label">
+        <input type="checkbox" id="isUrgent"> 🚨 【きんきゅう】たすけて！(+3pt)
       </label>
+      <div class="input-wrapper">
+        <textarea id="postContent" placeholder="メッセージを入力"></textarea>
+        <button id="submitPostBtn" style="padding: 10px 15px; border-radius: 18px;">送信</button>
+      </div>
     </div>
-
-    <button id="submitPostBtn">とうこうする！</button>
-
-    <hr style="border: none; border-top: 2px dashed var(--board-border); margin: 20px 0;">
-
-    <h3>みんなのメッセージ</h3>
-    <div id="postsContainer">読み込み中...</div>
   </div>
 
   <!-- Firebase SDK -->
@@ -245,8 +402,9 @@
     const db = getFirestore(app);
 
     let currentUser = JSON.parse(localStorage.getItem("board_user")) || null;
+    let selectedIcon = "icon01.png";
     let unsubscribePosts = null;
-    let isBoardOpen = true; // 掲示板が開いているかのステータス
+    let isBoardOpen = true;
 
     const userSection = document.getElementById("user-section");
     const boardSection = document.getElementById("board-section");
@@ -255,11 +413,13 @@
     const saveUserBtn = document.getElementById("saveUserBtn");
     const changeClassBtn = document.getElementById("changeClassBtn");
     const displayName = document.getElementById("displayName");
+    const displayUserIcon = document.getElementById("displayUserIcon");
     const displayClassName = document.getElementById("displayClassName");
     const submitPostBtn = document.getElementById("submitPostBtn");
     const postContent = document.getElementById("postContent");
     const isUrgent = document.getElementById("isUrgent");
     const postsContainer = document.getElementById("postsContainer");
+    const iconSelector = document.getElementById("iconSelector");
     
     // 先生用エレメント
     const toggleTeacherModeBtn = document.getElementById("toggleTeacherModeBtn");
@@ -268,29 +428,36 @@
     const toggleBoardBtn = document.getElementById("toggleBoardBtn");
     const statusBanner = document.getElementById("statusBanner");
 
+    // アイコン選択処理
+    iconSelector.addEventListener("click", (e) => {
+      if (e.target.classList.contains("icon-option")) {
+        document.querySelectorAll(".icon-option").forEach(el => el.classList.remove("selected"));
+        e.target.classList.add("selected");
+        selectedIcon = e.target.getAttribute("data-icon");
+      }
+    });
+
     function formatClassName(classId) {
-      const grade = Math.floor(classId / 100); //[cite: 1]
-      const classNum = classId % 100;          //[cite: 1]
-      return `${grade}年${classNum}组`;
+      const grade = Math.floor(classId / 100);[cite: 1]
+      const classNum = classId % 100;          [cite: 1]
+      return `${grade}年${classNum}組`;
     }
 
-    // 🌐 1. 掲示板のON/OFF状態をリアルタイム監視
     function listenBoardStatus() {
       const statusRef = doc(db, "settings", "boardStatus");
       onSnapshot(statusRef, (docSnap) => {
         if (docSnap.exists()) {
           isBoardOpen = docSnap.data().isOpen;
         } else {
-          isBoardOpen = true; // デフォルトはON
+          isBoardOpen = true;
         }
         updateUIByStatus();
       });
     }
 
-    // 状態に合わせて画面のボタン無効化・警告表示を切り替える
     function updateUIByStatus() {
       if (isBoardOpen) {
-        currentStatusText.textContent = "🟢 受付中（利用可能）";
+        currentStatusText.textContent = "🟢 受付中";
         toggleBoardBtn.textContent = "掲示板の受付を停止する";
         toggleBoardBtn.className = "btn-toggle-on";
         
@@ -299,7 +466,7 @@
         postContent.disabled = false;
         isUrgent.disabled = false;
       } else {
-        currentStatusText.textContent = "🔴 停止中（利用不可）";
+        currentStatusText.textContent = "🔴 停止中";
         toggleBoardBtn.textContent = "掲示板の受付を開始する";
         toggleBoardBtn.className = "btn-toggle-off";
 
@@ -310,13 +477,12 @@
       }
     }
 
-    // 🔑 先生モードパネルの表示切り替え（暗証番号: 1234 例）
     toggleTeacherModeBtn.addEventListener("click", () => {
       if (teacherControls.classList.contains("hidden")) {
-        const pass = prompt("先生用パスワードを入力してください（初期設定: 1234）");
-        if (pass === "1234") {
+        const pass = prompt("先生用パスワードを入力してください");
+        if (pass === "Rs2109073") {
           teacherControls.classList.remove("hidden");
-          toggleTeacherModeBtn.textContent = "先生モードを閉じる";
+          toggleTeacherModeBtn.textContent = "閉じる";
         } else if (pass !== null) {
           alert("パスワードが違います");
         }
@@ -326,7 +492,6 @@
       }
     });
 
-    // 🔄 先生がスイッチを押した時の処理
     toggleBoardBtn.addEventListener("click", async () => {
       const statusRef = doc(db, "settings", "boardStatus");
       try {
@@ -342,6 +507,7 @@
         userSection.classList.add("hidden");
         boardSection.classList.remove("hidden");
         displayName.textContent = currentUser.name;
+        displayUserIcon.src = currentUser.icon || "icon01.png";
         displayClassName.textContent = formatClassName(currentUser.class_id);
         loadClassPosts(currentUser.class_id);
       } else {
@@ -352,14 +518,14 @@
 
     saveUserBtn.addEventListener("click", () => {
       const name = userNameInput.value.trim();
-      const classId = parseInt(classSelect.value, 10); //[cite: 1]
+      const classId = parseInt(classSelect.value, 10);[cite: 1]
 
       if (!name || isNaN(classId)) {
         alert("おなまえとクラスをえらんでね！");
         return;
       }
 
-      currentUser = { name: name, class_id: classId };
+      currentUser = { name: name, class_id: classId, icon: selectedIcon };
       localStorage.setItem("board_user", JSON.stringify(currentUser));
       initApp();
     });
@@ -371,7 +537,6 @@
       initApp();
     });
 
-    // 投稿処理（利用停止中は押せない＆裏でもガード）
     submitPostBtn.addEventListener("click", async () => {
       if (!isBoardOpen) {
         alert("ただいま掲示板は利用停止中です。");
@@ -382,7 +547,7 @@
       const urgent = isUrgent.checked;
 
       if (!text) {
-        alert("メッセージを入力してね！");
+        alert("メッセージを入力");
         return;
       }
 
@@ -390,7 +555,8 @@
         await addDoc(collection(db, "posts"), {
           content: text,
           authorName: currentUser.name,
-          class_id: currentUser.class_id, //[cite: 1]
+          authorIcon: currentUser.icon || "icon01.png",
+          class_id: currentUser.class_id,[cite: 1]
           isUrgent: urgent,
           rewardPoints: urgent ? 3 : 1,
           createdAt: serverTimestamp()
@@ -400,48 +566,56 @@
         isUrgent.checked = false;
       } catch (e) {
         console.error("投稿エラー:", e);
-        alert("とうこうに失敗しちゃいました。");
+        alert("投稿失敗");
       }
     });
 
     function loadClassPosts(studentClassId) {
       if (unsubscribePosts) unsubscribePosts();
 
+      // LINE風に古い順に並べるため 'asc' に変更
       const q = query(
         collection(db, "posts"),
-        where("class_id", "==", Number(studentClassId)), //[cite: 1]
-        orderBy("createdAt", "desc")
+        where("class_id", "==", Number(studentClassId)),[cite: 1]
+        orderBy("createdAt", "asc")
       );
 
       unsubscribePosts = onSnapshot(q, (snapshot) => {
         postsContainer.innerHTML = "";
 
         if (snapshot.empty) {
-          postsContainer.innerHTML = "<p style='text-align:center;'>まだ投稿がないみたい🍃</p>";
+          postsContainer.innerHTML = "<p style='text-align:center; color:var(--text-sub); width:100%;'>まだメッセージがありません🍃</p>";
           return;
         }
 
         snapshot.forEach((doc) => {
           const data = doc.data();
-          const postEl = document.createElement("div");
-          postEl.className = `post ${data.isUrgent ? 'urgent' : ''}`;
+          const isMyPost = currentUser && currentUser.name === data.authorName;
+          const iconSrc = data.authorIcon || "icon01.png";
 
-          postEl.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <strong>👤 ${data.authorName}</strong>
-              ${data.isUrgent ? '<span class="badge urgent-badge">🚨 きんきゅう (+3pt)</span>' : '<span class="badge">つうじょう</span>'}
+          const msgEl = document.createElement("div");
+          msgEl.className = `chat-message ${isMyPost ? 'my' : 'other'} ${data.isUrgent ? 'urgent' : ''}`;
+
+          msgEl.innerHTML = `
+            <img src="${iconSrc}" class="avatar-img" alt="icon">
+            <div class="message-content">
+              <span class="author-name">${data.authorName}</span>
+              ${data.isUrgent ? '<span class="urgent-badge">緊急</span>' : ''}
+              <div class="bubble">${data.content}</div>
             </div>
-            <p style="margin: 10px 0 0 0; line-height: 1.5;">${data.content}</p>
           `;
-          postsContainer.appendChild(postEl);
+          postsContainer.appendChild(msgEl);
         });
+
+        // 自動で一番下までスクロール
+        window.scrollTo(0, document.body.scrollHeight);
+
       }, (error) => {
         console.error("データ取得エラー:", error);
         postsContainer.innerHTML = "<p>データの読み込みに失敗しました。</p>";
       });
     }
 
-    // 起動時処理
     listenBoardStatus();
     initApp();
   </script>
