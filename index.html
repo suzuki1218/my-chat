@@ -507,13 +507,13 @@
 
     .input-group {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
     }
 
     .input-group input[type="text"] { margin-bottom: 0; flex-grow: 1; }
     
-    .btn-attach-img {
+    .btn-attach-img, .btn-draw-open {
       background-color: #e8e0ce;
       color: var(--text-main);
       border: 1px solid var(--border);
@@ -521,7 +521,7 @@
       height: 44px;
       padding: 0;
       border-radius: 12px;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -532,9 +532,103 @@
     .input-group button.btn-send-msg { 
       width: auto; 
       white-space: nowrap; 
-      padding: 0 18px; 
+      padding: 0 16px; 
       height: 44px;
     }
+
+    /* ==================== 手書き（Canvas）モーダル ==================== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 600px;
+      border-radius: 18px;
+      padding: 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .canvas-container {
+      width: 100%;
+      background: #ffffff;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      touch-action: none; /* タブレットでのスクロール防止 */
+    }
+
+    #drawCanvas {
+      width: 100%;
+      height: 320px;
+      display: block;
+      border-radius: 10px;
+      cursor: crosshair;
+    }
+
+    .canvas-tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .tool-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .color-picker-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      cursor: pointer;
+    }
+
+    .color-picker-dot.active {
+      border-color: var(--primary);
+      transform: scale(1.15);
+    }
+
+    .btn-canvas-tool {
+      background-color: #e8e0ce;
+      color: var(--text-main);
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      width: auto;
+      border-radius: 8px;
+    }
+
+    .btn-canvas-tool.active {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-modal-cancel { background-color: var(--text-sub); }
+    .btn-modal-submit { background-color: var(--primary); }
   </style>
 </head>
 <body>
@@ -641,11 +735,47 @@
         <div class="input-group">
           <!-- 非表示のファイル選択インプット -->
           <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
-          <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を添付">+</button>
+          <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を選択">＋</button>
           
+          <!-- 手書き入力ボタン -->
+          <button type="button" class="btn-draw-open" onclick="openCanvasModal()" title="手書きでお絵描き">✎</button>
+
           <input type="text" id="messageText" placeholder="メッセージを入力...">
           <button id="btn-send" class="btn-send-msg">送信</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 3. 手書き（お絵描き）モーダル ==================== -->
+  <div id="canvas-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="margin:0; font-size:1.1rem; text-align:center;">手書きで解説・質問を描く</h3>
+      
+      <div class="canvas-container">
+        <canvas id="drawCanvas"></canvas>
+      </div>
+
+      <div class="canvas-tools">
+        <!-- 色選択 -->
+        <div class="tool-group">
+          <div class="color-picker-dot active" style="background:#000000;" onclick="setPenColor('#000000', this)"></div>
+          <div class="color-picker-dot" style="background:#d32f2f;" onclick="setPenColor('#d32f2f', this)"></div>
+          <div class="color-picker-dot" style="background:#1976d2;" onclick="setPenColor('#1976d2', this)"></div>
+          <div class="color-picker-dot" style="background:#388e3c;" onclick="setPenColor('#388e3c', this)"></div>
+        </div>
+
+        <!-- 太さ＆消しゴム -->
+        <div class="tool-group">
+          <button type="button" class="btn-canvas-tool active" id="tool-pen" onclick="usePen()">ペン</button>
+          <button type="button" class="btn-canvas-tool" id="tool-eraser" onclick="useEraser()">消しゴム</button>
+          <button type="button" class="btn-canvas-tool" onclick="clearCanvas()">全消去</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-modal-cancel" onclick="closeCanvasModal()">キャンセル</button>
+        <button type="button" class="btn-modal-submit" onclick="saveCanvasImage()">完成・添付する</button>
       </div>
     </div>
   </div>
@@ -715,11 +845,9 @@
         if (userSnap.exists()) {
           mySolveCount = userSnap.data().solveCount || 0;
         } else {
-          // ドキュメントが存在しない初期状態の場合のみ作成
           await setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() });
           mySolveCount = 0;
         }
-        // ポイント変動時に自動でUIを更新
         updateUIWithUserData();
       });
     }
@@ -811,7 +939,7 @@
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
-          const maxDim = 600; // 軽量化のため600pxに制限
+          const maxDim = 600;
 
           if (width > height && width > maxDim) {
             height *= maxDim / width;
@@ -826,7 +954,7 @@
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          selectedBase64Image = canvas.toDataURL("image/jpeg", 0.6); // 圧縮率0.6で容量安全圏へ
+          selectedBase64Image = canvas.toDataURL("image/jpeg", 0.6);
           document.getElementById("image-preview-thumb").src = selectedBase64Image;
           document.getElementById("image-preview-container").style.display = "flex";
         };
@@ -839,6 +967,143 @@
       selectedBase64Image = null;
       document.getElementById("imageInput").value = "";
       document.getElementById("image-preview-container").style.display = "none";
+    };
+
+    // ==================== 手書き（Canvas）制御処理 ====================
+    let canvas, ctx;
+    let isDrawing = false;
+    let penColor = "#000000";
+    let penWidth = 3;
+    let isEraser = false;
+
+    window.openCanvasModal = function() {
+      const modal = document.getElementById("canvas-modal");
+      modal.style.display = "flex";
+
+      if (!canvas) {
+        canvas = document.getElementById("drawCanvas");
+        ctx = canvas.getContext("2d");
+        setupCanvas();
+      }
+      clearCanvas(); // 開くたびに綺麗にする
+    };
+
+    window.closeCanvasModal = function() {
+      document.getElementById("canvas-modal").style.display = "none";
+    };
+
+    function setupCanvas() {
+      // 解像度調整（高精細タブレット表示のボヤけ防止）
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * 2;
+      canvas.height = 320 * 2;
+      ctx.scale(2, 2);
+
+      // 初期スタイル設定
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      // マウス / タッチ イベント listener
+      canvas.addEventListener("mousedown", startDrawing);
+      canvas.addEventListener("mousemove", draw);
+      canvas.addEventListener("mouseup", stopDrawing);
+      canvas.addEventListener("mouseleave", stopDrawing);
+
+      canvas.addEventListener("touchstart", (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent("mousedown", {
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+      }, false);
+
+      canvas.addEventListener("touchmove", (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent("mousemove", {
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+      }, false);
+
+      canvas.addEventListener("touchend", () => {
+        const mouseEvent = new MouseEvent("mouseup", {});
+        canvas.dispatchEvent(mouseEvent);
+      }, false);
+    }
+
+    function getCanvasPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    function startDrawing(e) {
+      isDrawing = true;
+      const pos = getCanvasPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const pos = getCanvasPos(e);
+      
+      if (isEraser) {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 20;
+      } else {
+        ctx.strokeStyle = penColor;
+        ctx.lineWidth = penWidth;
+      }
+
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    function stopDrawing() {
+      if (isDrawing) {
+        ctx.closePath();
+        isDrawing = false;
+      }
+    }
+
+    window.setPenColor = function(color, el) {
+      isEraser = false;
+      penColor = color;
+      document.querySelectorAll('.color-picker-dot').forEach(dot => dot.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('tool-pen').classList.add('active');
+      document.getElementById('tool-eraser').classList.remove('active');
+    };
+
+    window.usePen = function() {
+      isEraser = false;
+      document.getElementById('tool-pen').classList.add('active');
+      document.getElementById('tool-eraser').classList.remove('active');
+    };
+
+    window.useEraser = function() {
+      isEraser = true;
+      document.getElementById('tool-pen').classList.remove('active');
+      document.getElementById('tool-eraser').classList.add('active');
+    };
+
+    window.clearCanvas = function() {
+      if (!ctx) return;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width / 2, canvas.height / 2);
+    };
+
+    window.saveCanvasImage = function() {
+      // 白紙かどうかは気にせずBase64データ化
+      selectedBase64Image = canvas.toDataURL("image/jpeg", 0.7);
+      document.getElementById("image-preview-thumb").src = selectedBase64Image;
+      document.getElementById("image-preview-container").style.display = "flex";
+      closeCanvasModal();
     };
 
     // --- 質問削除処理 (pt消費) ---
@@ -857,18 +1122,14 @@
       if (!confirmDelete) return;
 
       try {
-        // 1. ポイント減算
         const userRef = doc(db, "users", senderId);
         await updateDoc(userRef, {
           solveCount: increment(-DELETE_COST)
         });
 
-        // 2. 質問データの削除
         await deleteDoc(doc(db, "requests", docId));
-
         alert("質問を削除しました。");
 
-        // もしチャット画面を開いている最中なら一覧に戻る
         if (currentDocId === docId) {
           document.getElementById("btn-back-to-list").click();
         }
@@ -877,7 +1138,6 @@
       }
     };
 
-    // チャット画面のヘッダーにある削除ボタン用
     window.deleteCurrentRequest = function() {
       if (currentDocId && currentOwnerId) {
         deleteRequest(currentDocId, currentOwnerId);
@@ -895,17 +1155,15 @@
         return;
       }
 
-      // 緊急投稿時のポイントチェック
       if (isUrgent && mySolveCount < URGENT_COST) {
         alert(`「緊急」で質問を投稿するには ${URGENT_COST} pt 必要です。（現在の所持pt: ${mySolveCount} pt）`);
         return;
       }
 
-      btn.disabled = true; // 連打防止
+      btn.disabled = true;
       const roomId = "room_" + Date.now();
 
       try {
-        // 緊急投稿の場合は3pt消費する
         if (isUrgent) {
           const userRef = doc(db, "users", senderId);
           await updateDoc(userRef, {
@@ -982,7 +1240,6 @@
 
         const btnText = isSolved ? "閲覧する" : "見にいく";
 
-        // 削除ボタン（本人の場合のみ生成）
         let deleteBtnHtml = "";
         if (isMyPost) {
           deleteBtnHtml = `<button class="btn-delete" onclick="deleteRequest('${data.docId}', '${data.ownerId}')">削除 (1pt)</button>`;
@@ -1013,7 +1270,7 @@
       currentDocId = docId;
       currentOwnerId = ownerId;
       currentIsSolved = isSolved;
-      currentIsUrgent = isUrgent; // 緊急フラグの保持
+      currentIsUrgent = isUrgent;
 
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
@@ -1030,7 +1287,6 @@
 
       document.getElementById("chat-title").innerHTML = `${titlePrefix}「${subject}」`;
 
-      // チャット内削除ボタンの表示制御（本人のみ表示）
       const chatDeleteBtn = document.getElementById("btn-chat-delete");
       if (ownerId === senderId) {
         chatDeleteBtn.style.display = "inline-block";
@@ -1045,7 +1301,6 @@
         subHint.style.display = "none";
       }
 
-      // 解決済みの場合は入力欄を非表示、それ以外は表示
       const inputWrapper = document.getElementById("chat-input-wrapper");
       if (isSolved) {
         inputWrapper.style.display = "none";
@@ -1062,7 +1317,7 @@
       document.getElementById("matching-section").style.display = "block";
     });
 
-    // --- 4. ベストアンサー選出＆解決処理（緊急時は3pt付与） ---
+    // --- 4. ベストアンサー選出＆解決処理 ---
     window.selectBestAnswer = async function(helperId, helperName) {
       if (senderId !== currentOwnerId) {
         alert("ベストアンサーを選べるのは質問者のみです。");
@@ -1074,7 +1329,6 @@
         return;
       }
 
-      // 緊急かどうかに応じて付与ptを変更
       const rewardPoints = currentIsUrgent ? URGENT_REWARD : 1;
 
       const confirmBest = confirm(`【${helperName}】さんをベストアンサーに選びますか？\n※解決ポイント(+${rewardPoints}pt)が送られ、解決済みマークがつきます！`);
@@ -1125,7 +1379,7 @@
         chatBox.innerHTML = "";
         
         if (snapshot.empty) {
-          chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin-top: 20px;'>まだメッセージはありません。<br>写真や文章を送って教えてあげましょう！</p>";
+          chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin-top: 20px;'>まだメッセージはありません。<br>写真や手書き画像を送って教えてあげましょう！</p>";
           return;
         }
 
@@ -1150,7 +1404,6 @@
             textHtml = `<div>${data.text.replace(/\n/g, '<br>')}</div>`;
           }
 
-          // ベストアンサーボタン（質問者本人かつ、相手のメッセージかつ、未解決の場合のみ）
           let bestAnswerBtnHtml = "";
           if (senderId === currentOwnerId && !isMyMsg && !currentIsSolved) {
             bestAnswerBtnHtml = `
@@ -1178,7 +1431,6 @@
           chatBox.appendChild(row);
         });
 
-        // 最下部へスクロール
         chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
