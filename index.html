@@ -13,17 +13,17 @@
   <style>
     :root {
       --bg-color: #f2ebd9;        /* ナチュラルベージュ背景 */
-      --card-bg: #fffdf7;         /* カードアイボリー */
+      --card-bg: #fffdf7;          /* カードアイボリー */
       --text-main: #332f2b;       /* 濃いブラウン */
       --text-sub: #7a7369;        /* アースグレー */
-      --primary: #2e7d32;         /* ナチュラルグリーン */
+      --primary: #2e7d32;          /* ナチュラルグリーン */
       --primary-light: #e8f5e9;
-      --success: #4caf50;         /* ライトグリーン */
-      --danger: #d32f2f;          /* アースレッド */
+      --success: #4caf50;          /* ライトグリーン */
+      --danger: #d32f2f;           /* アースレッド */
       --border: #dcd4c3;          /* 境界線 */
       --my-msg-bg: #81c784;       /* 自分の吹き出し */
-      --chat-bg: #e2d9c4;         /* トーク画面背景 */
-      --gold: #fbc02d;             /* ベストアンサー用カラー */
+      --chat-bg: #e2d9c4;          /* トーク画面背景 */
+      --gold: #fbc02d;              /* ベストアンサー用カラー */
       --my-card-bg: #eaf5ea;      /* 自分の投稿カード背景 */
     }
 
@@ -577,7 +577,7 @@
           <span class="lock-badge" id="lock-icon05">60pt〜</span>
         </div>
         <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon06.png" data-min="80" onclick="selectLoginIcon('icon06.png', this)" alt="アイコン6">
+          <img class="icon-option locked" src="icon08.png" data-min="80" onclick="selectLoginIcon('icon08.png', this)" alt="アイコン6">
           <span class="lock-badge" id="lock-icon06">80pt〜</span>
         </div>
         <div class="icon-wrapper">
@@ -600,7 +600,7 @@
       
       <!-- 緊急チェックボックス -->
       <label class="urgent-option-label">
-        <input type="checkbox" id="reqIsUrgent"> 緊急
+        <input type="checkbox" id="reqIsUrgent"> 緊急（3pt消費）
       </label>
 
       <button id="btn-create-request">投稿</button>
@@ -670,8 +670,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 削除に必要なポイント数
+    // 定数設定
     const DELETE_COST = 1;
+    const URGENT_COST = 3;  // 緊急投稿に必要なポイント
+    const URGENT_REWARD = 3; // 緊急質問を解決した際のポイント
 
     // ユーザー識別用ID
     let senderId = localStorage.getItem("senderId");
@@ -688,9 +690,20 @@
     let currentDocId = null;
     let currentOwnerId = null;
     let currentIsSolved = false;
+    let currentIsUrgent = false; // 現在選択中の質問が緊急かどうか
     let unsubscribeChat = null;
     let unsubscribeUser = null;
     let selectedBase64Image = null; // 選択された画像データ
+
+    // イベントリスナーの登録
+    document.getElementById("btn-login-submit").addEventListener("click", saveProfileAndStart);
+    document.getElementById("btn-create-request").addEventListener("click", createRequest);
+    document.getElementById("btn-send").addEventListener("click", sendMessage);
+
+    // Enterキー送信対応
+    document.getElementById("messageText").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
 
     // ユーザーデータ（解決数）をリアルタイムで監視・取得
     function listenUserData() {
@@ -871,7 +884,7 @@
       }
     };
 
-    // --- 1. 質問投稿 ---
+    // --- 1. 質問投稿（緊急時3pt消費） ---
     async function createRequest() {
       const subject = document.getElementById("reqSubject").value.trim();
       const isUrgent = document.getElementById("reqIsUrgent").checked;
@@ -882,10 +895,24 @@
         return;
       }
 
+      // 緊急投稿時のポイントチェック
+      if (isUrgent && mySolveCount < URGENT_COST) {
+        alert(`「緊急」で質問を投稿するには ${URGENT_COST} pt 必要です。（現在の所持pt: ${mySolveCount} pt）`);
+        return;
+      }
+
       btn.disabled = true; // 連打防止
       const roomId = "room_" + Date.now();
 
       try {
+        // 緊急投稿の場合は3pt消費する
+        if (isUrgent) {
+          const userRef = doc(db, "users", senderId);
+          await updateDoc(userRef, {
+            solveCount: increment(-URGENT_COST)
+          });
+        }
+
         const docRef = await addDoc(collection(db, "requests"), {
           subject: subject,
           roomId: roomId,
@@ -896,6 +923,7 @@
           isUrgent: isUrgent,
           createdAt: serverTimestamp()
         });
+        
         document.getElementById("reqSubject").value = "";
         document.getElementById("reqIsUrgent").checked = false;
         openChat(roomId, subject, docRef.id, senderId, false, isUrgent);
@@ -985,6 +1013,7 @@
       currentDocId = docId;
       currentOwnerId = ownerId;
       currentIsSolved = isSolved;
+      currentIsUrgent = isUrgent; // 緊急フラグの保持
 
       document.getElementById("matching-section").style.display = "none";
       document.getElementById("chat-section").style.display = "block";
@@ -1016,6 +1045,14 @@
         subHint.style.display = "none";
       }
 
+      // 解決済みの場合は入力欄を非表示、それ以外は表示
+      const inputWrapper = document.getElementById("chat-input-wrapper");
+      if (isSolved) {
+        inputWrapper.style.display = "none";
+      } else {
+        inputWrapper.style.display = "flex";
+      }
+
       joinChatRoom(roomId);
     };
 
@@ -1025,7 +1062,7 @@
       document.getElementById("matching-section").style.display = "block";
     });
 
-    // --- 4. ベストアンサー選出＆解決処理 ---
+    // --- 4. ベストアンサー選出＆解決処理（緊急時は3pt付与） ---
     window.selectBestAnswer = async function(helperId, helperName) {
       if (senderId !== currentOwnerId) {
         alert("ベストアンサーを選べるのは質問者のみです。");
@@ -1037,15 +1074,18 @@
         return;
       }
 
-      const confirmBest = confirm(`【${helperName}】さんをベストアンサーに選びますか？\n※解決ポイント(+1pt)が送られ、解決済みマークがつきます！`);
+      // 緊急かどうかに応じて付与ptを変更
+      const rewardPoints = currentIsUrgent ? URGENT_REWARD : 1;
+
+      const confirmBest = confirm(`【${helperName}】さんをベストアンサーに選びますか？\n※解決ポイント(+${rewardPoints}pt)が送られ、解決済みマークがつきます！`);
       if (!confirmBest) return;
 
       try {
         const helperRef = doc(db, "users", helperId);
         await updateDoc(helperRef, {
-          solveCount: increment(1)
+          solveCount: increment(rewardPoints)
         }).catch(async () => {
-          await setDoc(helperRef, { solveCount: 1, createdAt: serverTimestamp() }, { merge: true });
+          await setDoc(helperRef, { solveCount: rewardPoints, createdAt: serverTimestamp() }, { merge: true });
         });
 
         if (currentDocId) {
@@ -1054,7 +1094,7 @@
           });
         }
 
-        alert(`${helperName} さんをベストアンサーに選びました！\n質問を解決済みに変更しました。`);
+        alert(`${helperName} さんをベストアンサーに選びました！\n（解決ポイント +${rewardPoints}pt）`);
         document.getElementById("btn-back-to-list").click();
       } catch (e) {
         alert("エラーが発生しました: " + e.message);
@@ -1092,61 +1132,53 @@
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           const isMyMsg = data.senderId === senderId;
-          const isOwner = senderId === currentOwnerId;
-          const msgIcon = data.icon || "icon01.png";
-          const senderName = data.senderName || "ゲスト";
+          const timeStr = formatTime(data.timestamp);
 
-          const rowDiv = document.createElement("div");
-          rowDiv.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
+          const row = document.createElement("div");
+          row.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
 
-          const avatarImg = document.createElement("img");
-          avatarImg.className = "msg-avatar-img";
-          avatarImg.src = msgIcon;
+          const iconSrc = data.icon || "icon01.png";
+          const senderName = data.senderName || "回答者";
 
-          const contentWrapper = document.createElement("div");
-          contentWrapper.className = "msg-content-wrapper";
+          let imageHtml = "";
+          if (data.imageUrl) {
+            imageHtml = `<img class="msg-image" src="${data.imageUrl}" alt="添付画像" onclick="window.open('${data.imageUrl}', '_blank')">`;
+          }
 
-          const nameDiv = document.createElement("div");
-          nameDiv.className = "msg-sender-name";
-          nameDiv.innerText = senderName;
-
-          const bubbleDiv = document.createElement("div");
-          bubbleDiv.className = "msg-bubble";
-          
+          let textHtml = "";
           if (data.text) {
-            const textNode = document.createTextNode(data.text);
-            bubbleDiv.appendChild(textNode);
+            textHtml = `<div>${data.text.replace(/\n/g, '<br>')}</div>`;
           }
 
-          if (data.image) {
-            const imgElem = document.createElement("img");
-            imgElem.className = "msg-image";
-            imgElem.src = data.image;
-            imgElem.onclick = () => window.open(data.image, '_blank');
-            bubbleDiv.appendChild(imgElem);
+          // ベストアンサーボタン（質問者本人かつ、相手のメッセージかつ、未解決の場合のみ）
+          let bestAnswerBtnHtml = "";
+          if (senderId === currentOwnerId && !isMyMsg && !currentIsSolved) {
+            bestAnswerBtnHtml = `
+              <button class="btn-best-answer" onclick="selectBestAnswer('${data.senderId}', '${senderName}')">
+                ★ ベストアンサーに選ぶ
+              </button>
+            `;
           }
 
-          contentWrapper.appendChild(nameDiv);
-          contentWrapper.appendChild(bubbleDiv);
+          row.innerHTML = `
+            <img class="msg-avatar-img" src="${iconSrc}" alt="icon">
+            <div class="msg-content-wrapper">
+              <div class="msg-sender-name">${senderName}</div>
+              <div class="msg-bubble">
+                ${textHtml}
+                ${imageHtml}
+              </div>
+              ${bestAnswerBtnHtml}
+            </div>
+            <div class="msg-meta">
+              <span>${timeStr}</span>
+            </div>
+          `;
 
-          if (isOwner && !currentIsSolved && data.senderId !== currentOwnerId) {
-            const bestBtn = document.createElement("button");
-            bestBtn.className = "btn-best-answer";
-            bestBtn.innerText = "ベストアンサーに選ぶ";
-            bestBtn.onclick = () => selectBestAnswer(data.senderId, senderName);
-            contentWrapper.appendChild(bestBtn);
-          }
-
-          const metaDiv = document.createElement("div");
-          metaDiv.className = "msg-meta";
-          metaDiv.innerHTML = `<span>${formatTime(data.timestamp)}</span>`;
-
-          rowDiv.appendChild(avatarImg);
-          rowDiv.appendChild(contentWrapper);
-          rowDiv.appendChild(metaDiv);
-          chatBox.appendChild(rowDiv);
+          chatBox.appendChild(row);
         });
-        
+
+        // 最下部へスクロール
         chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
@@ -1155,45 +1187,31 @@
     async function sendMessage() {
       const textInput = document.getElementById("messageText");
       const text = textInput.value.trim();
-      const sendBtn = document.getElementById("btn-send");
 
-      if ((!text && !selectedBase64Image) || !currentRoomId) return;
+      if (!text && !selectedBase64Image) return;
+      if (!currentRoomId) return;
 
-      sendBtn.disabled = true; // 連打防止
-
-      const payload = {
-        senderId: senderId,
-        senderName: myName,
-        icon: myIcon,
-        timestamp: serverTimestamp()
-      };
-
-      if (text) payload.text = text;
-      if (selectedBase64Image) payload.image = selectedBase64Image;
+      const btn = document.getElementById("btn-send");
+      btn.disabled = true;
 
       try {
-        await addDoc(collection(db, "rooms", currentRoomId, "messages"), payload);
+        await addDoc(collection(db, "rooms", currentRoomId, "messages"), {
+          text: text,
+          imageUrl: selectedBase64Image || null,
+          senderId: senderId,
+          senderName: myName,
+          icon: myIcon,
+          timestamp: serverTimestamp()
+        });
+
         textInput.value = "";
         clearSelectedImage();
       } catch (e) {
         alert("送信に失敗しました: " + e.message);
       } finally {
-        sendBtn.disabled = false;
+        btn.disabled = false;
       }
     }
-
-    // --- 7. イベントリスナーの設定 ---
-    document.getElementById("btn-login-submit").addEventListener("click", saveProfileAndStart);
-    document.getElementById("btn-create-request").addEventListener("click", createRequest);
-    document.getElementById("btn-send").addEventListener("click", sendMessage);
-
-    // Enterキーでメッセージ送信
-    document.getElementById("messageText").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
   </script>
 </body>
 </html>
