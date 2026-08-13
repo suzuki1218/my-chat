@@ -2,12 +2,13 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>クラス別サポート掲示板</title>
-  <!-- フォント読み込み -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>学習サポート掲示板</title>
+  
+  <!-- Google Fonts: Zen Maru Gothic -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -27,596 +28,1172 @@
     }
 
     body {
-      font-family: 'M PLUS Rounded 1c', sans-serif;
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+      font-weight: 700;
       background-color: var(--bg-color);
       color: var(--text-main);
-      max-width: 600px;
+      max-width: 768px;
       margin: 0 auto;
-      padding: 10px;
-      padding-bottom: 120px; /* 下部固定フォーム用余白 */
+      padding: 16px;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
     }
 
     h1 {
-      text-align: center;
-      color: var(--primary);
-      font-weight: 800;
-      text-shadow: 2px 2px 0px #fff;
-      font-size: 1.5rem;
-      margin: 10px 0;
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin: 0;
+      color: #1b5e20;
+      letter-spacing: 0.05em;
     }
 
-    .box {
-      background-color: var(--card-bg);
-      border: 3px solid var(--border);
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #e8e0ce;
+      padding: 6px 12px;
       border-radius: 20px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 0px var(--border);
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
     }
 
-    /* 先生用コントロールパネル */
-    .teacher-box {
-      background-color: #fff8e1;
-      border: 3px solid var(--gold);
-      border-radius: 20px;
-      padding: 12px 15px;
-      margin-bottom: 15px;
+    .badge-avatar-img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
     }
 
-    label { display: block; margin-top: 10px; font-weight: 700; color: var(--text-main); }
+    .solve-count-tag {
+      background: #2e7d32;
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
 
-    input[type="text"], select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      background-color: #fff;
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      font-size: 1rem;
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 12px;
       color: var(--text-main);
-      box-sizing: border-box;
     }
 
-    /* アイコン選択エリア */
+    .card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(60, 50, 30, 0.06);
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+
+    /* フォーム要素 */
+    input[type="text"], textarea, select {
+      font-family: inherit;
+      font-weight: 700;
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+      background-color: #e8e0ce;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    /* 緊急チェックボックスのスタイル */
+    .urgent-option-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+      color: var(--danger);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .urgent-option-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--danger);
+      cursor: pointer;
+    }
+
+    button {
+      font-family: inherit;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      background-color: var(--primary);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button:active:not(:disabled) { 
+      opacity: 0.8; 
+      transform: scale(0.98);
+    }
+
+    /* 画像アイコン選択エリア */
+    .icon-selector-label {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+      display: block;
+    }
+
     .icon-selector {
       display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      justify-content: center;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
+    }
+
+    .icon-wrapper {
+      position: relative;
+      display: inline-block;
     }
 
     .icon-option {
-      width: 45px;
-      height: 45px;
-      padding: 2px;
-      border: 2px solid var(--border);
+      width: 60px;
+      height: 60px;
+      padding: 4px;
+      background: #e8e0ce;
       border-radius: 50%;
       cursor: pointer;
-      background-color: #fff;
-      object-fit: cover;
+      border: 3px solid transparent;
       transition: all 0.2s;
+      object-fit: cover;
     }
 
     .icon-option.selected {
       border-color: var(--primary);
-      background-color: var(--primary-light);
+      background: #ffffff;
       transform: scale(1.1);
-      box-shadow: 0 0 0 2px var(--primary);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
-    .avatar-img {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 25px;
-      padding: 10px 18px;
-      font-size: 0.95rem;
-      font-weight: 800;
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      cursor: pointer;
-      box-shadow: 0 3px 0px #1b5e20;
-      transition: all 0.1s ease;
-    }
-
-    button:active {
-      box-shadow: 0 0px 0px #1b5e20;
-      transform: translateY(3px);
-    }
-
-    button:disabled {
-      background-color: var(--text-sub) !important;
-      box-shadow: 0 3px 0px #504b44 !important;
+    .icon-option.locked {
+      filter: grayscale(100%) opacity(0.5);
       cursor: not-allowed;
     }
 
-    .btn-sub {
-      background-color: var(--text-sub);
-      box-shadow: 0 3px 0px #504b44;
-      padding: 5px 12px;
-      font-size: 0.8rem;
+    .lock-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #333;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 8px;
     }
 
-    .btn-toggle-on { background-color: var(--danger); box-shadow: 0 3px 0px #b71c1c; }
-    .btn-toggle-off { background-color: var(--primary); box-shadow: 0 3px 0px #1b5e20; }
-
-    .status-banner {
-      background-color: #ffebee;
-      color: var(--danger);
-      border: 2px solid var(--danger);
-      padding: 8px;
+    /* 募集一覧アイテム */
+    .request-item {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 12px;
+      margin: 0 -12px;
       border-radius: 12px;
-      font-weight: 800;
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: background-color 0.2s, opacity 0.3s;
+    }
+    
+    .request-item:last-child {
+      border-bottom: none;
+    }
+
+    /* 自分の投稿カードのスタイル定義 */
+    .request-item.my-request {
+      background-color: var(--my-card-bg);
+      border-left: 4px solid var(--primary);
+      padding-left: 10px;
+    }
+
+    /* 自分の投稿を表す「自分」バッジ */
+    .my-badge {
+      background-color: var(--primary);
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-right: 6px;
+      vertical-align: middle;
+      font-weight: bold;
+    }
+
+    /* 解決済みアイテムの文章部分を薄暗くするスタイル */
+    .request-item.solved .request-info {
+      opacity: 0.55;
+    }
+
+    .solved-label {
+      color: var(--danger);
+      font-weight: bold;
+      margin-right: 6px;
+      font-size: 0.9rem;
+      opacity: 1 !important;
+    }
+
+    .urgent-label {
+      color: var(--danger);
+      font-weight: 900;
+      margin-right: 6px;
+      font-size: 0.95rem;
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.8; }
+      to { opacity: 1; }
+    }
+
+    .request-info { 
+      flex-grow: 1; 
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .request-avatar-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+
+    .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .request-meta { font-size: 0.75rem; color: var(--text-sub); display: flex; gap: 8px; align-items: center; }
+
+    .request-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .btn-chat {
+      background-color: var(--success);
+      width: auto;
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      opacity: 1 !important;
+    }
+
+    /* 削除ボタン */
+    .btn-delete {
+      background-color: var(--danger);
+      width: auto;
+      padding: 10px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      opacity: 0.9;
+    }
+
+    /* チャット画面 */
+    #chat-section, #login-section, #matching-section { display: none; }
+    
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 12px;
+    }
+
+    .btn-back {
+      background-color: var(--text-sub);
+      width: auto;
+      padding: 8px 14px;
+      border-radius: 20px;
       font-size: 0.85rem;
     }
 
-    /* LINE風チャット領域 */
-    .chat-container {
-      background-color: var(--chat-bg);
-      border: 2px solid var(--border);
-      border-radius: 18px;
-      padding: 12px;
-      min-height: 350px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    /* メッセージ全体の枠 */
-    .chat-message {
-      display: flex;
-      gap: 8px;
-      max-width: 85%;
-    }
-
-    /* 相手のメッセージ（左配置） */
-    .chat-message.other {
-      align-self: flex-start;
-    }
-
-    /* 自分のメッセージ（右配置） */
-    .chat-message.my {
-      align-self: flex-end;
-      flex-direction: row-reverse;
-    }
-
-    .message-content {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .chat-message.my .message-content {
-      align-items: flex-end;
-    }
-
-    .author-name {
-      font-size: 0.75rem;
-      color: var(--text-sub);
-      margin-bottom: 3px;
-      margin-left: 2px;
-    }
-
-    /* 吹き出し本体 */
-    .bubble {
-      position: relative;
-      padding: 10px 14px;
-      border-radius: 16px;
-      background-color: #fff;
-      color: var(--text-main);
-      font-size: 0.95rem;
-      line-height: 1.4;
-      word-break: break-word;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-
-    .chat-message.other .bubble {
-      border-top-left-radius: 2px;
-    }
-
-    .chat-message.my .bubble {
-      background-color: var(--my-msg-bg);
-      border-top-right-radius: 2px;
-    }
-
-    .chat-message.urgent .bubble {
-      border: 2px solid var(--danger);
-      background-color: #fff5f5;
-    }
-
-    .urgent-badge {
-      display: inline-block;
+    .btn-chat-delete {
       background-color: var(--danger);
-      color: white;
-      font-size: 0.7rem;
-      font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 8px;
-      margin-bottom: 4px;
-    }
-
-    /* 下部固定入力エリア */
-    .input-fixed-area {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 600px;
-      background-color: var(--card-bg);
-      border-top: 3px solid var(--border);
-      padding: 10px 15px;
-      box-sizing: border-box;
-      z-index: 100;
-    }
-
-    .input-wrapper {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .input-wrapper textarea {
-      flex: 1;
-      height: 42px;
-      padding: 8px 12px;
-      border: 2px solid var(--border);
+      width: auto;
+      padding: 8px 14px;
       border-radius: 20px;
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      font-size: 0.95rem;
-      resize: none;
-      outline: none;
-      box-sizing: border-box;
-    }
-
-    .input-wrapper textarea:focus {
-      border-color: var(--primary);
-    }
-
-    .urgent-check-label {
-      display: flex;
-      align-items: center;
-      gap: 4px;
       font-size: 0.8rem;
-      font-weight: bold;
-      color: var(--danger);
-      margin-bottom: 5px;
+    }
+
+    #chat-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    /* トーク画面 */
+    #chat-box {
+      border: 1px solid var(--border);
+      height: 440px;
+      overflow-y: auto;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: var(--chat-bg);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* メッセージ行 */
+    .msg-row {
+      display: flex;
+      width: 100%;
+      align-items: flex-end;
+      gap: 8px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-row.my-msg { flex-direction: row-reverse; }
+    .msg-row.other-msg { flex-direction: row; }
+
+    .msg-avatar-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 2px;
+      border: 1px solid var(--border);
+    }
+
+    /* 自分のメッセージのアイコンだけを左右反転 */
+    .msg-row.my-msg .msg-avatar-img {
+      transform: scaleX(-1);
+    }
+
+    .msg-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      max-width: 75%;
+    }
+
+    .msg-sender-name {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+      margin-bottom: 2px;
+      padding: 0 4px;
+    }
+
+    .my-msg .msg-sender-name { text-align: right; }
+
+    /* フキダシ */
+    .msg-bubble {
+      padding: 10px 16px;
+      border-radius: 18px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      word-break: break-word;
+      font-weight: 500;
+    }
+
+    .msg-image {
+      max-width: 100%;
+      max-height: 250px;
+      border-radius: 12px;
+      margin-top: 8px;
+      display: block;
       cursor: pointer;
     }
 
-    .hidden { display: none; }
+    .my-msg .msg-bubble {
+      background: var(--my-msg-bg);
+      color: #113013;
+      border-bottom-right-radius: 4px;
+    }
+
+    .other-msg .msg-bubble {
+      background: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-meta {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.7rem;
+      color: #666055;
+      line-height: 1.2;
+      margin-bottom: 2px;
+      font-weight: 700;
+    }
+
+    /* ベストアンサーボタン */
+    .btn-best-answer {
+      background-color: var(--gold);
+      color: #5d4037;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 6px;
+      display: inline-block;
+      align-self: flex-start;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* 画像プレビュー */
+    .image-preview-container {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      background: #e8e0ce;
+      padding: 6px 12px;
+      border-radius: 10px;
+    }
+
+    .image-preview-thumb {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .btn-remove-image {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-size: 1rem;
+      padding: 0;
+      width: auto;
+      cursor: pointer;
+    }
+
+    /* チャット入力エリア */
+    .chat-input-area {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .input-group input[type="text"] { margin-bottom: 0; flex-grow: 1; }
+    
+    .btn-attach-img {
+      background-color: #e8e0ce;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 12px;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: bold;
+    }
+
+    .input-group button.btn-send-msg { 
+      width: auto; 
+      white-space: nowrap; 
+      padding: 0 18px; 
+      height: 44px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>クラスサポート掲示板</h1>
-
-  <!-- 1. 先生用コントロールパネル -->
-  <div class="teacher-box">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-weight: 800; font-size:0.9rem;">[設定] 先生用コントロール</span>
-      <button id="toggleTeacherModeBtn" class="btn-sub">先生モード表示</button>
+  <header id="main-header">
+    <h1>学習サポート掲示板</h1>
+    <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
+      <img id="badge-icon" class="badge-avatar-img" src="icon01.png" alt="icon">
+      <span id="badge-name">ゲスト</span>
+      <span id="badge-solve-count" class="solve-count-tag">解決: 0</span>
     </div>
+  </header>
 
-    <div id="teacherControls" class="hidden" style="margin-top: 10px;">
-      <p style="margin: 0 0 8px 0; font-size: 0.85rem;">現在の状態: <strong id="currentStatusText">読み込み中...</strong></p>
-      <button id="toggleBoardBtn" class="btn-toggle-on" style="width:100%;">掲示板の受付を停止する</button>
-    </div>
-  </div>
+  <!-- ==================== 0. ログイン / プロフィール設定画面 ==================== -->
+  <div id="login-section">
+    <div class="card" style="text-align: center; max-width: 400px; margin: 40px auto;">
+      <h2>アイコンと名前を選ぼう</h2>
+      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;">ベストアンサーに選ばれるとアイコンが増えます！</p>
+      
+      <p style="font-weight:bold; color:var(--primary); margin-bottom:16px;">現在の解決pt: <span id="user-solve-display">0</span> pt</p>
 
-  <!-- 2. ユーザー設定パネル -->
-  <div id="user-section" class="box">
-    <h2 style="font-size:1.2rem; color:var(--primary); margin-top:0;">プロフィール設定</h2>
-    
-    <label for="userName">名前</label>
-    <input type="text" id="userName" placeholder="名前を入力してください">
-
-    <label>アイコン選択</label>
-    <div class="icon-selector" id="iconSelector">
-      <img src="icon01.png" class="icon-option selected" data-icon="icon01.png" alt="icon01">
-      <img src="icon02.png" class="icon-option" data-icon="icon02.png" alt="icon02">
-      <img src="icon03.png" class="icon-option" data-icon="icon03.png" alt="icon03">
-      <img src="icon04.png" class="icon-option" data-icon="icon04.png" alt="icon04">
-      <img src="icon05.png" class="icon-option" data-icon="icon05.png" alt="icon05">
-      <img src="icon06.png" class="icon-option" data-icon="icon06.png" alt="icon06">
-      <img src="icon07.png" class="icon-option" data-icon="icon07.png" alt="icon07">
-      <img src="icon08.png" class="icon-option" data-icon="icon08.png" alt="icon08">
-    </div>
-
-    <label for="classSelect">クラス</label>
-    <select id="classSelect">
-      <option value="">選択してください</option>
-      <option value="105">1年5組 (105)</option>
-      <option value="106">1年6組 (106)</option>
-      <option value="107">1年7組 (107)</option>
-      <option value="108">1年8組 (108)</option>
-      <option value="109">1年9組 (109)</option>
-      <option value="110">1年10組 (110)</option>
-      <option value="310">3年10組 (310)</option>
-      <option value="311">3年11組 (311)</option>
-    </select>
-
-    <button id="saveUserBtn" style="width:100%; margin-top:15px;">掲示板に入る</button>
-  </div>
-
-  <!-- 3. 掲示板メイン画面（LINE風トーク画面） -->
-  <div id="board-section" class="hidden">
-    <!-- ヘッダー情報 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <img id="displayUserIcon" class="avatar-img" src="" alt="icon">
-        <span style="font-weight: bold;"><span id="displayClassName"></span> (<span id="displayName"></span>)</span>
+      <span class="icon-selector-label">アイコンを選択：</span>
+      <div class="icon-selector" id="login-icon-selector">
+        <div class="icon-wrapper">
+          <img class="icon-option selected" src="icon01.png" data-min="0" onclick="selectLoginIcon('icon01.png', this)" alt="アイコン1">
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option" src="icon02.png" data-min="0" onclick="selectLoginIcon('icon02.png', this)" alt="アイコン2">
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon03.png" data-min="20" onclick="selectLoginIcon('icon03.png', this)" alt="アイコン3">
+          <span class="lock-badge" id="lock-icon03">20pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon04.png" data-min="40" onclick="selectLoginIcon('icon04.png', this)" alt="アイコン4">
+          <span class="lock-badge" id="lock-icon04">40pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon05.png" data-min="60" onclick="selectLoginIcon('icon05.png', this)" alt="アイコン5">
+          <span class="lock-badge" id="lock-icon05">60pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon06.png" data-min="80" onclick="selectLoginIcon('icon06.png', this)" alt="アイコン6">
+          <span class="lock-badge" id="lock-icon06">80pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon07.png" data-min="100" onclick="selectLoginIcon('icon07.png', this)" alt="アイコン7">
+          <span class="lock-badge" id="lock-icon07">100pt〜</span>
+        </div>
       </div>
-      <button id="changeClassBtn" class="btn-sub">クラス変更</button>
-    </div>
 
-    <!-- 利用停止中の注意メッセージ -->
-    <div id="statusBanner" class="status-banner hidden">
-      [利用停止中] 現在、掲示板への書き込みは受付を停止しています。
+      <input type="text" id="userNameInput" placeholder="名前または出席番号（例：12番 たろう）">
+      <button id="btn-login-submit">掲示板にはいる</button>
     </div>
+  </div>
 
-    <!-- チャット表示エリア -->
-    <div class="chat-container" id="postsContainer">
-      読み込み中...
-    </div>
 
-    <!-- 固定送信エリア -->
-    <div class="input-fixed-area">
-      <label class="urgent-check-label">
-        <input type="checkbox" id="isUrgent"> [緊急] 至急回答を希望 (+3pt)
+  <!-- ==================== 1. 一覧画面 ==================== -->
+  <div id="matching-section">
+    <div class="card">
+      <h2>質問・相談を投稿する</h2>
+      <input type="text" id="reqSubject" placeholder="質問内容（例：数学P24の問3、英語の文法）">
+      
+      <!-- 緊急チェックボックス -->
+      <label class="urgent-option-label">
+        <input type="checkbox" id="reqIsUrgent"> 緊急
       </label>
-      <div class="input-wrapper">
-        <textarea id="postContent" placeholder="メッセージを入力"></textarea>
-        <button id="submitPostBtn" style="padding: 10px 15px; border-radius: 18px;">送信</button>
+
+      <button id="btn-create-request">投稿</button>
+    </div>
+
+    <div class="card">
+      <h2>質問一覧</h2>
+      <div id="request-list">読み込み中...</div>
+    </div>
+  </div>
+
+
+  <!-- ==================== 2. チャット画面 ==================== -->
+  <div id="chat-section">
+    <div class="chat-header">
+      <button id="btn-back-to-list" class="btn-back">← 一覧に戻る</button>
+      <button id="btn-chat-delete" class="btn-chat-delete" style="display:none;" onclick="deleteCurrentRequest()">この質問を削除 (1pt)</button>
+    </div>
+
+    <div class="card">
+      <div style="text-align: center;">
+        <h2 id="chat-title">質問</h2>
+        <p id="chat-sub-hint" style="font-size:0.8rem; color:var(--text-sub); margin:-8px 0 12px 0; display:none;">
+          質問者は一番参考になった「ベストアンサー」を押してください
+        </p>
+      </div>
+
+      <div id="chat-box"></div>
+
+      <div class="chat-input-area" id="chat-input-wrapper">
+        <!-- 画像プレビュー表示枠 -->
+        <div id="image-preview-container" class="image-preview-container">
+          <img id="image-preview-thumb" class="image-preview-thumb" src="" alt="preview">
+          <span style="font-size:0.8rem; flex-grow:1;">画像を添付中</span>
+          <button type="button" class="btn-remove-image" onclick="clearSelectedImage()">削除</button>
+        </div>
+
+        <div class="input-group">
+          <!-- 非表示のファイル選択インプット -->
+          <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
+          <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を添付">+</button>
+          
+          <input type="text" id="messageText" placeholder="メッセージを入力...">
+          <button id="btn-send" class="btn-send-msg">送信</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+
+  <!-- Firebase (v10) SDK -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { 
-      getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, doc, setDoc, serverTimestamp 
-    } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc, setDoc, increment } 
+      from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyAkGHvYqrhlu3bF_P6LIXk0YjmSAfyFj08",
+      authDomain: "study-matching-test.firebaseapp.com",
+      projectId: "study-matching-test",
+      storageBucket: "study-matching-test.firebasestorage.app",
+      messagingSenderId: "720859286999",
+      appId: "1:720859286999:web:9f61a8a71989db79d94f92",
+      measurementId: "G-62FYMVGYFY"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let currentUser = JSON.parse(localStorage.getItem("board_user")) || null;
-    let selectedIcon = "icon01.png";
-    let unsubscribePosts = null;
-    let isBoardOpen = true;
+    // 削除に必要なポイント数
+    const DELETE_COST = 1;
 
-    const userSection = document.getElementById("user-section");
-    const boardSection = document.getElementById("board-section");
-    const classSelect = document.getElementById("classSelect");
-    const userNameInput = document.getElementById("userName");
-    const saveUserBtn = document.getElementById("saveUserBtn");
-    const changeClassBtn = document.getElementById("changeClassBtn");
-    const displayName = document.getElementById("displayName");
-    const displayUserIcon = document.getElementById("displayUserIcon");
-    const displayClassName = document.getElementById("displayClassName");
-    const submitPostBtn = document.getElementById("submitPostBtn");
-    const postContent = document.getElementById("postContent");
-    const isUrgent = document.getElementById("isUrgent");
-    const postsContainer = document.getElementById("postsContainer");
-    const iconSelector = document.getElementById("iconSelector");
-    
-    // 先生用エレメント
-    const toggleTeacherModeBtn = document.getElementById("toggleTeacherModeBtn");
-    const teacherControls = document.getElementById("teacherControls");
-    const currentStatusText = document.getElementById("currentStatusText");
-    const toggleBoardBtn = document.getElementById("toggleBoardBtn");
-    const statusBanner = document.getElementById("statusBanner");
-
-    // アイコン選択処理
-    iconSelector.addEventListener("click", (e) => {
-      if (e.target.classList.contains("icon-option")) {
-        document.querySelectorAll(".icon-option").forEach(el => el.classList.remove("selected"));
-        e.target.classList.add("selected");
-        selectedIcon = e.target.getAttribute("data-icon");
-      }
-    });
-
-    function formatClassName(classId) {
-      const grade = Math.floor(classId / 100);
-      const classNum = classId % 100;
-      return `${grade}年${classNum}組`;
+    // ユーザー識別用ID
+    let senderId = localStorage.getItem("senderId");
+    if (!senderId) {
+      senderId = "user_" + Math.random().toString(36).substring(2, 9);
+      localStorage.setItem("senderId", senderId);
     }
 
-    function listenBoardStatus() {
-      const statusRef = doc(db, "settings", "boardStatus");
-      onSnapshot(statusRef, (docSnap) => {
-        if (docSnap.exists()) {
-          isBoardOpen = docSnap.data().isOpen;
+    let myIcon = localStorage.getItem("myIcon") || "icon01.png";
+    let myName = localStorage.getItem("myName") || "";
+    let mySolveCount = 0;
+
+    let currentRoomId = null;
+    let currentDocId = null;
+    let currentOwnerId = null;
+    let currentIsSolved = false;
+    let unsubscribeChat = null;
+    let unsubscribeUser = null;
+    let selectedBase64Image = null; // 選択された画像データ
+
+    // ユーザーデータ（解決数）をリアルタイムで監視・取得
+    function listenUserData() {
+      const userRef = doc(db, "users", senderId);
+
+      if (unsubscribeUser) unsubscribeUser();
+
+      unsubscribeUser = onSnapshot(userRef, async (userSnap) => {
+        if (userSnap.exists()) {
+          mySolveCount = userSnap.data().solveCount || 0;
         } else {
-          isBoardOpen = true;
+          // ドキュメントが存在しない初期状態の場合のみ作成
+          await setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() });
+          mySolveCount = 0;
         }
-        updateUIByStatus();
+        // ポイント変動時に自動でUIを更新
+        updateUIWithUserData();
       });
     }
 
-    function updateUIByStatus() {
-      if (isBoardOpen) {
-        currentStatusText.textContent = "[受付中]";
-        toggleBoardBtn.textContent = "掲示板の受付を停止する";
-        toggleBoardBtn.className = "btn-toggle-on";
-        
-        statusBanner.classList.add("hidden");
-        submitPostBtn.disabled = false;
-        postContent.disabled = false;
-        isUrgent.disabled = false;
-      } else {
-        currentStatusText.textContent = "[停止中]";
-        toggleBoardBtn.textContent = "掲示板の受付を開始する";
-        toggleBoardBtn.className = "btn-toggle-off";
+    function updateUIWithUserData() {
+      document.getElementById("user-solve-display").innerText = mySolveCount;
+      document.getElementById("badge-solve-count").innerText = `解決: ${mySolveCount}`;
 
-        statusBanner.classList.remove("hidden");
-        submitPostBtn.disabled = true;
-        postContent.disabled = true;
-        isUrgent.disabled = true;
-      }
-    }
-
-    toggleTeacherModeBtn.addEventListener("click", () => {
-      if (teacherControls.classList.contains("hidden")) {
-        const pass = prompt("先生用パスワードを入力してください（初期設定: 1234）");
-        if (pass === "1234") {
-          teacherControls.classList.remove("hidden");
-          toggleTeacherModeBtn.textContent = "閉じる";
-        } else if (pass !== null) {
-          alert("パスワードが違います");
+      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
+        const minReq = parseInt(opt.getAttribute("data-min") || "0", 10);
+        if (mySolveCount >= minReq) {
+          opt.classList.remove('locked');
+          const badge = opt.parentElement.querySelector('.lock-badge');
+          if (badge) badge.style.display = 'none';
+        } else {
+          opt.classList.add('locked');
         }
-      } else {
-        teacherControls.classList.add("hidden");
-        toggleTeacherModeBtn.textContent = "先生モード表示";
-      }
-    });
-
-    toggleBoardBtn.addEventListener("click", async () => {
-      const statusRef = doc(db, "settings", "boardStatus");
-      try {
-        await setDoc(statusRef, { isOpen: !isBoardOpen });
-      } catch (e) {
-        console.error("ステータス変更エラー:", e);
-        alert("設定の変更に失敗しました。");
-      }
-    });
-
-    function initApp() {
-      if (currentUser && currentUser.class_id) {
-        userSection.classList.add("hidden");
-        boardSection.classList.remove("hidden");
-        displayName.textContent = currentUser.name;
-        displayUserIcon.src = currentUser.icon || "icon01.png";
-        displayClassName.textContent = formatClassName(currentUser.class_id);
-        loadClassPosts(currentUser.class_id);
-      } else {
-        userSection.classList.remove("hidden");
-        boardSection.classList.add("hidden");
-      }
+      });
     }
 
-    saveUserBtn.addEventListener("click", () => {
-      const name = userNameInput.value.trim();
-      const classId = parseInt(classSelect.value, 10);
-
-      if (!name || isNaN(classId)) {
-        alert("名前とクラスを選択してください。");
+    // ログイン・設定画面
+    window.selectLoginIcon = function(iconSrc, element) {
+      const minReq = parseInt(element.getAttribute("data-min") || "0", 10);
+      if (mySolveCount < minReq) {
+        alert(`このアイコンを使うには「解決pt」が ${minReq} pt以上必要です！（現在の解決pt: ${mySolveCount} pt）`);
         return;
       }
 
-      currentUser = { name: name, class_id: classId, icon: selectedIcon };
-      localStorage.setItem("board_user", JSON.stringify(currentUser));
-      initApp();
-    });
+      myIcon = iconSrc;
+      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      element.classList.add('selected');
+    };
 
-    changeClassBtn.addEventListener("click", () => {
-      if (unsubscribePosts) unsubscribePosts();
-      localStorage.removeItem("board_user");
-      currentUser = null;
-      initApp();
-    });
+    window.showLoginScreen = function() {
+      updateUIWithUserData();
+      document.getElementById("login-section").style.display = "block";
+      document.getElementById("matching-section").style.display = "none";
+      document.getElementById("chat-section").style.display = "none";
+      document.getElementById("user-badge").style.display = "none";
+      
+      document.getElementById("userNameInput").value = myName;
+      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
+        if (opt.getAttribute("src") === myIcon) opt.classList.add('selected');
+        else opt.classList.remove('selected');
+      });
+    };
 
-    submitPostBtn.addEventListener("click", async () => {
-      if (!isBoardOpen) {
-        alert("現在、掲示板は利用停止中です。");
+    function saveProfileAndStart() {
+      const nameVal = document.getElementById("userNameInput").value.trim();
+      if (!nameVal) {
+        alert("名前または出席番号を入力してください。");
+        return;
+      }
+      myName = nameVal;
+      localStorage.setItem("myIcon", myIcon);
+      localStorage.setItem("myName", myName);
+
+      document.getElementById("badge-icon").src = myIcon;
+      document.getElementById("badge-name").innerText = myName;
+      document.getElementById("user-badge").style.display = "flex";
+
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("matching-section").style.display = "block";
+    }
+
+    // 起動時にリアルタイム監視を開始
+    listenUserData();
+
+    if (!myName) {
+      showLoginScreen();
+    } else {
+      document.getElementById("badge-icon").src = myIcon;
+      document.getElementById("badge-name").innerText = myName;
+      document.getElementById("user-badge").style.display = "flex";
+      document.getElementById("matching-section").style.display = "block";
+    }
+
+    // --- 画像選択＆圧縮処理 ---
+    window.handleImageSelect = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 600; // 軽量化のため600pxに制限
+
+          if (width > height && width > maxDim) {
+            height *= maxDim / width;
+            width = maxDim;
+          } else if (height > maxDim) {
+            width *= maxDim / height;
+            height = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          selectedBase64Image = canvas.toDataURL("image/jpeg", 0.6); // 圧縮率0.6で容量安全圏へ
+          document.getElementById("image-preview-thumb").src = selectedBase64Image;
+          document.getElementById("image-preview-container").style.display = "flex";
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.clearSelectedImage = function() {
+      selectedBase64Image = null;
+      document.getElementById("imageInput").value = "";
+      document.getElementById("image-preview-container").style.display = "none";
+    };
+
+    // --- 質問削除処理 (pt消費) ---
+    window.deleteRequest = async function(docId, ownerId) {
+      if (ownerId !== senderId) {
+        alert("自分の質問しか削除できません。");
         return;
       }
 
-      const text = postContent.value.trim();
-      const urgent = isUrgent.checked;
-
-      if (!text) {
-        alert("メッセージを入力してください。");
+      if (mySolveCount < DELETE_COST) {
+        alert(`質問を削除するには ${DELETE_COST} pt 必要です。（現在の所持pt: ${mySolveCount} pt）`);
         return;
       }
+
+      const confirmDelete = confirm(`${DELETE_COST} pt を消費して、この質問を削除しますか？\n（現在の所持pt: ${mySolveCount} pt）`);
+      if (!confirmDelete) return;
 
       try {
-        await addDoc(collection(db, "posts"), {
-          content: text,
-          authorName: currentUser.name,
-          authorIcon: currentUser.icon || "icon01.png",
-          class_id: currentUser.class_id,
-          isUrgent: urgent,
-          rewardPoints: urgent ? 3 : 1,
-          createdAt: serverTimestamp()
+        // 1. ポイント減算
+        const userRef = doc(db, "users", senderId);
+        await updateDoc(userRef, {
+          solveCount: increment(-DELETE_COST)
         });
 
-        postContent.value = "";
-        isUrgent.checked = false;
+        // 2. 質問データの削除
+        await deleteDoc(doc(db, "requests", docId));
+
+        alert("質問を削除しました。");
+
+        // もしチャット画面を開いている最中なら一覧に戻る
+        if (currentDocId === docId) {
+          document.getElementById("btn-back-to-list").click();
+        }
       } catch (e) {
-        console.error("投稿エラー:", e);
-        alert("投稿に失敗しました。");
+        alert("削除処理中にエラーが発生しました: " + e.message);
       }
+    };
+
+    // チャット画面のヘッダーにある削除ボタン用
+    window.deleteCurrentRequest = function() {
+      if (currentDocId && currentOwnerId) {
+        deleteRequest(currentDocId, currentOwnerId);
+      }
+    };
+
+    // --- 1. 質問投稿 ---
+    async function createRequest() {
+      const subject = document.getElementById("reqSubject").value.trim();
+      const isUrgent = document.getElementById("reqIsUrgent").checked;
+      const btn = document.getElementById("btn-create-request");
+
+      if (!subject) {
+        alert("質問内容を入力してください。");
+        return;
+      }
+
+      btn.disabled = true; // 連打防止
+      const roomId = "room_" + Date.now();
+
+      try {
+        const docRef = await addDoc(collection(db, "requests"), {
+          subject: subject,
+          roomId: roomId,
+          ownerId: senderId,
+          authorName: myName,
+          icon: myIcon,
+          isSolved: false,
+          isUrgent: isUrgent,
+          createdAt: serverTimestamp()
+        });
+        document.getElementById("reqSubject").value = "";
+        document.getElementById("reqIsUrgent").checked = false;
+        openChat(roomId, subject, docRef.id, senderId, false, isUrgent);
+      } catch (e) {
+        alert("エラーが発生しました: " + e.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // --- 2. 一覧表示（未解決を上、解決済みを下にソート） ---
+    const qRequests = query(collection(db, "requests"), orderBy("createdAt", "desc"));
+    onSnapshot(qRequests, (snapshot) => {
+      const listDiv = document.getElementById("request-list");
+      listDiv.innerHTML = "";
+
+      if (snapshot.empty) {
+        listDiv.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin: 20px 0;'>現在、質問はありません。</p>";
+        return;
+      }
+
+      const activeRequests = [];
+      const solvedRequests = [];
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        data.docId = docSnap.id;
+        if (data.isSolved) {
+          solvedRequests.push(data);
+        } else {
+          activeRequests.push(data);
+        }
+      });
+
+      const allRequests = [...activeRequests, ...solvedRequests];
+
+      allRequests.forEach((data) => {
+        const icon = data.icon || "icon01.png";
+        const author = data.authorName || "ゲスト";
+        const isSolved = data.isSolved || false;
+        const isUrgent = data.isUrgent || false;
+        const isMyPost = data.ownerId === senderId;
+
+        const item = document.createElement("div");
+        item.className = `request-item ${isSolved ? "solved" : ""} ${isMyPost ? "my-request" : ""}`;
+
+        let statusPrefix = "";
+        if (isMyPost) {
+          statusPrefix += `<span class="my-badge">自分</span>`;
+        }
+        if (isSolved) {
+          statusPrefix += `<span class="solved-label">&lt;解決済み&gt;</span>`;
+        } else if (isUrgent) {
+          statusPrefix += `<span class="urgent-label">&lt;緊急&gt;</span>`;
+        }
+
+        const btnText = isSolved ? "閲覧する" : "見にいく";
+
+        // 削除ボタン（本人の場合のみ生成）
+        let deleteBtnHtml = "";
+        if (isMyPost) {
+          deleteBtnHtml = `<button class="btn-delete" onclick="deleteRequest('${data.docId}', '${data.ownerId}')">削除 (1pt)</button>`;
+        }
+
+        item.innerHTML = `
+          <div class="request-info">
+            <img class="request-avatar-img" src="${icon}" alt="icon">
+            <div>
+              <div class="request-title">${statusPrefix}${data.subject}</div>
+              <div class="request-meta">
+                <span>質問者: ${author}</span>
+              </div>
+            </div>
+          </div>
+          <div class="request-actions">
+            ${deleteBtnHtml}
+            <button class="btn-chat" onclick="openChat('${data.roomId}', '${data.subject}', '${data.docId}', '${data.ownerId}', ${isSolved}, ${isUrgent})">${btnText}</button>
+          </div>
+        `;
+        listDiv.appendChild(item);
+      });
     });
 
-    function loadClassPosts(studentClassId) {
-      if (unsubscribePosts) unsubscribePosts();
+    // --- 3. チャット画面を開く ---
+    window.openChat = function(roomId, subject, docId, ownerId, isSolved, isUrgent) {
+      currentRoomId = roomId;
+      currentDocId = docId;
+      currentOwnerId = ownerId;
+      currentIsSolved = isSolved;
 
-      const q = query(
-        collection(db, "posts"),
-        where("class_id", "==", Number(studentClassId)),
-        orderBy("createdAt", "asc")
+      document.getElementById("matching-section").style.display = "none";
+      document.getElementById("chat-section").style.display = "block";
+      
+      let titlePrefix = "";
+      if (ownerId === senderId) {
+        titlePrefix += `<span class="my-badge" style="font-size:0.8rem; padding:3px 8px;">自分</span> `;
+      }
+      if (isSolved) {
+        titlePrefix += `<span style="color: var(--danger);">&lt;解決済み&gt;</span> `;
+      } else if (isUrgent) {
+        titlePrefix += `<span style="color: var(--danger); font-weight:900;">&lt;緊急&gt;</span> `;
+      }
+
+      document.getElementById("chat-title").innerHTML = `${titlePrefix}「${subject}」`;
+
+      // チャット内削除ボタンの表示制御（本人のみ表示）
+      const chatDeleteBtn = document.getElementById("btn-chat-delete");
+      if (ownerId === senderId) {
+        chatDeleteBtn.style.display = "inline-block";
+      } else {
+        chatDeleteBtn.style.display = "none";
+      }
+
+      const subHint = document.getElementById("chat-sub-hint");
+      if (senderId === ownerId && !isSolved) {
+        subHint.style.display = "block";
+      } else {
+        subHint.style.display = "none";
+      }
+
+      joinChatRoom(roomId);
+    };
+
+    document.getElementById("btn-back-to-list").addEventListener("click", () => {
+      if (unsubscribeChat) unsubscribeChat();
+      document.getElementById("chat-section").style.display = "none";
+      document.getElementById("matching-section").style.display = "block";
+    });
+
+    // --- 4. ベストアンサー選出＆解決処理 ---
+    window.selectBestAnswer = async function(helperId, helperName) {
+      if (senderId !== currentOwnerId) {
+        alert("ベストアンサーを選べるのは質問者のみです。");
+        return;
+      }
+
+      if (currentIsSolved) {
+        alert("この質問はすでに解決済みです。");
+        return;
+      }
+
+      const confirmBest = confirm(`【${helperName}】さんをベストアンサーに選びますか？\n※解決ポイント(+1pt)が送られ、解決済みマークがつきます！`);
+      if (!confirmBest) return;
+
+      try {
+        const helperRef = doc(db, "users", helperId);
+        await updateDoc(helperRef, {
+          solveCount: increment(1)
+        }).catch(async () => {
+          await setDoc(helperRef, { solveCount: 1, createdAt: serverTimestamp() }, { merge: true });
+        });
+
+        if (currentDocId) {
+          await updateDoc(doc(db, "requests", currentDocId), {
+            isSolved: true
+          });
+        }
+
+        alert(`${helperName} さんをベストアンサーに選びました！\n質問を解決済みに変更しました。`);
+        document.getElementById("btn-back-to-list").click();
+      } catch (e) {
+        alert("エラーが発生しました: " + e.message);
+      }
+    };
+
+    function formatTime(timestamp) {
+      if (!timestamp) return "";
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    // --- 5. リアルタイム・チャット受信 ---
+    function joinChatRoom(roomId) {
+      const chatBox = document.getElementById("chat-box");
+      chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>チャットに接続中...</p>";
+
+      if (unsubscribeChat) unsubscribeChat();
+
+      const qMessages = query(
+        collection(db, "rooms", roomId, "messages"),
+        orderBy("timestamp", "asc")
       );
 
-      unsubscribePosts = onSnapshot(q, (snapshot) => {
-        postsContainer.innerHTML = "";
-
+      unsubscribeChat = onSnapshot(qMessages, (snapshot) => {
+        chatBox.innerHTML = "";
+        
         if (snapshot.empty) {
-          postsContainer.innerHTML = "<p style='text-align:center; color:var(--text-sub); width:100%;'>投稿がありません</p>";
+          chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin-top: 20px;'>まだメッセージはありません。<br>写真や文章を送って教えてあげましょう！</p>";
           return;
         }
 
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const isMyPost = currentUser && currentUser.name === data.authorName;
-          const iconSrc = data.authorIcon || "icon01.png";
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const isMyMsg = data.senderId === senderId;
+          const isOwner = senderId === currentOwnerId;
+          const msgIcon = data.icon || "icon01.png";
+          const senderName = data.senderName || "ゲスト";
 
-          const msgEl = document.createElement("div");
-          msgEl.className = `chat-message ${isMyPost ? 'my' : 'other'} ${data.isUrgent ? 'urgent' : ''}`;
+          const rowDiv = document.createElement("div");
+          rowDiv.className = `msg-row ${isMyMsg ? "my-msg" : "other-msg"}`;
 
-          msgEl.innerHTML = `
-            <img src="${iconSrc}" class="avatar-img" alt="icon">
-            <div class="message-content">
-              <span class="author-name">${data.authorName}</span>
-              ${data.isUrgent ? '<span class="urgent-badge">[緊急] (+3pt)</span>' : ''}
-              <div class="bubble">${data.content}</div>
-            </div>
-          `;
-          postsContainer.appendChild(msgEl);
+          const avatarImg = document.createElement("img");
+          avatarImg.className = "msg-avatar-img";
+          avatarImg.src = msgIcon;
+
+          const contentWrapper = document.createElement("div");
+          contentWrapper.className = "msg-content-wrapper";
+
+          const nameDiv = document.createElement("div");
+          nameDiv.className = "msg-sender-name";
+          nameDiv.innerText = senderName;
+
+          const bubbleDiv = document.createElement("div");
+          bubbleDiv.className = "msg-bubble";
+          
+          if (data.text) {
+            const textNode = document.createTextNode(data.text);
+            bubbleDiv.appendChild(textNode);
+          }
+
+          if (data.image) {
+            const imgElem = document.createElement("img");
+            imgElem.className = "msg-image";
+            imgElem.src = data.image;
+            imgElem.onclick = () => window.open(data.image, '_blank');
+            bubbleDiv.appendChild(imgElem);
+          }
+
+          contentWrapper.appendChild(nameDiv);
+          contentWrapper.appendChild(bubbleDiv);
+
+          if (isOwner && !currentIsSolved && data.senderId !== currentOwnerId) {
+            const bestBtn = document.createElement("button");
+            bestBtn.className = "btn-best-answer";
+            bestBtn.innerText = "ベストアンサーに選ぶ";
+            bestBtn.onclick = () => selectBestAnswer(data.senderId, senderName);
+            contentWrapper.appendChild(bestBtn);
+          }
+
+          const metaDiv = document.createElement("div");
+          metaDiv.className = "msg-meta";
+          metaDiv.innerHTML = `<span>${formatTime(data.timestamp)}</span>`;
+
+          rowDiv.appendChild(avatarImg);
+          rowDiv.appendChild(contentWrapper);
+          rowDiv.appendChild(metaDiv);
+          chatBox.appendChild(rowDiv);
         });
-
-        // 最下部へスクロール
-        window.scrollTo(0, document.body.scrollHeight);
-
-      }, (error) => {
-        console.error("データ取得エラー:", error);
-        postsContainer.innerHTML = "<p>データの読み込みに失敗しました。</p>";
+        
+        chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
 
-    listenBoardStatus();
-    initApp();
+    // --- 6. メッセージ送信 ---
+    async function sendMessage() {
+      const textInput = document.getElementById("messageText");
+      const text = textInput.value.trim();
+      const sendBtn = document.getElementById("btn-send");
+
+      if ((!text && !selectedBase64Image) || !currentRoomId) return;
+
+      sendBtn.disabled = true; // 連打防止
+
+      const payload = {
+        senderId: senderId,
+        senderName: myName,
+        icon: myIcon,
+        timestamp: serverTimestamp()
+      };
+
+      if (text) payload.text = text;
+      if (selectedBase64Image) payload.image = selectedBase64Image;
+
+      try {
+        await addDoc(collection(db, "rooms", currentRoomId, "messages"), payload);
+        textInput.value = "";
+        clearSelectedImage();
+      } catch (e) {
+        alert("送信に失敗しました: " + e.message);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    // --- 7. イベントリスナーの設定 ---
+    document.getElementById("btn-login-submit").addEventListener("click", saveProfileAndStart);
+    document.getElementById("btn-create-request").addEventListener("click", createRequest);
+    document.getElementById("btn-send").addEventListener("click", sendMessage);
+
+    // Enterキーでメッセージ送信
+    document.getElementById("messageText").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
   </script>
 </body>
 </html>
