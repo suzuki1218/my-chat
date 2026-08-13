@@ -299,7 +299,7 @@
 </head>
 <body>
 
-  <h1>🍃 クラスサポート掲示板 🍃</h1>
+  <h1>掲示板</h1>
 
   <!-- 1. 先生用コントロールパネル -->
   <div class="teacher-box">
@@ -318,7 +318,7 @@
   <div id="user-section" class="box">
     <h2 style="font-size:1.2rem; color:var(--primary); margin-top:0;">プロフィール</h2>
     
-    <label for="userName">なまえ</label>
+    <label for="userName">名前</label>
     <input type="text" id="userName" placeholder="名前を入力">
 
     <label>自分のアイコン</label>
@@ -357,7 +357,7 @@
         <img id="displayUserIcon" class="avatar-img" src="" alt="icon">
         <span style="font-weight: bold;"><span id="displayClassName"></span> (<span id="displayName"></span>)</span>
       </div>
-      <button id="changeClassBtn" class="btn-sub">クラスへんこう</button>
+      <button id="changeClassBtn" class="btn-sub">クラス変更</button>
     </div>
 
     <!-- 利用停止中の注意メッセージ -->
@@ -373,7 +373,7 @@
     <!-- 固定送信エリア -->
     <div class="input-fixed-area">
       <label class="urgent-check-label">
-        <input type="checkbox" id="isUrgent"> 🚨 【きんきゅう】たすけて！(+3pt)
+        <input type="checkbox" id="isUrgent">緊急
       </label>
       <div class="input-wrapper">
         <textarea id="postContent" placeholder="メッセージを入力"></textarea>
@@ -457,7 +457,7 @@
 
     function updateUIByStatus() {
       if (isBoardOpen) {
-        currentStatusText.textContent = "🟢 受付中";
+        currentStatusText.textContent = "受付中";
         toggleBoardBtn.textContent = "掲示板の受付を停止する";
         toggleBoardBtn.className = "btn-toggle-on";
         
@@ -466,7 +466,7 @@
         postContent.disabled = false;
         isUrgent.disabled = false;
       } else {
-        currentStatusText.textContent = "🔴 停止中";
+        currentStatusText.textContent = "停止中";
         toggleBoardBtn.textContent = "掲示板の受付を開始する";
         toggleBoardBtn.className = "btn-toggle-off";
 
