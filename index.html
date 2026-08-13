@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>掲示板</title>
+  <title>クラス別サポート掲示板</title>
   <!-- フォント読み込み -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -299,12 +299,12 @@
 </head>
 <body>
 
-  <h1>掲示板</h1>
+  <h1>クラスサポート掲示板</h1>
 
   <!-- 1. 先生用コントロールパネル -->
   <div class="teacher-box">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-weight: 800; font-size:0.9rem;">先生用設定</span>
+      <span style="font-weight: 800; font-size:0.9rem;">[設定] 先生用コントロール</span>
       <button id="toggleTeacherModeBtn" class="btn-sub">先生モード表示</button>
     </div>
 
@@ -316,12 +316,12 @@
 
   <!-- 2. ユーザー設定パネル -->
   <div id="user-section" class="box">
-    <h2 style="font-size:1.2rem; color:var(--primary); margin-top:0;">プロフィール</h2>
+    <h2 style="font-size:1.2rem; color:var(--primary); margin-top:0;">プロフィール設定</h2>
     
     <label for="userName">名前</label>
-    <input type="text" id="userName" placeholder="名前を入力">
+    <input type="text" id="userName" placeholder="名前を入力してください">
 
-    <label>自分のアイコン</label>
+    <label>アイコン選択</label>
     <div class="icon-selector" id="iconSelector">
       <img src="icon01.png" class="icon-option selected" data-icon="icon01.png" alt="icon01">
       <img src="icon02.png" class="icon-option" data-icon="icon02.png" alt="icon02">
@@ -335,15 +335,15 @@
 
     <label for="classSelect">クラス</label>
     <select id="classSelect">
-      <option value="">選択</option>
-      <option value="105">1年5組 (105)</option>[cite: 1]
-      <option value="106">1年6組 (106)</option>[cite: 1]
-      <option value="107">1年7組 (107)</option>[cite: 1]
-      <option value="108">1年8組 (108)</option>[cite: 1]
-      <option value="109">1年9組 (109)</option>[cite: 1]
-      <option value="110">1年10組 (110)</option>[cite: 1]
-      <option value="310">3年10組 (310)</option>[cite: 1]
-      <option value="311">3年11組 (311)</option>[cite: 1]
+      <option value="">選択してください</option>
+      <option value="105">1年5組 (105)</option>
+      <option value="106">1年6組 (106)</option>
+      <option value="107">1年7組 (107)</option>
+      <option value="108">1年8組 (108)</option>
+      <option value="109">1年9組 (109)</option>
+      <option value="110">1年10組 (110)</option>
+      <option value="310">3年10組 (310)</option>
+      <option value="311">3年11組 (311)</option>
     </select>
 
     <button id="saveUserBtn" style="width:100%; margin-top:15px;">掲示板に入る</button>
@@ -362,7 +362,7 @@
 
     <!-- 利用停止中の注意メッセージ -->
     <div id="statusBanner" class="status-banner hidden">
-       ただいま掲示板は【利用停止中】です。
+      [利用停止中] 現在、掲示板への書き込みは受付を停止しています。
     </div>
 
     <!-- チャット表示エリア -->
@@ -373,7 +373,7 @@
     <!-- 固定送信エリア -->
     <div class="input-fixed-area">
       <label class="urgent-check-label">
-        <input type="checkbox" id="isUrgent">緊急
+        <input type="checkbox" id="isUrgent"> [緊急] 至急回答を希望 (+3pt)
       </label>
       <div class="input-wrapper">
         <textarea id="postContent" placeholder="メッセージを入力"></textarea>
@@ -438,8 +438,8 @@
     });
 
     function formatClassName(classId) {
-      const grade = Math.floor(classId / 100);[cite: 1]
-      const classNum = classId % 100;          [cite: 1]
+      const grade = Math.floor(classId / 100);
+      const classNum = classId % 100;
       return `${grade}年${classNum}組`;
     }
 
@@ -457,7 +457,7 @@
 
     function updateUIByStatus() {
       if (isBoardOpen) {
-        currentStatusText.textContent = "受付中";
+        currentStatusText.textContent = "[受付中]";
         toggleBoardBtn.textContent = "掲示板の受付を停止する";
         toggleBoardBtn.className = "btn-toggle-on";
         
@@ -466,7 +466,7 @@
         postContent.disabled = false;
         isUrgent.disabled = false;
       } else {
-        currentStatusText.textContent = "停止中";
+        currentStatusText.textContent = "[停止中]";
         toggleBoardBtn.textContent = "掲示板の受付を開始する";
         toggleBoardBtn.className = "btn-toggle-off";
 
@@ -479,8 +479,8 @@
 
     toggleTeacherModeBtn.addEventListener("click", () => {
       if (teacherControls.classList.contains("hidden")) {
-        const pass = prompt("先生用パスワードを入力してください");
-        if (pass === "Rs2109073") {
+        const pass = prompt("先生用パスワードを入力してください（初期設定: 1234）");
+        if (pass === "1234") {
           teacherControls.classList.remove("hidden");
           toggleTeacherModeBtn.textContent = "閉じる";
         } else if (pass !== null) {
@@ -518,10 +518,10 @@
 
     saveUserBtn.addEventListener("click", () => {
       const name = userNameInput.value.trim();
-      const classId = parseInt(classSelect.value, 10);[cite: 1]
+      const classId = parseInt(classSelect.value, 10);
 
       if (!name || isNaN(classId)) {
-        alert("おなまえとクラスをえらんでね！");
+        alert("名前とクラスを選択してください。");
         return;
       }
 
@@ -539,7 +539,7 @@
 
     submitPostBtn.addEventListener("click", async () => {
       if (!isBoardOpen) {
-        alert("ただいま掲示板は利用停止中です。");
+        alert("現在、掲示板は利用停止中です。");
         return;
       }
 
@@ -547,7 +547,7 @@
       const urgent = isUrgent.checked;
 
       if (!text) {
-        alert("メッセージを入力");
+        alert("メッセージを入力してください。");
         return;
       }
 
@@ -556,7 +556,7 @@
           content: text,
           authorName: currentUser.name,
           authorIcon: currentUser.icon || "icon01.png",
-          class_id: currentUser.class_id,[cite: 1]
+          class_id: currentUser.class_id,
           isUrgent: urgent,
           rewardPoints: urgent ? 3 : 1,
           createdAt: serverTimestamp()
@@ -566,17 +566,16 @@
         isUrgent.checked = false;
       } catch (e) {
         console.error("投稿エラー:", e);
-        alert("投稿失敗");
+        alert("投稿に失敗しました。");
       }
     });
 
     function loadClassPosts(studentClassId) {
       if (unsubscribePosts) unsubscribePosts();
 
-      // LINE風に古い順に並べるため 'asc' に変更
       const q = query(
         collection(db, "posts"),
-        where("class_id", "==", Number(studentClassId)),[cite: 1]
+        where("class_id", "==", Number(studentClassId)),
         orderBy("createdAt", "asc")
       );
 
@@ -584,7 +583,7 @@
         postsContainer.innerHTML = "";
 
         if (snapshot.empty) {
-          postsContainer.innerHTML = "<p style='text-align:center; color:var(--text-sub); width:100%;'>まだメッセージがありません🍃</p>";
+          postsContainer.innerHTML = "<p style='text-align:center; color:var(--text-sub); width:100%;'>投稿がありません</p>";
           return;
         }
 
@@ -600,14 +599,14 @@
             <img src="${iconSrc}" class="avatar-img" alt="icon">
             <div class="message-content">
               <span class="author-name">${data.authorName}</span>
-              ${data.isUrgent ? '<span class="urgent-badge">緊急</span>' : ''}
+              ${data.isUrgent ? '<span class="urgent-badge">[緊急] (+3pt)</span>' : ''}
               <div class="bubble">${data.content}</div>
             </div>
           `;
           postsContainer.appendChild(msgEl);
         });
 
-        // 自動で一番下までスクロール
+        // 最下部へスクロール
         window.scrollTo(0, document.body.scrollHeight);
 
       }, (error) => {
