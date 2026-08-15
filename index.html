@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>学級マッチング＆Q&Aチャット</title>
+  <title>Q&Aチャット</title>
   <style>
     :root {
       --bg-color: #f4f6f8;
@@ -495,18 +495,18 @@
         <div class="post-box">
           <h3>質問を投稿する</h3>
           <div class="form-group" style="margin-top: 8px;">
-            <input type="text" id="reqSubject" placeholder="質問内容を入力（例: 数学のP.45が分かりません）">
+            <input type="text" id="reqSubject" placeholder="質問内容を入力">
           </div>
           <div class="checkbox-group">
             <input type="checkbox" id="reqIsUrgent">
-            <label for="reqIsUrgent">緊急投稿にする（消費pt: 3pt / 回答者ボーナス付き）</label>
+            <label for="reqIsUrgent">緊急</label>
           </div>
           <button class="btn-primary" onclick="createRequest()">投稿する</button>
         </div>
 
         <h3>質問一覧</h3>
         <div class="request-list" id="request-list" style="margin-top: 8px;">
-          <!-- 動的に質問カードが挿入されます -->
+          <!--  -->
         </div>
       </section>
 
