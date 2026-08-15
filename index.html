@@ -3,233 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>授業用 質問掲示板</title>
+  <title>質問掲示板</title>
   <style>
-    :root {
-      --primary-color: #007bff;
-      --danger-color: #dc3545;
-      --bg-color: #f8f9fa;
-      --card-bg: #ffffff;
-    }
+    /* 元のベースコードのCSSをそのまま維持 */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      margin: 0;
-      padding: 15px;
-      background-color: var(--bg-color);
-      color: #333;
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f9;
     }
     .container {
-      max-width: 800px;
+      max-width: 600px;
       margin: 0 auto;
-    }
-    h1 {
-      font-size: 1.5rem;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    
-    /* クラス選択バー */
-    .class-bar {
-      background: #e9ecef;
-      padding: 12px 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-    }
-    .class-bar label {
-      font-weight: bold;
-    }
-    .class-bar select, .class-bar input {
-      padding: 6px 10px;
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-    .class-status {
-      margin-left: auto;
-      font-size: 0.9rem;
-      background: #fff;
-      padding: 4px 8px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-
-    /* フォーム周り */
-    .form-card {
-      background: var(--card-bg);
+      background: white;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      text-align: center;
+      color: #333;
     }
     .form-group {
       margin-bottom: 15px;
     }
-    .form-group label {
+    label {
       display: block;
       margin-bottom: 5px;
       font-weight: bold;
     }
-    .form-control {
+    input[type="text"], textarea, select {
       width: 100%;
       padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
       box-sizing: border-box;
-    }
-    
-    /* Canvas手書きエリア */
-    .canvas-container {
       border: 1px solid #ccc;
       border-radius: 4px;
-      background: #fff;
-      touch-action: none; /* タブレットスクロール防止 */
-      margin-top: 5px;
     }
-    canvas {
-      display: block;
+    button {
       width: 100%;
-      height: 200px;
-      cursor: crosshair;
-    }
-    .canvas-tools {
-      display: flex;
-      gap: 10px;
-      margin-top: 5px;
-    }
-
-    /* ボタン類 */
-    .btn {
-      padding: 8px 16px;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
       border: none;
       border-radius: 4px;
+      font-size: 16px;
       cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
     }
-    .btn-primary { background: var(--primary-color); color: #fff; }
-    .btn-secondary { background: #6c757d; color: #fff; }
-    .btn-submit { width: 100%; padding: 12px; font-size: 1.1rem; }
-
-    /* 緊急トグル */
-    .emergency-option {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--danger-color);
-      font-weight: bold;
+    button:hover {
+      background-color: #218838;
     }
-
-    /* 質問カード一覧 */
-    .request-card {
-      background: var(--card-bg);
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      margin-bottom: 12px;
-      border-left: 5px solid var(--primary-color);
+    canvas {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: crosshair;
+      touch-action: none;
+      width: 100%;
+      height: 200px;
+      display: block;
     }
-    .request-card.emergency {
-      border-left-color: var(--danger-color);
-      background-color: #fff5f5;
+    .clear-btn {
+      background-color: #dc3545;
+      margin-top: 5px;
+      padding: 5px;
+      font-size: 12px;
     }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      color: #666;
-      font-size: 0.85rem;
-      margin-bottom: 8px;
+    .clear-btn:hover {
+      background-color: #c82333;
     }
-    .card-body {
-      white-space: pre-wrap;
-      word-break: break-all;
+    .request-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
     }
-    .card-image {
-      max-width: 100%;
-      margin-top: 10px;
-      border: 1px solid #eee;
+    .request-item:last-child {
+      border-bottom: none;
+    }
+    .emergency {
+      background-color: #ffe6e6;
+      border-left: 5px solid #dc3545;
+      padding: 10px;
       border-radius: 4px;
     }
-    .badge-emergency {
-      background: var(--danger-color);
-      color: white;
-      padding: 2px 6px;
+    .class-status-bar {
+      background: #e9ecef;
+      padding: 10px;
       border-radius: 4px;
-      font-size: 0.75rem;
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>🏫 授業質問掲示板</h1>
+  <h1>質問掲示板</h1>
 
-  <!-- クラス・ルームコード設定バー -->
-  <div class="class-bar">
-    <label for="roomSelect">クラス選択:</label>
-    <select id="roomSelect">
-      <option value="">-- クラスを選択 --</option>
-      <option value="0105">1-5 (コード: 0105)</option>
-      <option value="0106">1-6 (コード: 0106)</option>
-      <option value="0107">1-7 (コード: 0107)</option>
-      <option value="0108">1-8 (コード: 0108)</option>
-      <option value="0109">1-9 (コード: 0109)</option>
-      <option value="0110">1-10 (コード: 0110)</option>
-      <option value="0310">3-10 (コード: 0310)</option>
-      <option value="0311">3-11 (コード: 0311)</option>
-    </select>
-
-    <span>または手入力:</span>
-    <input type="text" id="roomCodeInput" placeholder="0105" maxlength="4" style="width: 70px; text-align: center;">
-    <button id="setRoomBtn" class="btn btn-secondary" style="padding: 6px 12px;">設定</button>
-
-    <div class="class-status">
-      入室中: <strong id="activeRoomDisplay" style="color: var(--primary-color);">未設定</strong>
+  <!-- クラス選択 (元の入力エリア上部にシンプルに追加) -->
+  <div class="class-status-bar">
+    <div class="form-group" style="margin-bottom: 5px;">
+      <label for="roomSelect">クラスを選択（コード）</label>
+      <select id="roomSelect">
+        <option value="">選択してください</option>
+        <option value="0105">1-5 (0105)</option>
+        <option value="0106">1-6 (0106)</option>
+        <option value="0107">1-7 (0107)</option>
+        <option value="0108">1-8 (0108)</option>
+        <option value="0109">1-9 (0109)</option>
+        <option value="0110">1-10 (0110)</option>
+        <option value="0310">3-10 (0310)</option>
+        <option value="0311">3-11 (0311)</option>
+      </select>
     </div>
   </div>
 
-  <!-- 質問投稿フォーム -->
-  <div class="form-card">
-    <div class="form-group">
-      <label for="userName">お名前（ニックネーム可）</label>
-      <input type="text" id="userName" class="form-control" placeholder="例: たろう">
-    </div>
-
-    <div class="form-group">
-      <label for="userText">質問内容</label>
-      <textarea id="userText" class="form-control" rows="3" placeholder="質問したい内容を入力してください"></textarea>
-    </div>
-
-    <!-- 手書きメモ/図形描画Canvas -->
-    <div class="form-group">
-      <label>手書きメモ・図（任意）</label>
-      <div class="canvas-container">
-        <canvas id="memoCanvas"></canvas>
-      </div>
-      <div class="canvas-tools">
-        <button type="button" id="clearCanvasBtn" class="btn btn-secondary" style="font-size:0.8rem;">クリア</button>
-      </div>
-    </div>
-
-    <div class="form-group emergency-option">
-      <input type="checkbox" id="isEmergency">
-      <label for="isEmergency">🚨 緊急質問（すぐに先生に見てもらいたい場合）</label>
-    </div>
-
-    <button id="submitBtn" class="btn btn-primary btn-submit">質問を送信する</button>
+  <!-- 元の投稿フォーム -->
+  <div class="form-group">
+    <label for="nameInput">お名前</label>
+    <input type="text" id="nameInput" placeholder="名前を入力">
   </div>
 
-  <!-- 質問一覧表示エリア -->
+  <div class="form-group">
+    <label for="textInput">質問内容</label>
+    <textarea id="textInput" rows="4" placeholder="質問を入力"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>手書きCanvas</label>
+    <canvas id="drawCanvas"></canvas>
+    <button type="button" id="clearCanvasBtn" class="clear-btn">手書きをクリア</button>
+  </div>
+
+  <div class="form-group">
+    <label>
+      <input type="checkbox" id="emergencyCheck"> 緊急質問
+    </label>
+  </div>
+
+  <button id="sendBtn">送信</button>
+
   <h2>質問一覧</h2>
-  <div id="requestsContainer">
-    <p style="color: #666;">クラスを選択すると質問が表示されます。</p>
+  <div id="requestList">
+    <p>クラスを選択すると質問が表示されます。</p>
   </div>
 </div>
 
-<!-- Firebase SDK (v9/v10 Modular) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { 
@@ -243,7 +157,7 @@
     serverTimestamp 
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // ★ご自身のFirebase設定情報に置き換えてください
+  // ★ご自身のFirebase設定情報
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -256,8 +170,8 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- ルームコード（クラス）管理 ---
-  const VALID_ROOMS = {
+  // --- クラスコード定義 ---
+  const ROOM_MAP = {
     "0105": "1-5",
     "0106": "1-6",
     "0107": "1-7",
@@ -269,73 +183,46 @@
   };
 
   let currentRoomCode = localStorage.getItem('user_room_code') || '';
-  let unsubscribeSnapshot = null;
+  let unsubscribe = null;
 
   const roomSelect = document.getElementById('roomSelect');
-  const roomCodeInput = document.getElementById('roomCodeInput');
-  const setRoomBtn = document.getElementById('setRoomBtn');
-  const activeRoomDisplay = document.getElementById('activeRoomDisplay');
+  const requestList = document.getElementById('requestList');
 
-  // ルーム変更処理
-  function switchRoom(code) {
-    if (!VALID_ROOMS[code]) {
-      alert("無効なルームコードです。\n有効なコード: 0105, 0106, 0107, 0108, 0109, 0110, 0310, 0311");
-      return;
-    }
-    currentRoomCode = code;
-    localStorage.setItem('user_room_code', currentRoomCode);
-    
-    // UI同期
-    roomSelect.value = VALID_ROOMS[code] ? code : '';
-    roomCodeInput.value = code;
-    activeRoomDisplay.textContent = `${VALID_ROOMS[code]} (${code})`;
-
-    // Firestoreのリスナーを切り替え
+  // 初期選択状態の復元
+  if (currentRoomCode && ROOM_MAP[currentRoomCode]) {
+    roomSelect.value = currentRoomCode;
     setupSnapshotListener();
   }
 
-  // イベント設定
   roomSelect.addEventListener('change', (e) => {
-    if (e.target.value) switchRoom(e.target.value);
+    currentRoomCode = e.target.value;
+    localStorage.setItem('user_room_code', currentRoomCode);
+    setupSnapshotListener();
   });
 
-  setRoomBtn.addEventListener('click', () => {
-    const inputVal = roomCodeInput.value.trim();
-    switchRoom(inputVal);
-  });
-
-  // 初期読み込み時のルーム記憶反映
-  if (currentRoomCode && VALID_ROOMS[currentRoomCode]) {
-    switchRoom(currentRoomCode);
-  }
-
-  // --- Canvas手書き処理 (タッチ・マウス対応) ---
-  const canvas = document.getElementById('memoCanvas');
+  // --- 手書きCanvas機能（元のまま） ---
+  const canvas = document.getElementById('drawCanvas');
   const ctx = canvas.getContext('2d');
   let isDrawing = false;
 
-  // 高解像度調整
-  function resizeCanvas() {
-    canvas.width = canvas.parentElement.clientWidth;
+  function initCanvas() {
+    canvas.width = canvas.parentElement.clientWidth - 2;
     canvas.height = 200;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000000';
+    ctx.strokeStyle = '#000';
   }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
+  window.addEventListener('resize', initCanvas);
+  initCanvas();
 
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
+    return { x: clientX - rect.left, y: clientY - rect.top };
   }
 
-  function startDrawing(e) {
+  function startDraw(e) {
     isDrawing = true;
     const pos = getPos(e);
     ctx.beginPath();
@@ -349,137 +236,113 @@
     ctx.stroke();
   }
 
-  function stopDrawing() {
-    isDrawing = false;
-  }
+  function stopDraw() { isDrawing = false; }
 
-  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mousedown', startDraw);
   canvas.addEventListener('mousemove', draw);
-  canvas.addEventListener('mouseup', stopDrawing);
-  canvas.addEventListener('mouseleave', stopDrawing);
+  canvas.addEventListener('mouseup', stopDraw);
+  canvas.addEventListener('mouseleave', stopDraw);
 
-  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); });
   canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
-  canvas.addEventListener('touchend', stopDrawing);
+  canvas.addEventListener('touchend', stopDraw);
 
   document.getElementById('clearCanvasBtn').addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   });
 
-  // Canvasが空かどうか判定
-  function isCanvasBlank(cvs) {
+  function isCanvasBlank() {
     const blank = document.createElement('canvas');
-    blank.width = cvs.width;
-    blank.height = cvs.height;
-    return cvs.toDataURL() === blank.toDataURL();
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+    return canvas.toDataURL() === blank.toDataURL();
   }
 
-  // --- Firestore リアルタイム受信 (該当クラスのみ絞り込み) ---
+  // --- Firestore リアルタイム取得 (クラス絞り込み) ---
   function setupSnapshotListener() {
-    if (unsubscribeSnapshot) unsubscribeSnapshot();
-
-    const container = document.getElementById('requestsContainer');
+    if (unsubscribe) unsubscribe();
 
     if (!currentRoomCode) {
-      container.innerHTML = '<p style="color: #666;">上のバーでクラスを選択してください。</p>';
+      requestList.innerHTML = '<p>クラスを選択すると質問が表示されます。</p>';
       return;
     }
 
-    // クエリ: roomCode が一致するデータのみを新しい順に取得
     const q = query(
       collection(db, "requests"),
       where("roomCode", "==", currentRoomCode),
       orderBy("createdAt", "desc")
     );
 
-    unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-      container.innerHTML = '';
+    unsubscribe = onSnapshot(q, (snapshot) => {
+      requestList.innerHTML = '';
 
       if (snapshot.empty) {
-        container.innerHTML = '<p style="color: #666;">現在質問はありません。</p>';
+        requestList.innerHTML = '<p>質問はありません。</p>';
         return;
       }
 
       snapshot.forEach((doc) => {
         const data = doc.data();
-        const card = document.createElement('div');
-        card.className = `request-card ${data.isEmergency ? 'emergency' : ''}`;
+        const div = document.createElement('div');
+        div.className = `request-item ${data.isEmergency ? 'emergency' : ''}`;
 
-        const timeStr = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '送信中...';
+        let imgHtml = data.imageData ? `<br><img src="${data.imageData}" style="max-width:100%; border:1px solid #ccc; margin-top:5px;">` : '';
 
-        card.innerHTML = `
-          <div class="card-header">
-            <span>👤 ${escapeHtml(data.name)} ${data.isEmergency ? '<span class="badge-emergency">🚨 緊急</span>' : ''}</span>
-            <span>🕒 ${timeStr}</span>
-          </div>
-          <div class="card-body">${escapeHtml(data.text)}</div>
-          ${data.imageData ? `<img src="${data.imageData}" class="card-image" alt="手書きメモ">` : ''}
+        div.innerHTML = `
+          <strong>${escapeHtml(data.name)}</strong> 
+          ${data.isEmergency ? '<span style="color:red; font-weight:bold;">[緊急]</span>' : ''}<br>
+          ${escapeHtml(data.text)}
+          ${imgHtml}
         `;
-        container.appendChild(card);
+        requestList.appendChild(div);
       });
-    }, (error) => {
-      console.error("Firestore受信エラー:", error);
-      container.innerHTML = `<p style="color: red;">データ読み込みエラーが発生しました。Firestoreのインデックス作成が必要な場合があります。</p>`;
     });
   }
 
-  // --- Firestore 質問送信 ---
-  document.getElementById('submitBtn').addEventListener('click', async () => {
+  // --- 送信処理 ---
+  document.getElementById('sendBtn').addEventListener('click', async () => {
     if (!currentRoomCode) {
-      alert("先にクラスを選択してください！");
+      alert("クラスを選択してください！");
       return;
     }
 
-    const nameInput = document.getElementById('userName');
-    const textInput = document.getElementById('userText');
-    const isEmergencyCheck = document.getElementById('isEmergency');
+    const nameInput = document.getElementById('nameInput');
+    const textInput = document.getElementById('textInput');
+    const emergencyCheck = document.getElementById('emergencyCheck');
 
-    const textVal = textInput.value.trim();
-    const hasCanvasImage = !isCanvasBlank(canvas);
+    const name = nameInput.value.trim() || '匿名';
+    const text = textInput.value.trim();
+    const hasCanvas = !isCanvasBlank();
 
-    if (!textVal && !hasCanvasImage) {
-      alert("質問内容テキストまたは手書きメモを入力してください。");
+    if (!text && !hasCanvas) {
+      alert("質問内容または手書き入力をしてください。");
       return;
     }
 
     try {
-      const newRequest = {
+      await addDoc(collection(db, "requests"), {
         roomCode: currentRoomCode,
-        className: VALID_ROOMS[currentRoomCode],
-        name: nameInput.value.trim() || '匿名生徒',
-        text: textVal,
-        imageData: hasCanvasImage ? canvas.toDataURL('image/png') : null,
-        isEmergency: isEmergencyCheck.checked,
+        name: name,
+        text: text,
+        imageData: hasCanvas ? canvas.toDataURL() : null,
+        isEmergency: emergencyCheck.checked,
         createdAt: serverTimestamp()
-      };
+      });
 
-      await addDoc(collection(db, "requests"), newRequest);
-
-      // フォームリセット
       textInput.value = '';
-      isEmergencyCheck.checked = false;
+      emergencyCheck.checked = false;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      alert("質問を送信しました！");
+      alert("送信しました！");
 
     } catch (e) {
-      console.error("送信エラー: ", e);
-      alert("送信に失敗しました。ネットワーク状況を確認してください。");
+      console.error("Error: ", e);
+      alert("送信に失敗しました。");
     }
   });
 
-  // HTMLエスケープ処理（XSS対策）
   function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/[&<>"']/g, (match) => {
-      const escapeMap = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-      };
-      return escapeMap[match];
-    });
+    return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
   }
 </script>
 
