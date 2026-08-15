@@ -95,21 +95,15 @@
 <div class="container">
   <h1>質問掲示板</h1>
 
-  <!-- クラス選択 (元の入力エリア上部にシンプルに追加) -->
+  <!-- クラスコード入力エリア -->
   <div class="class-status-bar">
     <div class="form-group" style="margin-bottom: 5px;">
-      <label for="roomSelect">クラスを選択（コード）</label>
-      <select id="roomSelect">
-        <option value="">選択してください</option>
-        <option value="0105">1-5 (0105)</option>
-        <option value="0106">1-6 (0106)</option>
-        <option value="0107">1-7 (0107)</option>
-        <option value="0108">1-8 (0108)</option>
-        <option value="0109">1-9 (0109)</option>
-        <option value="0110">1-10 (0110)</option>
-        <option value="0310">3-10 (0310)</option>
-        <option value="0311">3-11 (0311)</option>
-      </select>
+      <label for="roomCodeInput">クラスコードを入力</label>
+      <div style="display: flex; gap: 5px;">
+        <input type="text" id="roomCodeInput" placeholder="例: 0105" maxlength="10">
+        <button id="setRoomBtn" style="width: 100px; padding: 8px;">決定</button>
+      </div>
+      <p id="currentRoomText" style="margin: 5px 0 0 0; font-size: 14px; color: #555;"></p>
     </div>
   </div>
 
@@ -140,7 +134,7 @@
 
   <h2>質問一覧</h2>
   <div id="requestList">
-    <p>クラスを選択すると質問が表示されます。</p>
+    <p>クラスコードを入力すると質問が表示されます。</p>
   </div>
 </div>
 
@@ -170,35 +164,37 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- クラスコード定義 ---
-  const ROOM_MAP = {
-    "0105": "1-5",
-    "0106": "1-6",
-    "0107": "1-7",
-    "0108": "1-8",
-    "0109": "1-9",
-    "0110": "1-10",
-    "0310": "3-10",
-    "0311": "3-11"
-  };
-
   let currentRoomCode = localStorage.getItem('user_room_code') || '';
   let unsubscribe = null;
 
-  const roomSelect = document.getElementById('roomSelect');
+  const roomCodeInput = document.getElementById('roomCodeInput');
+  const setRoomBtn = document.getElementById('setRoomBtn');
+  const currentRoomText = document.getElementById('currentRoomText');
   const requestList = document.getElementById('requestList');
 
-  // 初期選択状態の復元
-  if (currentRoomCode && ROOM_MAP[currentRoomCode]) {
-    roomSelect.value = currentRoomCode;
+  // 初期ロード処理
+  if (currentRoomCode) {
+    roomCodeInput.value = currentRoomCode;
+    updateRoomDisplay();
     setupSnapshotListener();
   }
 
-  roomSelect.addEventListener('change', (e) => {
-    currentRoomCode = e.target.value;
+  // 「決定」ボタンでクラスコードを設定
+  setRoomBtn.addEventListener('click', () => {
+    const code = roomCodeInput.value.trim();
+    if (!code) {
+      alert("クラスコードを入力してください。");
+      return;
+    }
+    currentRoomCode = code;
     localStorage.setItem('user_room_code', currentRoomCode);
+    updateRoomDisplay();
     setupSnapshotListener();
   });
+
+  function updateRoomDisplay() {
+    currentRoomText.textContent = `現在のクラスコード: ${currentRoomCode}`;
+  }
 
   // --- 手書きCanvas機能（元のまま） ---
   const canvas = document.getElementById('drawCanvas');
@@ -263,7 +259,7 @@
     if (unsubscribe) unsubscribe();
 
     if (!currentRoomCode) {
-      requestList.innerHTML = '<p>クラスを選択すると質問が表示されます。</p>';
+      requestList.innerHTML = '<p>クラスコードを入力すると質問が表示されます。</p>';
       return;
     }
 
@@ -302,7 +298,7 @@
   // --- 送信処理 ---
   document.getElementById('sendBtn').addEventListener('click', async () => {
     if (!currentRoomCode) {
-      alert("クラスを選択してください！");
+      alert("クラスコードを入力・決定してください！");
       return;
     }
 
