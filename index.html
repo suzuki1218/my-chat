@@ -5,88 +5,234 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>質問掲示板</title>
   <style>
-    /* 元のベースコードのCSSをそのまま維持 */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f4f4f9;
+    /* どうぶつの森風の温かみのある配色（緑・ベージュ） */
+    :root {
+      --bg-color: #f7f3e9;         /* 温かみのあるベージュ */
+      --main-green: #71b382;       /* やわらかい緑 */
+      --dark-green: #528c62;       /* 濃いめの緑（ボタン・見出し） */
+      --card-bg: #fffdf9;          /* カードの背景 */
+      --border-color: #e2d7c5;     /* 外枠のベージュ系境界線 */
+      --text-color: #5c4b37;       /* ダークブラウン（文字色） */
+      --emergency-bg: #fff0f0;     /* 緊急用の淡い赤 */
+      --emergency-border: #e06d6d; /* 緊急用の境界線 */
     }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
     .container {
       max-width: 600px;
       margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 16px;
+      border: 3px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(92, 75, 55, 0.08);
     }
-    h1, h2 {
+
+    h1 {
       text-align: center;
-      color: #333;
+      color: var(--dark-green);
+      font-size: 1.5rem;
+      margin-top: 0;
+      margin-bottom: 20px;
     }
-    .form-group {
+
+    h2 {
+      text-align: center;
+      color: var(--dark-green);
+      font-size: 1.2rem;
+      margin-top: 30px;
       margin-bottom: 15px;
+      border-bottom: 2px dashed var(--border-color);
+      padding-bottom: 8px;
     }
+
+    .class-status-bar {
+      background: #efe9dc;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
     label {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       font-weight: bold;
+      color: var(--text-color);
+      font-size: 0.95rem;
     }
+
     input[type="text"], textarea, select {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #ffffff;
+      color: var(--text-color);
+      font-size: 0.95rem;
+      outline: none;
     }
+
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--main-green);
+    }
+
+    /* GitHubのアイコン画像ラジオボタン選択 */
+    .icon-selector {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .icon-option {
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .icon-option input[type="radio"] {
+      display: none;
+    }
+
+    .icon-option img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      box-sizing: border-box;
+      background-color: #efe9dc;
+      transition: all 0.2s ease;
+    }
+
+    .icon-option input[type="radio"]:checked + img {
+      border-color: var(--main-green);
+      transform: scale(1.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
     button {
       width: 100%;
-      padding: 10px;
-      background-color: #28a745;
+      padding: 12px;
+      background-color: var(--main-green);
       color: white;
       border: none;
-      border-radius: 4px;
-      font-size: 16px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
       cursor: pointer;
+      box-shadow: 0 3px 0 var(--dark-green);
+      transition: background-color 0.2s, transform 0.1s;
     }
+
     button:hover {
-      background-color: #218838;
+      background-color: var(--dark-green);
     }
+
+    button:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--dark-green);
+    }
+
     canvas {
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
       cursor: crosshair;
       touch-action: none;
       width: 100%;
-      height: 200px;
+      height: 180px;
       display: block;
+      background-color: #ffffff;
     }
+
     .clear-btn {
-      background-color: #dc3545;
-      margin-top: 5px;
-      padding: 5px;
-      font-size: 12px;
+      background-color: #d98880;
+      box-shadow: 0 2px 0 #b35e56;
+      margin-top: 6px;
+      padding: 6px;
+      font-size: 0.85rem;
+      width: auto;
     }
+
     .clear-btn:hover {
-      background-color: #c82333;
+      background-color: #b35e56;
     }
+
+    /* 質問一覧アイテム */
     .request-item {
-      border-bottom: 1px solid #eee;
-      padding: 10px 0;
+      background: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
     }
-    .request-item:last-child {
-      border-bottom: none;
+
+    .request-item.emergency {
+      background-color: var(--emergency-bg);
+      border-color: var(--emergency-border);
     }
-    .emergency {
-      background-color: #ffe6e6;
-      border-left: 5px solid #dc3545;
-      padding: 10px;
+
+    .item-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      flex-shrink: 0;
+      background-color: #efe9dc;
+    }
+
+    .item-body {
+      flex: 1;
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .item-name {
+      font-weight: bold;
+      color: var(--text-color);
+      font-size: 0.95rem;
+    }
+
+    .emergency-badge {
+      color: #ffffff;
+      background-color: var(--emergency-border);
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 2px 6px;
       border-radius: 4px;
     }
-    .class-status-bar {
-      background: #e9ecef;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 15px;
+
+    .item-text {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .item-image {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -97,20 +243,28 @@
 
   <!-- クラスコード入力エリア -->
   <div class="class-status-bar">
-    <div class="form-group" style="margin-bottom: 5px;">
+    <div class="form-group" style="margin-bottom: 0;">
       <label for="roomCodeInput">クラスコードを入力</label>
-      <div style="display: flex; gap: 5px;">
+      <div style="display: flex; gap: 6px;">
         <input type="text" id="roomCodeInput" placeholder="例: 0105" maxlength="10">
         <button id="setRoomBtn" style="width: 100px; padding: 8px;">決定</button>
       </div>
-      <p id="currentRoomText" style="margin: 5px 0 0 0; font-size: 14px; color: #555;"></p>
+      <p id="currentRoomText" style="margin: 6px 0 0 0; font-size: 0.85rem; color: #7c6c58;"></p>
     </div>
   </div>
 
-  <!-- 元の投稿フォーム -->
+  <!-- 投稿フォーム -->
   <div class="form-group">
     <label for="nameInput">お名前</label>
     <input type="text" id="nameInput" placeholder="名前を入力">
+  </div>
+
+  <!-- GitHubのアイコン画像選択（icon01.png ～ icon08.png） -->
+  <div class="form-group">
+    <label>アイコンを選択</label>
+    <div class="icon-selector" id="iconSelector">
+      <!-- JavaScriptで動的生成（icon01.png ～ icon08.png） -->
+    </div>
   </div>
 
   <div class="form-group">
@@ -119,13 +273,13 @@
   </div>
 
   <div class="form-group">
-    <label>手書きCanvas</label>
+    <label>手書きメモ</label>
     <canvas id="drawCanvas"></canvas>
     <button type="button" id="clearCanvasBtn" class="clear-btn">手書きをクリア</button>
   </div>
 
   <div class="form-group">
-    <label>
+    <label style="color: #c0392b; cursor: pointer;">
       <input type="checkbox" id="emergencyCheck"> 緊急質問
     </label>
   </div>
@@ -164,6 +318,23 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  // GitHubのアイコン基準パス（リポジトリのルートまたは配置フォルダに合わせて指定してください）
+  const ICON_BASE_URL = "./"; 
+
+  // アイコン選択肢の動的生成 (icon01.png 〜 icon08.png)
+  const iconSelector = document.getElementById('iconSelector');
+  for (let i = 1; i <= 8; i++) {
+    const num = String(i).padStart(2, '0');
+    const fileName = `icon${num}.png`;
+    const label = document.createElement('label');
+    label.className = 'icon-option';
+    label.innerHTML = `
+      <input type="radio" name="iconSelect" value="${fileName}" ${i === 1 ? 'checked' : ''}>
+      <img src="${ICON_BASE_URL}${fileName}" alt="icon${num}" onerror="this.style.visibility='hidden'">
+    `;
+    iconSelector.appendChild(label);
+  }
+
   let currentRoomCode = localStorage.getItem('user_room_code') || '';
   let unsubscribe = null;
 
@@ -172,14 +343,12 @@
   const currentRoomText = document.getElementById('currentRoomText');
   const requestList = document.getElementById('requestList');
 
-  // 初期ロード処理
   if (currentRoomCode) {
     roomCodeInput.value = currentRoomCode;
     updateRoomDisplay();
     setupSnapshotListener();
   }
 
-  // 「決定」ボタンでクラスコードを設定
   setRoomBtn.addEventListener('click', () => {
     const code = roomCodeInput.value.trim();
     if (!code) {
@@ -196,17 +365,17 @@
     currentRoomText.textContent = `現在のクラスコード: ${currentRoomCode}`;
   }
 
-  // --- 手書きCanvas機能（元のまま） ---
+  // --- 手書きCanvas機能 ---
   const canvas = document.getElementById('drawCanvas');
   const ctx = canvas.getContext('2d');
   let isDrawing = false;
 
   function initCanvas() {
-    canvas.width = canvas.parentElement.clientWidth - 2;
-    canvas.height = 200;
+    canvas.width = canvas.parentElement.clientWidth - 4;
+    canvas.height = 180;
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000';
+    ctx.strokeStyle = '#5c4b37';
   }
   window.addEventListener('resize', initCanvas);
   initCanvas();
@@ -254,7 +423,7 @@
     return canvas.toDataURL() === blank.toDataURL();
   }
 
-  // --- Firestore リアルタイム取得 (クラス絞り込み) ---
+  // --- Firestore リアルタイム取得 ---
   function setupSnapshotListener() {
     if (unsubscribe) unsubscribe();
 
@@ -282,13 +451,19 @@
         const div = document.createElement('div');
         div.className = `request-item ${data.isEmergency ? 'emergency' : ''}`;
 
-        let imgHtml = data.imageData ? `<br><img src="${data.imageData}" style="max-width:100%; border:1px solid #ccc; margin-top:5px;">` : '';
+        const iconFile = data.icon || 'icon01.png';
+        const imgHtml = data.imageData ? `<br><img src="${data.imageData}" class="item-image">` : '';
 
         div.innerHTML = `
-          <strong>${escapeHtml(data.name)}</strong> 
-          ${data.isEmergency ? '<span style="color:red; font-weight:bold;">[緊急]</span>' : ''}<br>
-          ${escapeHtml(data.text)}
-          ${imgHtml}
+          <img src="${ICON_BASE_URL}${iconFile}" class="item-avatar" alt="icon" onerror="this.src='${ICON_BASE_URL}icon01.png'">
+          <div class="item-body">
+            <div class="item-header">
+              <span class="item-name">${escapeHtml(data.name)}</span>
+              ${data.isEmergency ? '<span class="emergency-badge">[緊急]</span>' : ''}
+            </div>
+            <div class="item-text">${escapeHtml(data.text)}</div>
+            ${imgHtml}
+          </div>
         `;
         requestList.appendChild(div);
       });
@@ -298,13 +473,14 @@
   // --- 送信処理 ---
   document.getElementById('sendBtn').addEventListener('click', async () => {
     if (!currentRoomCode) {
-      alert("クラスコードを入力・決定してください！");
+      alert("クラスコードを入力・決定してください。");
       return;
     }
 
     const nameInput = document.getElementById('nameInput');
     const textInput = document.getElementById('textInput');
     const emergencyCheck = document.getElementById('emergencyCheck');
+    const selectedIcon = document.querySelector('input[name="iconSelect"]:checked')?.value || 'icon01.png';
 
     const name = nameInput.value.trim() || '匿名';
     const text = textInput.value.trim();
@@ -319,6 +495,7 @@
       await addDoc(collection(db, "requests"), {
         roomCode: currentRoomCode,
         name: name,
+        icon: selectedIcon,
         text: text,
         imageData: hasCanvas ? canvas.toDataURL() : null,
         isEmergency: emergencyCheck.checked,
@@ -328,7 +505,7 @@
       textInput.value = '';
       emergencyCheck.checked = false;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      alert("送信しました！");
+      alert("送信しました。");
 
     } catch (e) {
       console.error("Error: ", e);
