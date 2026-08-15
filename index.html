@@ -3,268 +3,331 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Q&Aチャット</title>
+  <title>クラス質問掲示板</title>
   <style>
     :root {
-      --bg-color: #f4f6f8;
+      --primary-color: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f3f4f6;
       --card-bg: #ffffff;
-      --primary: #4a90e2;
-      --primary-hover: #357abd;
-      --accent-urgent: #e74c3c;
-      --accent-solved: #2ecc71;
-      --text-main: #333333;
-      --text-sub: #777777;
-      --border-color: #e0e0e0;
-      --chat-my-bg: #dcf8c6;
-      --chat-other-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-sub: #6b7280;
+      --border-color: #e5e7eb;
+      --urgent-color: #ef4444;
+      --urgent-bg: #fef2f2;
+      --solved-bg: #f3f4f6;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
     body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 10px;
+      line-height: 1.5;
+      padding-bottom: 40px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 600px;
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      height: 95vh;
-    }
-
-    /* ヘッダー */
     header {
-      background: var(--primary);
-      color: white;
-      padding: 12px 16px;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .header-container {
+      max-width: 800px;
+      margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    header h1 {
-      font-size: 1.1rem;
+    .app-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--primary-color);
     }
 
     .user-info {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
+      gap: 10px;
     }
 
-    .user-avatar {
-      width: 32px;
-      height: 32px;
+    .user-icon {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       object-fit: cover;
-      background: #fff;
+      border: 1px solid var(--border-color);
     }
 
-    .btn-profile {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      cursor: pointer;
+    .user-stats {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    .btn-profile-edit {
+      background: none;
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 6px;
       font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--text-main);
     }
 
-    /* メインエリア */
-    main {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      position: relative;
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 15px;
     }
 
-    /* ログイン / プロフィール画面 */
-    #login-section {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      justify-content: center;
+    /* プロフィール設定モーダル / 画面 */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
       height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .login-card h2 {
+      margin-bottom: 16px;
+      font-size: 1.2rem;
+      text-align: center;
     }
 
     .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      margin-bottom: 16px;
     }
 
     .form-group label {
-      font-size: 0.9rem;
-      font-weight: bold;
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-sub);
     }
 
-    input[type="text"], select, textarea {
+    .form-control {
       width: 100%;
       padding: 10px;
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      font-size: 1rem;
+      font-size: 0.95rem;
+      background-color: #fff;
+    }
+
+    .icon-selector {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .icon-option {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      object-fit: cover;
+    }
+
+    .icon-option.selected {
+      border-color: var(--primary-color);
     }
 
     .btn-primary {
-      background: var(--primary);
+      width: 100%;
+      background-color: var(--primary-color);
       color: white;
       border: none;
-      padding: 12px;
+      padding: 10px;
       border-radius: 6px;
       font-size: 1rem;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
-      width: 100%;
     }
 
     .btn-primary:hover {
-      background: var(--primary-hover);
+      background-color: var(--primary-hover);
     }
 
-    /* 質問一覧画面 */
-    #matching-section {
-      display: none;
+    /* 質問投稿カード */
+    .post-card {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
     }
 
-    .post-box {
-      background: #f9f9f9;
-      padding: 12px;
-      border-radius: 8px;
+    .post-card textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
       border: 1px solid var(--border-color);
-      margin-bottom: 16px;
+      border-radius: 6px;
+      resize: vertical;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
     }
 
-    .checkbox-group {
+    .post-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .checkbox-label {
       display: flex;
       align-items: center;
       gap: 6px;
-      margin: 8px 0;
       font-size: 0.85rem;
-      color: var(--accent-urgent);
-      font-weight: bold;
+      color: var(--urgent-color);
+      font-weight: 600;
+      cursor: pointer;
     }
 
+    /* 質問リスト */
     .request-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
-    .request-card {
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 12px;
+    .request-item {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       cursor: pointer;
-      transition: background 0.2s;
-      position: relative;
+      border-left: 4px solid var(--primary-color);
+      transition: transform 0.1s ease;
     }
 
-    .request-card:hover {
-      background: #f0f4f8;
+    .request-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .request-item.urgent {
+      border-left-color: var(--urgent-color);
+      background-color: var(--urgent-bg);
+    }
+
+    .request-item.solved {
+      border-left-color: var(--text-sub);
+      background-color: var(--solved-bg);
+      opacity: 0.8;
     }
 
     .request-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
-    .badge {
-      font-size: 0.75rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: white;
-      font-weight: bold;
-    }
-
-    .badge-urgent { background: var(--accent-urgent); }
-    .badge-solved { background: var(--accent-solved); }
-    .badge-open { background: var(--primary); }
-
-    .request-subject {
-      font-weight: bold;
-      font-size: 1rem;
-      margin-bottom: 6px;
-      word-break: break-all;
-    }
-
-    .request-footer {
+    .request-user {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--text-sub);
+    }
+
+    .request-badge {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .badge-urgent {
+      background-color: var(--urgent-color);
+      color: white;
+    }
+
+    .badge-solved {
+      background-color: var(--text-sub);
+      color: white;
+    }
+
+    .request-body {
+      font-size: 1rem;
+      font-weight: 500;
     }
 
     /* チャット画面 */
     #chat-section {
       display: none;
-      height: 100%;
-      flex-direction: column;
     }
 
-    .chat-header {
+    .chat-header-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 8px;
-      margin-bottom: 8px;
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
     .btn-back {
-      background: none;
-      border: none;
-      color: var(--primary);
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 6px;
       cursor: pointer;
-      font-weight: bold;
+      font-size: 0.9rem;
     }
 
-    .btn-delete {
-      background: var(--accent-urgent);
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.8rem;
+    .chat-title-info {
+      flex: 1;
+    }
+
+    .chat-title-info h3 {
+      font-size: 1.1rem;
     }
 
     .chat-box {
-      flex: 1;
+      background: var(--card-bg);
+      border-radius: 12px;
+      height: 450px;
       overflow-y: auto;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      padding: 8px;
-      background: #f0f2f5;
-      border-radius: 8px;
-      max-height: calc(100% - 150px);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 12px;
     }
 
     .msg-row {
       display: flex;
-      gap: 8px;
       align-items: flex-start;
-      max-width: 85%;
+      gap: 8px;
+      max-width: 80%;
     }
 
     .msg-row.my-msg {
@@ -299,23 +362,26 @@
     }
 
     .msg-bubble {
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 12px;
       font-size: 0.95rem;
-      word-break: break-word;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      word-break: break-all;
     }
 
     .my-msg .msg-bubble {
-      background: var(--chat-my-bg);
+      background-color: var(--primary-color);
+      color: white;
+      border-top-right-radius: 2px;
     }
 
     .other-msg .msg-bubble {
-      background: var(--chat-other-bg);
+      background-color: #f0f0f0;
+      color: var(--text-main);
+      border-top-left-radius: 2px;
     }
 
     .msg-image {
-      max-width: 100%;
+      max-width: 200px;
       max-height: 200px;
       border-radius: 8px;
       margin-top: 6px;
@@ -330,106 +396,109 @@
     }
 
     .btn-best-answer {
-      background: #f39c12;
+      background-color: #f59e0b;
       color: white;
       border: none;
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 0.75rem;
       cursor: pointer;
-      margin-top: 6px;
-      font-weight: bold;
+      margin-top: 4px;
+      align-self: flex-start;
     }
 
     /* チャット入力エリア */
     .chat-input-area {
-      margin-top: 8px;
+      background: var(--card-bg);
+      padding: 10px;
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-    }
-
-    .chat-tools {
-      display: flex;
       gap: 8px;
-    }
-
-    .btn-tool {
-      background: #eef2f5;
-      border: 1px solid var(--border-color);
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-
-    .chat-input-row {
-      display: flex;
-      gap: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .image-preview-container {
       display: none;
       align-items: center;
       gap: 8px;
-      background: #eee;
-      padding: 4px 8px;
-      border-radius: 4px;
+      padding: 4px;
+      background: #f9fafb;
+      border-radius: 6px;
     }
 
-    .image-preview-container img {
+    .image-preview-thumb {
+      width: 40px;
       height: 40px;
+      object-fit: cover;
       border-radius: 4px;
     }
 
-    /* 手書き（Canvas）モーダル */
-    .modal {
-      display: none;
+    .chat-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .chat-input-text {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .tool-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-sub);
+    }
+
+    .tool-btn:hover {
+      background-color: #f9fafb;
+    }
+
+    /* キャンバスモーダル */
+    .canvas-modal-overlay {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
+      z-index: 300;
     }
 
-    .modal-content {
-      background: white;
+    .canvas-card {
+      background: var(--card-bg);
       padding: 16px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 500px;
+      border-radius: 12px;
+      width: 95%;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
-    .canvas-wrapper {
-      border: 1px solid var(--border-color);
-      touch-action: none;
-      width: 100%;
-      height: 320px;
-      background: #ffffff;
-    }
-
-    canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
+    .canvas-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .canvas-tools {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
       gap: 8px;
-    }
-
-    .color-picker {
-      display: flex;
-      gap: 6px;
+      align-items: center;
     }
 
     .color-picker-dot {
@@ -444,149 +513,145 @@
       border-color: #333;
     }
 
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
+    #drawCanvas {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      touch-action: none;
+      background-color: #ffffff;
+      width: 100%;
+      height: 320px;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <!-- ヘッダー -->
-    <header>
-      <h1>学級Q&A</h1>
-      <div class="user-info" id="user-info" style="display: none;">
-        <img src="icon01.png" class="user-avatar" id="header-avatar" alt="User">
+  <!-- ヘッダー -->
+  <header>
+    <div class="header-container">
+      <div class="app-title">クラス質問掲示板</div>
+      <div class="user-info">
+        <img id="header-user-icon" class="user-icon" src="icon01.png" alt="User Icon">
         <div>
-          <div id="header-name" style="font-weight: bold;">名前</div>
-          <div style="font-size: 0.75rem;"><span id="header-class">1-A</span> | <span id="header-pt">0</span>pt</div>
+          <div id="header-user-name" style="font-weight: bold; font-size: 0.85rem;">ゲスト</div>
+          <div class="user-stats">ポイント: <span id="header-user-pt">0</span> pt</div>
         </div>
-        <button class="btn-profile" onclick="showLoginScreen()">変更</button>
+        <button class="btn-profile-edit" onclick="showLoginScreen()">設定</button>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main>
-      <!-- 1. プロフィール設定 / ログイン画面 -->
-      <section id="login-section">
-        <h2>プロフィール設定</h2>
-        <div class="form-group">
-          <label>名前</label>
-          <input type="text" id="userNameInput" placeholder="例: たろう">
+  <!-- プロフィール設定モーダル -->
+  <div id="login-overlay" class="login-overlay" style="display: none;">
+    <div class="login-card">
+      <h2>プロフィール設定</h2>
+      <div class="form-group">
+        <label>表示名</label>
+        <input type="text" id="inputName" class="form-control" placeholder="名前を入力">
+      </div>
+      <div class="form-group">
+        <label>所属クラス</label>
+        <select id="inputClass" class="form-control">
+          <option value="">クラスを選択してください</option>
+          <option value="1-A">1年 A組</option>
+          <option value="1-B">1年 B組</option>
+          <option value="2-A">2年 A組</option>
+          <option value="2-B">2年 B組</option>
+          <option value="3-A">3年 A組</option>
+          <option value="3-B">3年 B組</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>アイコン選択</label>
+        <div class="icon-selector">
+          <img class="icon-option" src="icon01.png" onclick="selectIcon('icon01.png', this)">
+          <img class="icon-option" src="icon02.png" onclick="selectIcon('icon02.png', this)">
+          <img class="icon-option" src="icon03.png" onclick="selectIcon('icon03.png', this)">
         </div>
-        <div class="form-group">
-          <label>クラス（クラスID）</label>
-          <input type="text" id="userClassInput" placeholder="例: 1年A組">
-        </div>
-        <div class="form-group">
-          <label>アイコン</label>
-          <select id="userIconSelect">
-            <option value="icon01.png">アイコン 1</option>
-            <option value="icon02.png">アイコン 2</option>
-            <option value="icon03.png">アイコン 3</option>
-          </select>
-        </div>
-        <button class="btn-primary" onclick="saveProfile()">設定して進む</button>
-      </section>
-
-      <!-- 2. 質問一覧 ＆ 新規投稿画面 -->
-      <section id="matching-section">
-        <div class="post-box">
-          <h3>質問を投稿する</h3>
-          <div class="form-group" style="margin-top: 8px;">
-            <input type="text" id="reqSubject" placeholder="質問内容を入力">
-          </div>
-          <div class="checkbox-group">
-            <input type="checkbox" id="reqIsUrgent">
-            <label for="reqIsUrgent">緊急</label>
-          </div>
-          <button class="btn-primary" onclick="createRequest()">投稿する</button>
-        </div>
-
-        <h3>質問一覧</h3>
-        <div class="request-list" id="request-list" style="margin-top: 8px;">
-          <!--  -->
-        </div>
-      </section>
-
-      <!-- 3. チャット画面 -->
-      <section id="chat-section">
-        <div class="chat-header">
-          <button class="btn-back" onclick="backToList()">← 戻る</button>
-          <div id="chat-title" style="font-weight: bold; flex: 1; text-align: center; margin: 0 8px;">質問詳細</div>
-          <button class="btn-delete" id="btn-chat-delete" style="display:none;" onclick="deleteCurrentRequest()">削除</button>
-        </div>
-
-        <div id="chat-sub-hint" style="display:none; font-size: 0.8rem; color: #d35400; background: #fef5e7; padding: 6px; border-radius: 4px; text-align: center; margin-bottom: 6px;">
-          ※ 回答者のメッセージにある「★ベストアンサーに選ぶ」を押すと解決済みになります。
-        </div>
-
-        <div class="chat-box" id="chat-box">
-          <!-- メッセージが動的に追加されます -->
-        </div>
-
-        <div class="chat-input-area">
-          <div class="image-preview-container" id="image-preview-container">
-            <img id="image-preview-thumb" src="" alt="Preview">
-            <button onclick="clearSelectedImage()" style="background:none; border:none; color:red; cursor:pointer;">✕</button>
-          </div>
-
-          <div class="chat-tools">
-            <label class="btn-tool">
-              📷 写真選択
-              <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
-            </label>
-            <button class="btn-tool" onclick="openCanvasModal()">✏️ 手書き</button>
-          </div>
-
-          <div class="chat-input-row">
-            <textarea id="messageText" rows="2" placeholder="メッセージを入力..."></textarea>
-            <button class="btn-primary" id="btn-send" style="width: 80px;" onclick="sendMessage()">送信</button>
-          </div>
-        </div>
-      </section>
-    </main>
+      </div>
+      <button class="btn-primary" onclick="saveProfile()">保存して開始</button>
+    </div>
   </div>
 
-  <!-- 手書き（Canvas）モーダル -->
-  <div class="modal" id="canvas-modal">
-    <div class="modal-content">
-      <h3>手書きメモ</h3>
-      <div class="canvas-wrapper">
-        <canvas id="drawCanvas"></canvas>
-      </div>
-
-      <div class="canvas-tools">
-        <div class="color-picker">
-          <div class="color-picker-dot active" style="background:#000000;" onclick="setPenColor('#000000', this)"></div>
-          <div class="color-picker-dot" style="background:#e74c3c;" onclick="setPenColor('#e74c3c', this)"></div>
-          <div class="color-picker-dot" style="background:#3498db;" onclick="setPenColor('#3498db', this)"></div>
-          <div class="color-picker-dot" style="background:#2ecc71;" onclick="setPenColor('#2ecc71', this)"></div>
-        </div>
-        <div>
-          <button class="btn-tool active" id="tool-pen" onclick="usePen()">ペン</button>
-          <button class="btn-tool" id="tool-eraser" onclick="useEraser()">消しゴム</button>
-          <button class="btn-tool" onclick="clearCanvas()">全消去</button>
+  <div class="container">
+    <!-- 質問投稿・一覧セクション -->
+    <div id="matching-section">
+      <div class="post-card">
+        <textarea id="reqSubject" placeholder="質問したい内容を入力してください..."></textarea>
+        <div class="post-actions">
+          <label class="checkbox-label">
+            <input type="checkbox" id="reqIsUrgent"> 【緊急】ポイントを消費して強調表示 (5pt)
+          </label>
+          <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="createRequest()">質問する</button>
         </div>
       </div>
 
-      <div class="modal-actions">
-        <button class="btn-tool" onclick="closeCanvasModal()">キャンセル</button>
-        <button class="btn-primary" style="width:auto; padding:6px 16px;" onclick="saveCanvasImage()">決定</button>
+      <div class="request-list" id="request-list">
+        <!-- 質問一覧が動的に読み込まれます -->
+      </div>
+    </div>
+
+    <!-- チャットセクション -->
+    <div id="chat-section">
+      <div class="chat-header-bar">
+        <button class="btn-back" onclick="backToList()">← 戻る</button>
+        <div class="chat-title-info">
+          <h3 id="chat-title">質問タイトル</h3>
+          <div id="chat-sub-hint" style="font-size: 0.75rem; color: var(--text-sub); display: none;">
+            ※解決したら、回答の「★ ベストアンサーに選ぶ」を押してください
+          </div>
+        </div>
+        <button id="btn-chat-delete" class="btn-back" style="color: var(--urgent-color); border-color: var(--urgent-color); display: none;" onclick="deleteCurrentRequest()">削除 (2pt)</button>
+      </div>
+
+      <div class="chat-box" id="chat-box">
+        <!-- メッセージが動的に表示されます -->
+      </div>
+
+      <div class="chat-input-area">
+        <div id="image-preview-container" class="image-preview-container">
+          <img id="image-preview-thumb" class="image-preview-thumb" src="">
+          <span style="font-size: 0.8rem; color: var(--text-sub);">画像が選択されています</span>
+          <button style="background: none; border: none; cursor: pointer; color: var(--urgent-color); margin-left: auto;" onclick="clearSelectedImage()">✕ 削除</button>
+        </div>
+        <div class="chat-controls">
+          <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+          <button class="tool-btn" onclick="document.getElementById('imageInput').click()" title="写真を添付">📷</button>
+          <button class="tool-btn" onclick="openCanvasModal()" title="手書きで投稿">✏️</button>
+          <input type="text" id="messageText" class="chat-input-text" placeholder="メッセージを入力..." onkeydown="if(event.key==='Enter') sendMessage()">
+          <button id="btn-send" class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="sendMessage()">送信</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase SDK Modules -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, deleteDoc,
-      query, where, onSnapshot, serverTimestamp, increment 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  <!-- 手書きモーダル -->
+  <div id="canvas-modal" class="canvas-modal-overlay">
+    <div class="canvas-card">
+      <div class="canvas-toolbar">
+        <div class="canvas-tools">
+          <div class="color-picker-dot active" style="background: #000000;" onclick="setPenColor('#000000', this)"></div>
+          <div class="color-picker-dot" style="background: #ef4444;" onclick="setPenColor('#ef4444', this)"></div>
+          <div class="color-picker-dot" style="background: #3b82f6;" onclick="setPenColor('#3b82f6', this)"></div>
+          <button class="tool-btn" id="tool-pen" onclick="usePen()">ペン</button>
+          <button class="tool-btn" id="tool-eraser" onclick="useEraser()">消しゴム</button>
+          <button class="tool-btn" onclick="clearCanvas()">全消去</button>
+        </div>
+        <button class="btn-back" onclick="closeCanvasModal()">✕</button>
+      </div>
+      <canvas id="drawCanvas"></canvas>
+      <button class="btn-primary" onclick="saveCanvasImage()">この手書き画像を添付する</button>
+    </div>
+  </div>
 
-    // --- Firebase 設定（ご自身の環境のキーに置き換えてください） ---
+  <!-- Firebase SDK (v9/v10 Modular) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, deleteDoc, 
+      query, where, onSnapshot, serverTimestamp, increment 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // TODO: ご自身の Firebase 設定に置き換えてください
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -599,20 +664,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- グローバル変数 & 定数 ---
-    const URGENT_COST = 3;     // 緊急質問に必要なpt
-    const DELETE_COST = 1;     // 質問削除に必要なpt
-    const URGENT_REWARD = 3;   // 緊急質問の追加ボーナスpt
+    // --- 定数・グローバル変数 ---
+    const URGENT_COST = 5;
+    const DELETE_COST = 2;
+    const URGENT_REWARD = 5;
 
-    let senderId = localStorage.getItem("app_sender_id");
+    let senderId = localStorage.getItem("app_user_id");
     if (!senderId) {
       senderId = "user_" + Math.random().toString(36).substring(2, 9);
-      localStorage.setItem("app_sender_id", senderId);
+      localStorage.setItem("app_user_id", senderId);
     }
 
-    let myName = "";
-    let myClass = "";
-    let myIcon = "icon01.png";
+    let myName = localStorage.getItem("app_user_name") || "";
+    let myClass = localStorage.getItem("app_user_class") || "";
+    let myIcon = localStorage.getItem("app_user_icon") || "icon01.png";
     let mySolveCount = 0;
 
     let currentRoomId = null;
@@ -625,139 +690,122 @@
     let unsubscribeRequests = null;
     let unsubscribeChat = null;
 
-    // HTMLエスケープ処理
-    function escapeHtml(str) {
-      if (!str) return "";
-      return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    // 初期化ロード
+    // --- 初期化 ---
     window.addEventListener("DOMContentLoaded", () => {
-      loadUserProfile();
-
-      const messageInput = document.getElementById("messageText");
-      if (messageInput) {
-        messageInput.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-          }
-        });
-      }
+      initUserProfile();
     });
 
-    // --- プロフィール設定・読み込み ---
-    async function loadUserProfile() {
-      const userRef = doc(db, "users", senderId);
-      const snap = await getDoc(userRef);
-
-      if (snap.exists()) {
-        const data = snap.data();
-        myName = data.name || "名無し";
-        myClass = data.classId || "";
-        myIcon = data.icon || "icon01.png";
-        mySolveCount = data.solveCount || 0;
-
-        document.getElementById("userNameInput").value = myName;
-        document.getElementById("userClassInput").value = myClass;
-        document.getElementById("userIconSelect").value = myIcon;
-
-        if (myClass) {
-          showMatchingScreen();
-        } else {
-          showLoginScreen();
-        }
-      } else {
+    function initUserProfile() {
+      if (!myName || !myClass) {
         showLoginScreen();
+      } else {
+        updateHeaderUI();
+        syncUserData();
+        listenRequests();
       }
     }
 
-    window.saveProfile = async function() {
-      const nameInput = document.getElementById("userNameInput").value.trim();
-      const classInput = document.getElementById("userClassInput").value.trim();
-      const iconInput = document.getElementById("userIconSelect").value;
+    function updateHeaderUI() {
+      document.getElementById("header-user-name").innerText = `${myName} (${myClass})`;
+      document.getElementById("header-user-icon").src = myIcon;
+      document.getElementById("header-user-pt").innerText = mySolveCount;
+    }
 
-      if (!nameInput || !classInput) {
-        alert("名前とクラスを入力してください。");
+    window.showLoginScreen = function() {
+      document.getElementById("inputName").value = myName;
+      document.getElementById("inputClass").value = myClass;
+      
+      const dots = document.querySelectorAll(".icon-option");
+      dots.forEach(img => {
+        img.classList.toggle("selected", img.getAttribute("src") === myIcon);
+      });
+
+      document.getElementById("login-overlay").style.display = "flex";
+    };
+
+    window.selectIcon = function(iconSrc, el) {
+      myIcon = iconSrc;
+      document.querySelectorAll(".icon-option").forEach(img => img.classList.remove("selected"));
+      el.classList.add("selected");
+    };
+
+    window.saveProfile = async function() {
+      const nameVal = document.getElementById("inputName").value.trim();
+      const classVal = document.getElementById("inputClass").value;
+
+      if (!nameVal) {
+        alert("名前を入力してください。");
+        return;
+      }
+      if (!classVal) {
+        alert("クラスを選択してください。");
         return;
       }
 
-      myName = nameInput;
-      myClass = classInput;
-      myIcon = iconInput;
+      myName = nameVal;
+      myClass = classVal;
 
-      const userRef = doc(db, "users", senderId);
-      await setDoc(userRef, {
-        name: myName,
-        classId: myClass,
-        icon: myIcon,
-        solveCount: mySolveCount
-      }, { merge: true });
+      localStorage.setItem("app_user_name", myName);
+      localStorage.setItem("app_user_class", myClass);
+      localStorage.setItem("app_user_icon", myIcon);
 
-      showMatchingScreen();
-    };
+      document.getElementById("login-overlay").style.display = "none";
+      updateHeaderUI();
 
-    window.showLoginScreen = function() {
-      document.getElementById("user-info").style.display = "none";
-      document.getElementById("login-section").style.display = "flex";
-      document.getElementById("matching-section").style.display = "none";
-      document.getElementById("chat-section").style.display = "none";
-    };
-
-    function showMatchingScreen() {
-      document.getElementById("header-name").innerText = myName;
-      document.getElementById("header-class").innerText = myClass;
-      document.getElementById("header-pt").innerText = mySolveCount;
-      document.getElementById("header-avatar").src = myIcon;
-
-      document.getElementById("user-info").style.display = "flex";
-      document.getElementById("login-section").style.display = "none";
-      document.getElementById("matching-section").style.display = "block";
-      document.getElementById("chat-section").style.display = "none";
+      try {
+        const userRef = doc(db, "users", senderId);
+        await setDoc(userRef, {
+          name: myName,
+          classId: myClass,
+          icon: myIcon
+        }, { merge: true });
+      } catch (e) {
+        console.error("ユーザー設定保存エラー:", e);
+      }
 
       listenRequests();
-      listenUserData();
-    }
+    };
 
-    function listenUserData() {
-      onSnapshot(doc(db, "users", senderId), (docSnap) => {
+    // ユーザーポイントデータ等のリアルタイム同期
+    function syncUserData() {
+      const userRef = doc(db, "users", senderId);
+      onSnapshot(userRef, (docSnap) => {
         if (docSnap.exists()) {
-          mySolveCount = docSnap.data().solveCount || 0;
-          document.getElementById("header-pt").innerText = mySolveCount;
+          const data = docSnap.data();
+          mySolveCount = data.solveCount || 0;
+          document.getElementById("header-user-pt").innerText = mySolveCount;
+        } else {
+          setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() }, { merge: true });
         }
       });
     }
 
-    // --- 質問一覧のリアルタイム取得 ---
+    // --- 質問リストの同期 ---
     function listenRequests() {
+      if (!myClass) return;
       if (unsubscribeRequests) unsubscribeRequests();
 
-      const qRequests = query(
+      const q = query(
         collection(db, "requests"),
         where("classId", "==", myClass)
       );
 
-      unsubscribeRequests = onSnapshot(qRequests, (snapshot) => {
+      unsubscribeRequests = onSnapshot(q, (snapshot) => {
         const listEl = document.getElementById("request-list");
         listEl.innerHTML = "";
 
         if (snapshot.empty) {
-          listEl.innerHTML = "<p style='color: var(--text-sub); text-align: center; padding: 20px;'>質問はまだありません。</p>";
+          listEl.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin-top: 20px;'>現在、質問はありません。</p>";
           return;
         }
 
-        const requests = [];
+        const items = [];
         snapshot.forEach((docSnap) => {
-          requests.push({ id: docSnap.id, ...docSnap.data() });
+          items.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        // 並び順: 未解決 > 緊急 > 新しい順
-        requests.sort((a, b) => {
+        // 緊急度・作成日時順ソート
+        items.sort((a, b) => {
           if (a.isSolved !== b.isSolved) return a.isSolved ? 1 : -1;
           if (a.isUrgent !== b.isUrgent) return b.isUrgent ? 1 : -1;
           const tA = a.createdAt ? (a.createdAt.toMillis ? a.createdAt.toMillis() : a.createdAt) : 0;
@@ -765,35 +813,50 @@
           return tB - tA;
         });
 
-        requests.forEach((req) => {
-          const card = document.createElement("div");
-          card.className = "request-card";
-          
+        items.forEach((item) => {
+          const div = document.createElement("div");
+          let classNames = "request-item";
+          if (item.isSolved) classNames += " solved";
+          else if (item.isUrgent) classNames += " urgent";
+
+          div.className = classNames;
+          div.onclick = () => window.openChatRoom(item.roomId, item.id, item.ownerId, item.subject, item.isSolved, item.isUrgent);
+
           let badgeHtml = "";
-          if (req.isSolved) {
-            badgeHtml = `<span class="badge badge-solved">解決済み</span>`;
-          } else if (req.isUrgent) {
-            badgeHtml = `<span class="badge badge-urgent">🔥 緊急</span>`;
-          } else {
-            badgeHtml = `<span class="badge badge-open">受付中</span>`;
+          if (item.isSolved) {
+            badgeHtml = `<span class="request-badge badge-solved">解決済み</span>`;
+          } else if (item.isUrgent) {
+            badgeHtml = `<span class="request-badge badge-urgent">至急 (5pt)</span>`;
           }
 
-          card.innerHTML = `
-            <div class="request-header">
-              ${badgeHtml}
-              <span style="font-size: 0.75rem; color: var(--text-sub);">${req.ownerName || '匿名'}</span>
-            </div>
-            <div class="request-subject">${escapeHtml(req.subject)}</div>
-          `;
+          const iconSrc = item.ownerIcon || "icon01.png";
 
-          card.onclick = () => openChatRoom(req.roomId, req.id, req.ownerId, req.subject, req.isSolved, req.isUrgent);
-          listEl.appendChild(card);
+          div.innerHTML = `
+            <div class="request-header">
+              <div class="request-user">
+                <img src="${iconSrc}" class="user-icon" style="width:24px; height:24px;">
+                <span>${escapeHtml(item.ownerName || "匿名")}</span>
+              </div>
+              ${badgeHtml}
+            </div>
+            <div class="request-body">${escapeHtml(item.subject)}</div>
+          `;
+          listEl.appendChild(div);
         });
       });
     }
 
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+    }
+
     // --- 質問新規投稿 ---
-    window.createRequest = async function() {
+    async function createRequest() {
       const subjectInput = document.getElementById("reqSubject");
       const isUrgentInput = document.getElementById("reqIsUrgent");
       const subject = subjectInput.value.trim();
@@ -836,11 +899,10 @@
 
         subjectInput.value = "";
         isUrgentInput.checked = false;
-        alert("質問を投稿しました！");
       } catch (e) {
         alert("投稿に失敗しました: " + e.message);
       }
-    };
+    }
 
     // --- チャットルームを開く ---
     window.openChatRoom = function(roomId, docId, ownerId, subject, isSolved, isUrgent) {
@@ -852,14 +914,14 @@
 
       document.getElementById("chat-title").innerText = subject;
       document.getElementById("matching-section").style.display = "none";
-      document.getElementById("chat-section").style.display = "flex";
+      document.getElementById("chat-section").style.display = "block";
 
       const isMyReq = ownerId === senderId;
       const deleteBtn = document.getElementById("btn-chat-delete");
-      if (deleteBtn) deleteBtn.style.display = isMyReq ? "block" : "none";
+      deleteBtn.style.display = isMyReq ? "block" : "none";
 
       const hintEl = document.getElementById("chat-sub-hint");
-      if (hintEl) hintEl.style.display = (isMyReq && !isSolved) ? "block" : "none";
+      hintEl.style.display = (isMyReq && !isSolved) ? "block" : "none";
 
       joinChatRoom(roomId);
     };
@@ -869,7 +931,6 @@
       currentRoomId = null;
       currentDocId = null;
       currentOwnerId = null;
-      clearSelectedImage();
       document.getElementById("chat-section").style.display = "none";
       document.getElementById("matching-section").style.display = "block";
     };
@@ -886,7 +947,7 @@
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
-          const maxDim = 800;
+          const maxDim = 600;
 
           if (width > height && width > maxDim) {
             height *= maxDim / width;
@@ -901,7 +962,7 @@
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          selectedBase64Image = canvas.toDataURL("image/jpeg", 0.7);
+          selectedBase64Image = canvas.toDataURL("image/jpeg", 0.6);
           document.getElementById("image-preview-thumb").src = selectedBase64Image;
           document.getElementById("image-preview-container").style.display = "flex";
         };
@@ -912,10 +973,8 @@
 
     window.clearSelectedImage = function() {
       selectedBase64Image = null;
-      const imgInput = document.getElementById("imageInput");
-      if (imgInput) imgInput.value = "";
-      const container = document.getElementById("image-preview-container");
-      if (container) container.style.display = "none";
+      document.getElementById("imageInput").value = "";
+      document.getElementById("image-preview-container").style.display = "none";
     };
 
     // ==================== 手書き（Canvas）制御処理 ====================
@@ -933,9 +992,8 @@
         canvas = document.getElementById("drawCanvas");
         ctx = canvas.getContext("2d");
         setupCanvas();
-      } else {
-        clearCanvas();
       }
+      clearCanvas();
     };
 
     window.closeCanvasModal = function() {
@@ -944,16 +1002,12 @@
 
     function setupCanvas() {
       const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 2;
-      
-      canvas.width = rect.width * dpr;
-      canvas.height = (rect.height || 320) * dpr;
-      ctx.scale(dpr, dpr);
+      canvas.width = rect.width * 2;
+      canvas.height = 320 * 2;
+      ctx.scale(2, 2);
 
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-
-      clearCanvas();
 
       canvas.addEventListener("mousedown", startDrawing);
       canvas.addEventListener("mousemove", draw);
@@ -961,25 +1015,26 @@
       canvas.addEventListener("mouseleave", stopDrawing);
 
       canvas.addEventListener("touchstart", (e) => {
-        e.preventDefault();
         const touch = e.touches[0];
-        canvas.dispatchEvent(new MouseEvent("mousedown", {
+        const mouseEvent = new MouseEvent("mousedown", {
           clientX: touch.clientX,
           clientY: touch.clientY
-        }));
+        });
+        canvas.dispatchEvent(mouseEvent);
       }, false);
 
       canvas.addEventListener("touchmove", (e) => {
-        e.preventDefault();
         const touch = e.touches[0];
-        canvas.dispatchEvent(new MouseEvent("mousemove", {
+        const mouseEvent = new MouseEvent("mousemove", {
           clientX: touch.clientX,
           clientY: touch.clientY
-        }));
+        });
+        canvas.dispatchEvent(mouseEvent);
       }, false);
 
       canvas.addEventListener("touchend", () => {
-        canvas.dispatchEvent(new MouseEvent("mouseup", {}));
+        const mouseEvent = new MouseEvent("mouseup", {});
+        canvas.dispatchEvent(mouseEvent);
       }, false);
     }
 
@@ -1025,7 +1080,7 @@
       isEraser = false;
       penColor = color;
       document.querySelectorAll('.color-picker-dot').forEach(dot => dot.classList.remove('active'));
-      if (el) el.classList.add('active');
+      el.classList.add('active');
       document.getElementById('tool-pen').classList.add('active');
       document.getElementById('tool-eraser').classList.remove('active');
     };
@@ -1043,10 +1098,9 @@
     };
 
     window.clearCanvas = function() {
-      if (!ctx || !canvas) return;
-      const rect = canvas.getBoundingClientRect();
+      if (!ctx) return;
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.fillRect(0, 0, canvas.width / 2, canvas.height / 2);
     };
 
     window.saveCanvasImage = function() {
@@ -1219,7 +1273,7 @@
       if (!currentRoomId) return;
 
       const btn = document.getElementById("btn-send");
-      if (btn) btn.disabled = true;
+      btn.disabled = true;
 
       try {
         await addDoc(collection(db, "rooms", currentRoomId, "messages"), {
@@ -1236,7 +1290,7 @@
       } catch (e) {
         alert("送信に失敗しました: " + e.message);
       } finally {
-        if (btn) btn.disabled = false;
+        btn.disabled = false;
       }
     };
   </script>
