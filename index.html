@@ -81,6 +81,14 @@
       border-radius: 10px;
     }
 
+    .class-room-tag {
+      background: #1565c0;
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
     h2 {
       font-size: 1.1rem;
       font-weight: 700;
@@ -230,14 +238,12 @@
       border-bottom: none;
     }
 
-    /* 自分の投稿カードのスタイル定義 */
     .request-item.my-request {
       background-color: var(--my-card-bg);
       border-left: 4px solid var(--primary);
       padding-left: 10px;
     }
 
-    /* 自分の投稿を表す「自分」バッジ */
     .my-badge {
       background-color: var(--primary);
       color: white;
@@ -249,7 +255,6 @@
       font-weight: bold;
     }
 
-    /* 解決済みアイテムの文章部分を薄暗くするスタイル */
     .request-item.solved .request-info {
       opacity: 0.55;
     }
@@ -309,7 +314,6 @@
       opacity: 1 !important;
     }
 
-    /* 削除ボタン */
     .btn-delete {
       background-color: var(--danger);
       width: auto;
@@ -352,7 +356,6 @@
       margin-bottom: 12px;
     }
 
-    /* トーク画面 */
     #chat-box {
       border: 1px solid var(--border);
       height: 440px;
@@ -366,7 +369,6 @@
       gap: 16px;
     }
 
-    /* メッセージ行 */
     .msg-row {
       display: flex;
       width: 100%;
@@ -392,7 +394,6 @@
       border: 1px solid var(--border);
     }
 
-    /* 自分のメッセージのアイコンだけを左右反転 */
     .msg-row.my-msg .msg-avatar-img {
       transform: scaleX(-1);
     }
@@ -412,7 +413,6 @@
 
     .my-msg .msg-sender-name { text-align: right; }
 
-    /* フキダシ */
     .msg-bubble {
       padding: 10px 16px;
       border-radius: 18px;
@@ -455,7 +455,6 @@
       font-weight: 700;
     }
 
-    /* ベストアンサーボタン */
     .btn-best-answer {
       background-color: var(--gold);
       color: #5d4037;
@@ -471,7 +470,6 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* 画像プレビュー */
     .image-preview-container {
       display: none;
       align-items: center;
@@ -499,7 +497,6 @@
       cursor: pointer;
     }
 
-    /* チャット入力エリア */
     .chat-input-area {
       display: flex;
       flex-direction: column;
@@ -570,7 +567,7 @@
       background: #ffffff;
       border: 2px dashed var(--border);
       border-radius: 12px;
-      touch-action: none; /* タブレットでのスクロール防止 */
+      touch-action: none;
     }
 
     #drawCanvas {
@@ -636,21 +633,42 @@
   <header id="main-header">
     <h1>学習サポート掲示板</h1>
     <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
+      <span id="badge-class" class="class-room-tag">1-5</span>
       <img id="badge-icon" class="badge-avatar-img" src="icon01.png" alt="icon">
       <span id="badge-name">ゲスト</span>
       <span id="badge-solve-count" class="solve-count-tag">解決: 0</span>
     </div>
   </header>
 
-  <!-- ==================== 0. ログイン / プロフィール設定画面 ==================== -->
+  <!-- ==================== 0. ログイン / ルーム（クラス）選択画面 ==================== -->
   <div id="login-section">
-    <div class="card" style="text-align: center; max-width: 400px; margin: 40px auto;">
-      <h2>アイコンと名前を選ぼう</h2>
-      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;">ベストアンサーに選ばれるとアイコンが増えます！</p>
+    <div class="card" style="text-align: center; max-width: 420px; margin: 30px auto;">
+      <h2>参加するクラスと名前を選ぼう</h2>
+      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;">同じクラスの仲間と教え合いができるルームに入ります。</p>
       
       <p style="font-weight:bold; color:var(--primary); margin-bottom:16px;">現在の解決pt: <span id="user-solve-display">0</span> pt</p>
 
-      <span class="icon-selector-label">アイコンを選択：</span>
+      <!-- クラス選択ドロップダウン（ご指定のクラス一覧） -->
+      <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">参加するクラスルーム：</label>
+      <select id="userClassSelect" onchange="toggleCustomClassInput(this)">
+        <option value="">クラスを選択してください</option>
+        <option value="1-5">1-5</option>
+        <option value="1-6">1-6</option>
+        <option value="1-7">1-7</option>
+        <option value="1-8">1-8</option>
+        <option value="1-9">1-9</option>
+        <option value="1-10">1-10</option>
+        <option value="3-10">3-10</option>
+        <option value="3-11">3-11</option>
+        <option value="custom">★ その他のクラスを自由入力</option>
+      </select>
+
+      <input type="text" id="customClassInput" placeholder="例: 2-1、特進クラスなど" style="display:none;">
+
+      <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">お名前・出席番号：</label>
+      <input type="text" id="userNameInput" placeholder="例：12番 たろう">
+
+      <span class="icon-selector-label">アバターアイコンを選択：</span>
       <div class="icon-selector" id="login-icon-selector">
         <div class="icon-wrapper">
           <img class="icon-option selected" src="icon01.png" data-min="0" onclick="selectLoginIcon('icon01.png', this)" alt="アイコン1">
@@ -680,8 +698,7 @@
         </div>
       </div>
 
-      <input type="text" id="userNameInput" placeholder="名前または出席番号（例：12番 たろう）">
-      <button id="btn-login-submit">掲示板にはいる</button>
+      <button id="btn-login-submit">クラスルームに入る</button>
     </div>
   </div>
 
@@ -689,7 +706,7 @@
   <!-- ==================== 1. 一覧画面 ==================== -->
   <div id="matching-section">
     <div class="card">
-      <h2>質問・相談を投稿する</h2>
+      <h2><span id="current-room-name-display" style="color:var(--primary);">クラス</span> の掲示板に投稿</h2>
       <input type="text" id="reqSubject" placeholder="質問内容（例：数学P24の問3、英語の文法）">
       
       <!-- 緊急チェックボックス -->
@@ -697,11 +714,11 @@
         <input type="checkbox" id="reqIsUrgent"> 緊急（3pt消費）
       </label>
 
-      <button id="btn-create-request">投稿</button>
+      <button id="btn-create-request">投稿する</button>
     </div>
 
     <div class="card">
-      <h2>質問一覧</h2>
+      <h2>質問一覧 (<span id="current-room-name-display-2">クラス</span>)</h2>
       <div id="request-list">読み込み中...</div>
     </div>
   </div>
@@ -725,7 +742,6 @@
       <div id="chat-box"></div>
 
       <div class="chat-input-area" id="chat-input-wrapper">
-        <!-- 画像プレビュー表示枠 -->
         <div id="image-preview-container" class="image-preview-container">
           <img id="image-preview-thumb" class="image-preview-thumb" src="" alt="preview">
           <span style="font-size:0.8rem; flex-grow:1;">画像を添付中</span>
@@ -733,11 +749,9 @@
         </div>
 
         <div class="input-group">
-          <!-- 非表示のファイル選択インプット -->
           <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
           <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を選択">＋</button>
           
-          <!-- 手書き入力ボタン -->
           <button type="button" class="btn-draw-open" onclick="openCanvasModal()" title="手書きでお絵描き">✎</button>
 
           <input type="text" id="messageText" placeholder="メッセージを入力...">
@@ -747,7 +761,7 @@
     </div>
   </div>
 
-  <!-- ==================== 3. 手書き（お絵描き）モーダル ==================== -->
+  <!-- ==================== 3. 手書き（Canvas）モーダル ==================== -->
   <div id="canvas-modal" class="modal-overlay">
     <div class="modal-content">
       <h3 style="margin:0; font-size:1.1rem; text-align:center;">手書きで解説・質問を描く</h3>
@@ -757,7 +771,6 @@
       </div>
 
       <div class="canvas-tools">
-        <!-- 色選択 -->
         <div class="tool-group">
           <div class="color-picker-dot active" style="background:#000000;" onclick="setPenColor('#000000', this)"></div>
           <div class="color-picker-dot" style="background:#d32f2f;" onclick="setPenColor('#d32f2f', this)"></div>
@@ -765,7 +778,6 @@
           <div class="color-picker-dot" style="background:#388e3c;" onclick="setPenColor('#388e3c', this)"></div>
         </div>
 
-        <!-- 太さ＆消しゴム -->
         <div class="tool-group">
           <button type="button" class="btn-canvas-tool active" id="tool-pen" onclick="usePen()">ペン</button>
           <button type="button" class="btn-canvas-tool" id="tool-eraser" onclick="useEraser()">消しゴム</button>
@@ -784,7 +796,7 @@
   <!-- Firebase (v10) SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc, setDoc, increment } 
+    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, getDoc, setDoc, increment } 
       from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -802,8 +814,8 @@
 
     // 定数設定
     const DELETE_COST = 1;
-    const URGENT_COST = 3;  // 緊急投稿に必要なポイント
-    const URGENT_REWARD = 3; // 緊急質問を解決した際のポイント
+    const URGENT_COST = 3;
+    const URGENT_REWARD = 3;
 
     // ユーザー識別用ID
     let senderId = localStorage.getItem("senderId");
@@ -812,6 +824,7 @@
       localStorage.setItem("senderId", senderId);
     }
 
+    let myClass = localStorage.getItem("myClass") || "";
     let myIcon = localStorage.getItem("myIcon") || "icon01.png";
     let myName = localStorage.getItem("myName") || "";
     let mySolveCount = 0;
@@ -820,16 +833,27 @@
     let currentDocId = null;
     let currentOwnerId = null;
     let currentIsSolved = false;
-    let currentIsUrgent = false; // 現在選択中の質問が緊急かどうか
+    let currentIsUrgent = false;
+    let unsubscribeRequests = null;
     let unsubscribeChat = null;
     let unsubscribeUser = null;
-    let selectedBase64Image = null; // 選択された画像データ
+    let selectedBase64Image = null;
 
     // イベントリスナーの登録
     document.getElementById("btn-login-submit").addEventListener("click", saveProfileAndStart);
     document.getElementById("btn-create-request").addEventListener("click", createRequest);
     document.getElementById("btn-send").addEventListener("click", sendMessage);
     document.getElementById("btn-back-to-list").addEventListener("click", backToList);
+
+    // 自由入力のクラス切替
+    window.toggleCustomClassInput = function(selectEl) {
+      const customInput = document.getElementById("customClassInput");
+      if (selectEl.value === "custom") {
+        customInput.style.display = "block";
+      } else {
+        customInput.style.display = "none";
+      }
+    };
 
     // Enterキー送信対応
     document.getElementById("messageText").addEventListener("keypress", (e) => {
@@ -892,6 +916,26 @@
       document.getElementById("user-badge").style.display = "none";
       
       document.getElementById("userNameInput").value = myName;
+
+      const selectEl = document.getElementById("userClassSelect");
+      const customInput = document.getElementById("customClassInput");
+
+      if (myClass) {
+        let matched = false;
+        for (let i = 0; i < selectEl.options.length; i++) {
+          if (selectEl.options[i].value === myClass) {
+            selectEl.selectedIndex = i;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          selectEl.value = "custom";
+          customInput.style.display = "block";
+          customInput.value = myClass;
+        }
+      }
+
       document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
         if (opt.getAttribute("src") === myIcon) opt.classList.add('selected');
         else opt.classList.remove('selected');
@@ -899,88 +943,139 @@
     };
 
     function saveProfileAndStart() {
+      const selectEl = document.getElementById("userClassSelect");
+      let selectedClass = selectEl.value;
+
+      if (selectedClass === "custom") {
+        selectedClass = document.getElementById("customClassInput").value.trim();
+      }
+
       const nameVal = document.getElementById("userNameInput").value.trim();
+
+      if (!selectedClass) {
+        alert("参加するクラスを選択（または入力）してください。");
+        return;
+      }
       if (!nameVal) {
         alert("名前または出席番号を入力してください。");
         return;
       }
+
+      myClass = selectedClass;
       myName = nameVal;
+
+      localStorage.setItem("myClass", myClass);
       localStorage.setItem("myIcon", myIcon);
       localStorage.setItem("myName", myName);
 
+      document.getElementById("badge-class").innerText = myClass;
       document.getElementById("badge-icon").src = myIcon;
       document.getElementById("badge-name").innerText = myName;
       document.getElementById("user-badge").style.display = "flex";
 
+      document.getElementById("current-room-name-display").innerText = myClass;
+      document.getElementById("current-room-name-display-2").innerText = myClass;
+
       document.getElementById("login-section").style.display = "none";
       document.getElementById("matching-section").style.display = "block";
+
+      // 該当クラスの質問一覧を監視開始
+      listenRequests();
     }
 
     // 起動時にリアルタイム監視を開始
     listenUserData();
 
-    if (!myName) {
+    if (!myName || !myClass) {
       showLoginScreen();
     } else {
+      document.getElementById("badge-class").innerText = myClass;
       document.getElementById("badge-icon").src = myIcon;
       document.getElementById("badge-name").innerText = myName;
       document.getElementById("user-badge").style.display = "flex";
+
+      document.getElementById("current-room-name-display").innerText = myClass;
+      document.getElementById("current-room-name-display-2").innerText = myClass;
+
       document.getElementById("matching-section").style.display = "block";
+      listenRequests();
     }
 
-    // --- 質問一覧のリアルタイム取得 ---
-    const qRequests = query(collection(db, "requests"), orderBy("createdAt", "desc"));
-    onSnapshot(qRequests, (snapshot) => {
-      const listEl = document.getElementById("request-list");
-      listEl.innerHTML = "";
+    // --- クラス別の質問一覧をリアルタイム取得 ---
+    function listenRequests() {
+      if (!myClass) return;
 
-      if (snapshot.empty) {
-        listEl.innerHTML = "<p style='color: var(--text-sub); text-align: center; font-size: 0.9rem;'>現在質問はありません。</p>";
-        return;
-      }
+      if (unsubscribeRequests) unsubscribeRequests();
 
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const reqId = docSnap.id;
-        const isMyReq = data.ownerId === senderId;
-        const isSolved = data.isSolved || false;
-        const isUrgent = data.isUrgent || false;
+      // インデックスエラー回避のため、classId条件で絞り込み、JS側で降順ソート
+      const qRequests = query(
+        collection(db, "requests"),
+        where("classId", "==", myClass)
+      );
 
-        const item = document.createElement("div");
-        item.className = `request-item ${isMyReq ? "my-request" : ""} ${isSolved ? "solved" : ""}`;
+      unsubscribeRequests = onSnapshot(qRequests, (snapshot) => {
+        const listEl = document.getElementById("request-list");
+        listEl.innerHTML = "";
 
-        let statusTag = "";
-        if (isSolved) statusTag += `<span class="solved-label">[解決済]</span>`;
-        if (isUrgent && !isSolved) statusTag += `<span class="urgent-label">【緊急】</span>`;
-
-        let deleteBtnHtml = "";
-        if (isMyReq) {
-          deleteBtnHtml = `<button class="btn-delete" onclick="deleteRequest('${reqId}', '${data.ownerId}')">削除</button>`;
+        if (snapshot.empty) {
+          listEl.innerHTML = `<p style='color: var(--text-sub); text-align: center; font-size: 0.9rem;'>現在【${myClass}】に質問はありません。</p>`;
+          return;
         }
 
-        item.innerHTML = `
-          <div class="request-info">
-            <img class="request-avatar-img" src="${data.ownerIcon || 'icon01.png'}" alt="icon">
-            <div>
-              <div class="request-title">
-                ${isMyReq ? '<span class="my-badge">自分</span>' : ''}
-                ${statusTag}${escapeHtml(data.subject)}
-              </div>
-              <div class="request-meta">
-                <span>投稿者: ${escapeHtml(data.ownerName || "匿名")}</span>
+        // Firestoreドキュメントを配列化して最新順（createdAt降順）にソート
+        const docsArray = [];
+        snapshot.forEach((docSnap) => {
+          docsArray.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        docsArray.sort((a, b) => {
+          const tA = a.createdAt ? (a.createdAt.toMillis ? a.createdAt.toMillis() : a.createdAt) : 0;
+          const tB = b.createdAt ? (b.createdAt.toMillis ? b.createdAt.toMillis() : b.createdAt) : 0;
+          return tB - tA;
+        });
+
+        docsArray.forEach((data) => {
+          const reqId = data.id;
+          const isMyReq = data.ownerId === senderId;
+          const isSolved = data.isSolved || false;
+          const isUrgent = data.isUrgent || false;
+
+          const item = document.createElement("div");
+          item.className = `request-item ${isMyReq ? "my-request" : ""} ${isSolved ? "solved" : ""}`;
+
+          let statusTag = "";
+          if (isSolved) statusTag += `<span class="solved-label">[解決済]</span>`;
+          if (isUrgent && !isSolved) statusTag += `<span class="urgent-label">【緊急】</span>`;
+
+          let deleteBtnHtml = "";
+          if (isMyReq) {
+            deleteBtnHtml = `<button class="btn-delete" onclick="deleteRequest('${reqId}', '${data.ownerId}')">削除</button>`;
+          }
+
+          item.innerHTML = `
+            <div class="request-info">
+              <img class="request-avatar-img" src="${data.ownerIcon || 'icon01.png'}" alt="icon">
+              <div>
+                <div class="request-title">
+                  ${isMyReq ? '<span class="my-badge">自分</span>' : ''}
+                  ${statusTag}${escapeHtml(data.subject)}
+                </div>
+                <div class="request-meta">
+                  <span>投稿者: ${escapeHtml(data.ownerName || "匿名")}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="request-actions">
-            <button class="btn-chat" onclick="openChatRoom('${data.roomId}', '${reqId}', '${data.ownerId}', '${escapeHtml(data.subject)}', ${isSolved}, ${isUrgent})">
-              ${isSolved ? "閲覧" : "回答する"}
-            </button>
-            ${deleteBtnHtml}
-          </div>
-        `;
-        listEl.appendChild(item);
+            <div class="request-actions">
+              <button class="btn-chat" onclick="openChatRoom('${data.roomId}', '${reqId}', '${data.ownerId}', '${escapeHtml(data.subject)}', ${isSolved}, ${isUrgent})">
+                ${isSolved ? "閲覧" : "回答する"}
+              </button>
+              ${deleteBtnHtml}
+            </div>
+          `;
+          listEl.appendChild(item);
+        });
       });
-    });
+    }
 
     function escapeHtml(str) {
       return String(str || "").replace(/[&<>"']/g, (m) => ({
@@ -988,7 +1083,7 @@
       })[m]);
     }
 
-    // --- 質問新規投稿 ---
+    // --- 質問新規投稿 (クラスIDを付与) ---
     async function createRequest() {
       const subjectInput = document.getElementById("reqSubject");
       const isUrgentInput = document.getElementById("reqIsUrgent");
@@ -997,6 +1092,12 @@
 
       if (!subject) {
         alert("質問内容を入力してください。");
+        return;
+      }
+
+      if (!myClass) {
+        alert("クラスが設定されていません。一度プロフィール設定を開いてクラスを選択してください。");
+        showLoginScreen();
         return;
       }
 
@@ -1013,6 +1114,7 @@
 
         const roomId = "room_" + Math.random().toString(36).substring(2, 9);
         await addDoc(collection(db, "requests"), {
+          classId: myClass,
           subject: subject,
           ownerId: senderId,
           ownerName: myName,
@@ -1119,7 +1221,7 @@
         ctx = canvas.getContext("2d");
         setupCanvas();
       }
-      clearCanvas(); // 開くたびに綺麗にする
+      clearCanvas();
     };
 
     window.closeCanvasModal = function() {
@@ -1127,17 +1229,14 @@
     };
 
     function setupCanvas() {
-      // 解像度調整（高精細タブレット表示のボヤけ防止）
       const rect = canvas.getBoundingClientRect();
       canvas.width = rect.width * 2;
       canvas.height = 320 * 2;
       ctx.scale(2, 2);
 
-      // 初期スタイル設定
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      // マウス / タッチ イベント listener
       canvas.addEventListener("mousedown", startDrawing);
       canvas.addEventListener("mousemove", draw);
       canvas.addEventListener("mouseup", stopDrawing);
@@ -1239,7 +1338,7 @@
       closeCanvasModal();
     };
 
-    // --- 質問削除処理 (pt消費) ---
+    // --- 質問削除処理 ---
     window.deleteRequest = async function(docId, ownerId) {
       if (ownerId !== senderId) {
         alert("自分の質問しか削除できません。");
@@ -1311,7 +1410,7 @@
       return `${hours}:${minutes}`;
     }
 
-    // --- 5. リアルタイム・チャット受信 ---
+    // --- リアルタイム・チャット受信 ---
     function joinChatRoom(roomId) {
       const chatBox = document.getElementById("chat-box");
       chatBox.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>チャットに接続中...</p>";
@@ -1319,8 +1418,7 @@
       if (unsubscribeChat) unsubscribeChat();
 
       const qMessages = query(
-        collection(db, "rooms", roomId, "messages"),
-        orderBy("timestamp", "asc")
+        collection(db, "rooms", roomId, "messages")
       );
 
       unsubscribeChat = onSnapshot(qMessages, (snapshot) => {
@@ -1331,8 +1429,19 @@
           return;
         }
 
+        const msgArray = [];
         snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
+          msgArray.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        // 古い順（timestamp昇順）にソート
+        msgArray.sort((a, b) => {
+          const tA = a.timestamp ? (a.timestamp.toMillis ? a.timestamp.toMillis() : a.timestamp) : 0;
+          const tB = b.timestamp ? (b.timestamp.toMillis ? b.timestamp.toMillis() : b.timestamp) : 0;
+          return tA - tB;
+        });
+
+        msgArray.forEach((data) => {
           const isMyMsg = data.senderId === senderId;
           const timeStr = formatTime(data.timestamp);
 
@@ -1383,7 +1492,7 @@
       });
     }
 
-    // --- 6. メッセージ送信 ---
+    // --- メッセージ送信 ---
     async function sendMessage() {
       const textInput = document.getElementById("messageText");
       const text = textInput.value.trim();
