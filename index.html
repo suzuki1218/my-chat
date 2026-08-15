@@ -643,12 +643,12 @@
   <!-- ==================== 0. ログイン / ルーム（クラス）選択画面 ==================== -->
   <div id="login-section">
     <div class="card" style="text-align: center; max-width: 420px; margin: 30px auto;">
-      <h2>参加するクラスと名前を選ぼう</h2>
-      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;">同じクラスの仲間と教え合いができるルームに入ります。</p>
+      <h2>ログイン</h2>
+      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;"></p>
       
       <p style="font-weight:bold; color:var(--primary); margin-bottom:16px;">現在の解決pt: <span id="user-solve-display">0</span> pt</p>
 
-      <!-- クラス選択ドロップダウン（ご指定のクラス一覧） -->
+      <!-- クラス選択 -->
       <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">参加するクラスルーム：</label>
       <select id="userClassSelect" onchange="toggleCustomClassInput(this)">
         <option value="">クラスを選択してください</option>
@@ -660,13 +660,13 @@
         <option value="1-10">1-10</option>
         <option value="3-10">3-10</option>
         <option value="3-11">3-11</option>
-        <option value="custom">★ その他のクラスを自由入力</option>
+       
       </select>
 
-      <input type="text" id="customClassInput" placeholder="例: 2-1、特進クラスなど" style="display:none;">
+      <input type="text" id="customClassInput" placeholder="" style="display:none;">
 
       <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">お名前・出席番号：</label>
-      <input type="text" id="userNameInput" placeholder="例：12番 たろう">
+      <input type="text" id="userNameInput" placeholder="">
 
       <span class="icon-selector-label">アバターアイコンを選択：</span>
       <div class="icon-selector" id="login-icon-selector">
@@ -707,11 +707,11 @@
   <div id="matching-section">
     <div class="card">
       <h2><span id="current-room-name-display" style="color:var(--primary);">クラス</span> の掲示板に投稿</h2>
-      <input type="text" id="reqSubject" placeholder="質問内容（例：数学P24の問3、英語の文法）">
+      <input type="text" id="reqSubject" placeholder="質問内容">
       
       <!-- 緊急チェックボックス -->
       <label class="urgent-option-label">
-        <input type="checkbox" id="reqIsUrgent"> 緊急（3pt消費）
+        <input type="checkbox" id="reqIsUrgent"> 緊急
       </label>
 
       <button id="btn-create-request">投稿する</button>
@@ -735,7 +735,7 @@
       <div style="text-align: center;">
         <h2 id="chat-title">質問</h2>
         <p id="chat-sub-hint" style="font-size:0.8rem; color:var(--text-sub); margin:-8px 0 12px 0; display:none;">
-          質問者は一番参考になった「ベストアンサー」を押してください
+          質問者は一番参考になった「ベストアンサー」を選ぶ
         </p>
       </div>
 
