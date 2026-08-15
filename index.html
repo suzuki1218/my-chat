@@ -651,7 +651,7 @@
       <!-- クラス選択 -->
       <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">参加するクラスルーム：</label>
       <select id="userClassSelect" onchange="toggleCustomClassInput(this)">
-        <option value="">クラスを選択してください</option>
+        <option value="">クラスを選択</option>
         <option value="1-5">1-5</option>
         <option value="1-6">1-6</option>
         <option value="1-7">1-7</option>
@@ -662,12 +662,12 @@
         <option value="3-11">3-11</option>
       </select>
 
-      <input type="text" id="customClassInput" placeholder="例: 2-1、特進クラスなど" style="display:none;">
+      <input type="text" id="customClassInput" placeholder="" style="display:none;">
 
       <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">お名前・出席番号：</label>
-      <input type="text" id="userNameInput" placeholder="例：12番 たろう">
+      <input type="text" id="userNameInput" placeholder="">
 
-      <span class="icon-selector-label">アバターアイコンを選択：</span>
+      <span class="icon-selector-label">アイコンを選択：</span>
       <div class="icon-selector" id="login-icon-selector">
         <div class="icon-wrapper">
           <img class="icon-option selected" src="icon01.png" data-min="0" onclick="selectLoginIcon('icon01.png', this)" alt="アイコン1">
@@ -697,7 +697,7 @@
         </div>
       </div>
 
-      <button id="btn-login-submit">クラスルームに入る</button>
+      <button id="btn-login-submit">入室</button>
     </div>
   </div>
 
@@ -734,7 +734,7 @@
       <div style="text-align: center;">
         <h2 id="chat-title">質問</h2>
         <p id="chat-sub-hint" style="font-size:0.8rem; color:var(--text-sub); margin:-8px 0 12px 0; display:none;">
-          質問者は一番参考になった「ベストアンサー」に選ぶ
+          質問者は一番参考になった「ベストアンサー」を選ぶ
         </p>
       </div>
 
@@ -753,7 +753,7 @@
           
           <button type="button" class="btn-draw-open" onclick="openCanvasModal()" title="手書き">✎</button>
 
-          <input type="text" id="messageText" placeholder="メッセージを入力...">
+          <input type="text" id="messageText" placeholder="メッセージを入力">
           <button id="btn-send" class="btn-send-msg">送信</button>
         </div>
       </div>
@@ -763,7 +763,7 @@
   <!-- ==================== 3. 手書き（Canvas）モーダル ==================== -->
   <div id="canvas-modal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin:0; font-size:1.1rem; text-align:center;">手書きで解説・質問を描く</h3>
+      <h3 style="margin:0; font-size:1.1rem; text-align:center;">手書きで描く</h3>
       
       <div class="canvas-container">
         <canvas id="drawCanvas"></canvas>
@@ -786,7 +786,7 @@
 
       <div class="modal-actions">
         <button type="button" class="btn-modal-cancel" onclick="closeCanvasModal()">キャンセル</button>
-        <button type="button" class="btn-modal-submit" onclick="saveCanvasImage()">完成・添付する</button>
+        <button type="button" class="btn-modal-submit" onclick="saveCanvasImage()">添付する</button>
       </div>
     </div>
   </div>
