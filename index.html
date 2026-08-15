@@ -4,102 +4,169 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>質問掲示板</title>
+  <!-- どうぶつの森風の丸みのあるフォント -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+
   <style>
-    /* どうぶつの森風の温かみのある配色（緑・ベージュ） */
     :root {
-      --bg-color: #f7f3e9;         /* 温かみのあるベージュ */
-      --main-green: #71b382;       /* やわらかい緑 */
-      --dark-green: #528c62;       /* 濃いめの緑（ボタン・見出し） */
-      --card-bg: #fffdf9;          /* カードの背景 */
-      --border-color: #e2d7c5;     /* 外枠のベージュ系境界線 */
-      --text-color: #5c4b37;       /* ダークブラウン（文字色） */
-      --emergency-bg: #fff0f0;     /* 緊急用の淡い赤 */
-      --emergency-border: #e06d6d; /* 緊急用の境界線 */
+      --bg-color: #f2ede1;         /* 温かみのあるクリームベージュ */
+      --main-green: #58a969;       /* どうぶつの森風のやさしい緑 */
+      --dark-green: #3d7948;       /* 濃い緑（枠線・ボタン shadow） */
+      --header-green: #488b56;     /* ヘッダー用緑 */
+      --card-bg: #fffdf9;          /* カード背景 */
+      --border-color: #d8cdb8;     /* 枠線ベージュ */
+      --text-color: #4a3e31;       /* ダークブラウン（文字） */
+      --chat-bg: #e5edd7;          /* チャットエリア背景 */
+      --bubble-bg: #ffffff;        /* チャット吹き出し */
+      --emergency-bg: #fde8e8;     /* 緊急時背景 */
+      --emergency-border: #e06d6d;
+      --solved-bg: #e2f0d9;        /* 解決済み用緑系背景 */
+      --solved-border: #70ad47;
+      --gold-star: #f1c40f;        /* ベストアンサー用ゴールド */
     }
 
     body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      font-family: 'M PLUS Rounded 1c', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       background-color: var(--bg-color);
       color: var(--text-color);
+      letter-spacing: 0.02em;
     }
 
     .container {
       max-width: 600px;
       margin: 0 auto;
-      background: var(--card-bg);
-      padding: 24px;
-      border-radius: 16px;
-      border: 3px solid var(--border-color);
-      box-shadow: 0 4px 12px rgba(92, 75, 55, 0.08);
+      background: var(--bg-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 15px rgba(74, 62, 49, 0.1);
     }
 
-    h1 {
+    /* ヘッダー */
+    .header {
+      background-color: var(--header-green);
+      color: #ffffff;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 4px solid var(--dark-green);
+    }
+
+    .header-left, .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    .point-badge {
+      background-color: #f39c12;
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      border: 2px solid #d35400;
+    }
+
+    .header-btn {
+      background: var(--dark-green);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 700;
+      width: auto;
+      box-shadow: none;
+    }
+
+    /* 画面切り替え制御 */
+    .page {
+      display: none;
+      padding: 20px;
+      flex: 1;
+    }
+
+    .page.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ログイン画面カード */
+    .login-card {
+      background: var(--card-bg);
+      border: 3px solid var(--border-color);
+      border-radius: 20px;
+      padding: 24px;
+      margin: auto 0;
+      box-shadow: 0 6px 0 var(--border-color);
+    }
+
+    .login-title {
       text-align: center;
       color: var(--dark-green);
-      font-size: 1.5rem;
+      font-size: 1.4rem;
+      font-weight: 800;
       margin-top: 0;
       margin-bottom: 20px;
     }
 
-    h2 {
-      text-align: center;
-      color: var(--dark-green);
-      font-size: 1.2rem;
-      margin-top: 30px;
-      margin-bottom: 15px;
-      border-bottom: 2px dashed var(--border-color);
-      padding-bottom: 8px;
-    }
-
-    .class-status-bar {
-      background: #efe9dc;
-      padding: 12px 16px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      border: 1px solid var(--border-color);
-    }
-
+    /* フォームパーツ */
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
     label {
       display: block;
       margin-bottom: 6px;
-      font-weight: bold;
+      font-weight: 700;
       color: var(--text-color);
       font-size: 0.95rem;
     }
 
-    input[type="text"], textarea, select {
+    input[type="text"], textarea {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       box-sizing: border-box;
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
+      border: 3px solid var(--border-color);
+      border-radius: 12px;
       background-color: #ffffff;
       color: var(--text-color);
-      font-size: 0.95rem;
+      font-size: 1rem;
+      font-family: inherit;
       outline: none;
     }
 
-    input[type="text"]:focus, textarea:focus, select:focus {
+    input[type="text"]:focus, textarea:focus {
       border-color: var(--main-green);
     }
 
-    /* GitHubのアイコン画像ラジオボタン選択 */
+    /* アイコン選択ラジオボタン */
     .icon-selector {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .icon-option {
       cursor: pointer;
-      display: inline-block;
     }
 
     .icon-option input[type="radio"] {
@@ -107,33 +174,36 @@
     }
 
     .icon-option img {
-      width: 44px;
-      height: 44px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
-      border: 3px solid transparent;
+      border: 3px solid var(--border-color);
+      background-color: #ffffff;
+      transition: all 0.15s ease;
       box-sizing: border-box;
-      background-color: #efe9dc;
-      transition: all 0.2s ease;
     }
 
     .icon-option input[type="radio"]:checked + img {
       border-color: var(--main-green);
+      border-width: 4px;
       transform: scale(1.1);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
 
+    /* ボタン共通 */
     button {
       width: 100%;
       padding: 12px;
       background-color: var(--main-green);
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: bold;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 3px 0 var(--dark-green);
-      transition: background-color 0.2s, transform 0.1s;
+      box-shadow: 0 4px 0 var(--dark-green);
+      font-family: inherit;
+      transition: background-color 0.1s, transform 0.1s;
     }
 
     button:hover {
@@ -142,25 +212,26 @@
 
     button:active {
       transform: translateY(2px);
-      box-shadow: 0 1px 0 var(--dark-green);
+      box-shadow: 0 2px 0 var(--dark-green);
     }
 
+    /* キャンバス */
     canvas {
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
+      border: 3px solid var(--border-color);
+      border-radius: 12px;
       cursor: crosshair;
       touch-action: none;
       width: 100%;
-      height: 180px;
+      height: 160px;
       display: block;
       background-color: #ffffff;
     }
 
     .clear-btn {
       background-color: #d98880;
-      box-shadow: 0 2px 0 #b35e56;
+      box-shadow: 0 3px 0 #b35e56;
       margin-top: 6px;
-      padding: 6px;
+      padding: 6px 12px;
       font-size: 0.85rem;
       width: auto;
     }
@@ -169,16 +240,35 @@
       background-color: #b35e56;
     }
 
+    /* 質問投稿フォームエリア */
+    .post-card {
+      background: var(--card-bg);
+      border: 3px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 0 var(--border-color);
+    }
+
+    .section-title {
+      color: var(--dark-green);
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 12px;
+      border-bottom: 2px dashed var(--border-color);
+      padding-bottom: 6px;
+    }
+
     /* 質問一覧アイテム */
     .request-item {
-      background: #ffffff;
-      border: 2px solid var(--border-color);
-      border-radius: 12px;
+      background: var(--card-bg);
+      border: 3px solid var(--border-color);
+      border-radius: 16px;
       padding: 14px;
-      margin-bottom: 12px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 0 var(--border-color);
+      position: relative;
     }
 
     .request-item.emergency {
@@ -186,109 +276,308 @@
       border-color: var(--emergency-border);
     }
 
-    .item-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 2px solid var(--border-color);
-      flex-shrink: 0;
-      background-color: #efe9dc;
-    }
-
-    .item-body {
-      flex: 1;
+    .request-item.solved {
+      background-color: var(--solved-bg);
+      border-color: var(--solved-border);
     }
 
     .item-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .item-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      background-color: #ffffff;
+    }
+
+    .item-user-info {
+      flex: 1;
     }
 
     .item-name {
-      font-weight: bold;
-      color: var(--text-color);
+      font-weight: 800;
       font-size: 0.95rem;
     }
 
-    .emergency-badge {
-      color: #ffffff;
-      background-color: var(--emergency-border);
+    .status-badge {
       font-size: 0.75rem;
       font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 4px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      margin-left: 6px;
+      color: #ffffff;
     }
+
+    .badge-emergency { background-color: var(--emergency-border); }
+    .badge-unsolved { background-color: #e67e22; }
+    .badge-solved { background-color: var(--solved-border); }
 
     .item-text {
       font-size: 0.95rem;
       line-height: 1.4;
       white-space: pre-wrap;
       word-break: break-all;
+      margin-bottom: 10px;
     }
 
     .item-image {
       max-width: 100%;
-      border-radius: 8px;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      margin-bottom: 10px;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .visit-btn {
+      background-color: var(--main-green);
+      box-shadow: 0 3px 0 var(--dark-green);
+      font-size: 0.9rem;
+      padding: 8px;
+      flex: 1;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      box-shadow: 0 3px 0 #c0392b;
+      font-size: 0.85rem;
+      padding: 8px 12px;
+      width: auto;
+    }
+
+    /* チャット画面 */
+    .chat-info-card {
+      background: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .chat-area {
+      flex: 1;
+      background-color: var(--chat-bg);
+      border: 3px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 12px;
+      max-height: 350px;
+    }
+
+    .chat-bubble-container {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 4px;
+    }
+
+    .chat-bubble {
+      display: flex;
+      gap: 8px;
+      max-width: 85%;
+    }
+
+    .chat-bubble.my-msg {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .chat-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
       border: 1px solid var(--border-color);
+      background-color: #fff;
+    }
+
+    .chat-content {
+      background: var(--bubble-bg);
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 2px solid var(--border-color);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      word-break: break-all;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .chat-bubble.my-msg .chat-content {
+      background-color: #d2f0d4;
+      border-color: #92ca96;
+    }
+
+    /* ベストアンサー表示 */
+    .best-answer-content {
+      border: 3px solid var(--gold-star) !important;
+      background-color: #fffdf0 !important;
+    }
+
+    .best-answer-tag {
+      background-color: var(--gold-star);
+      color: #333;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
+    .best-answer-btn {
+      background-color: #f39c12;
+      box-shadow: 0 2px 0 #d35400;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+      width: auto;
+      align-self: flex-start;
+    }
+
+    .msg-delete-btn {
+      background-color: #e74c3c;
+      box-shadow: 0 2px 0 #c0392b;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+      width: auto;
+      align-self: flex-end;
+    }
+
+    .chat-name {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 2px;
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input-area input {
+      flex: 1;
+    }
+
+    .chat-send-btn {
+      width: 80px;
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+
+    .solve-toggle-btn {
+      background-color: #70ad47;
+      box-shadow: 0 3px 0 #4e7a32;
+      font-size: 0.85rem;
+      padding: 6px 12px;
       margin-top: 8px;
+      width: auto;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>質問掲示板</h1>
+  <!-- ヘッダー -->
+  <div class="header">
+    <div class="header-left">
+      <h1 id="headerTitle">質問掲示板</h1>
+    </div>
+    <div class="header-right">
+      <span id="userPointBadge" class="point-badge" style="display: none;">0pt</span>
+      <button id="headerBackBtn" class="header-btn" style="display: none;">退室</button>
+    </div>
+  </div>
 
-  <!-- クラスコード入力エリア -->
-  <div class="class-status-bar">
-    <div class="form-group" style="margin-bottom: 0;">
-      <label for="roomCodeInput">クラスコードを入力</label>
-      <div style="display: flex; gap: 6px;">
+  <!-- 1. ログイン画面 -->
+  <div id="loginPage" class="page active">
+    <div class="login-card">
+      <div class="login-title">掲示板に入る</div>
+      
+      <div class="form-group">
+        <label for="roomCodeInput">クラスコード</label>
         <input type="text" id="roomCodeInput" placeholder="例: 0105" maxlength="10">
-        <button id="setRoomBtn" style="width: 100px; padding: 8px;">決定</button>
       </div>
-      <p id="currentRoomText" style="margin: 6px 0 0 0; font-size: 0.85rem; color: #7c6c58;"></p>
+
+      <div class="form-group">
+        <label for="nameInput">お名前</label>
+        <input type="text" id="nameInput" placeholder="名前を入力">
+      </div>
+
+      <div class="form-group">
+        <label>アイコンを選択</label>
+        <div class="icon-selector" id="iconSelector">
+          <!-- icon01.png 〜 icon08.png 自動生成 -->
+        </div>
+      </div>
+
+      <button id="loginBtn">入室する</button>
     </div>
   </div>
 
-  <!-- 投稿フォーム -->
-  <div class="form-group">
-    <label for="nameInput">お名前</label>
-    <input type="text" id="nameInput" placeholder="名前を入力">
-  </div>
+  <!-- 2. 質問投稿・一覧画面 -->
+  <div id="mainPage" class="page">
+    <!-- 新規質問投稿エリア -->
+    <div class="post-card">
+      <div class="section-title">質問を投稿する</div>
+      
+      <div class="form-group">
+        <label for="textInput">質問内容</label>
+        <textarea id="textInput" rows="3" placeholder="質問を入力してください"></textarea>
+      </div>
 
-  <!-- GitHubのアイコン画像選択（icon01.png ～ icon08.png） -->
-  <div class="form-group">
-    <label>アイコンを選択</label>
-    <div class="icon-selector" id="iconSelector">
-      <!-- JavaScriptで動的生成（icon01.png ～ icon08.png） -->
+      <div class="form-group">
+        <label>手書きメモ</label>
+        <canvas id="drawCanvas"></canvas>
+        <button type="button" id="clearCanvasBtn" class="clear-btn">手書きをクリア</button>
+      </div>
+
+      <div class="form-group">
+        <label style="color: #c0392b; cursor: pointer;">
+          <input type="checkbox" id="emergencyCheck"> 緊急質問 (要 3pt消費)
+        </label>
+      </div>
+
+      <button id="sendBtn">送信する</button>
+    </div>
+
+    <!-- 質問一覧エリア -->
+    <div class="section-title">質問一覧</div>
+    <div id="requestList">
+      <!-- 投稿された質問がここに表示されます -->
     </div>
   </div>
 
-  <div class="form-group">
-    <label for="textInput">質問内容</label>
-    <textarea id="textInput" rows="4" placeholder="質問を入力"></textarea>
-  </div>
+  <!-- 3. チャット画面（見に行く選択時） -->
+  <div id="chatPage" class="page">
+    <div class="chat-info-card" id="chatInfoArea">
+      <!-- 選択された質問内容の要約が表示されます -->
+    </div>
 
-  <div class="form-group">
-    <label>手書きメモ</label>
-    <canvas id="drawCanvas"></canvas>
-    <button type="button" id="clearCanvasBtn" class="clear-btn">手書きをクリア</button>
-  </div>
+    <div class="section-title">チャット</div>
+    <div class="chat-area" id="chatMessages">
+      <!-- メッセージが表示されます -->
+    </div>
 
-  <div class="form-group">
-    <label style="color: #c0392b; cursor: pointer;">
-      <input type="checkbox" id="emergencyCheck"> 緊急質問
-    </label>
-  </div>
-
-  <button id="sendBtn">送信</button>
-
-  <h2>質問一覧</h2>
-  <div id="requestList">
-    <p>クラスコードを入力すると質問が表示されます。</p>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="メッセージを入力...">
+      <button id="chatSendBtn" class="chat-send-btn">送信</button>
+    </div>
   </div>
 </div>
 
@@ -298,6 +587,12 @@
     getFirestore, 
     collection, 
     addDoc, 
+    doc,
+    getDoc,
+    setDoc,
+    deleteDoc,
+    updateDoc,
+    increment,
     query, 
     where, 
     orderBy, 
@@ -318,10 +613,30 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // GitHubのアイコン基準パス（リポジトリのルートまたは配置フォルダに合わせて指定してください）
   const ICON_BASE_URL = "./"; 
 
-  // アイコン選択肢の動的生成 (icon01.png 〜 icon08.png)
+  // ユーザー状態
+  let currentUser = {
+    roomCode: '',
+    name: '',
+    icon: 'icon01.png',
+    points: 3 // 初期pt
+  };
+  let currentRequestData = null; 
+  let currentRequestId = null;   
+  let mainUnsubscribe = null;
+  let chatUnsubscribe = null;
+  let userUnsubscribe = null;
+
+  // DOM要素
+  const loginPage = document.getElementById('loginPage');
+  const mainPage = document.getElementById('mainPage');
+  const chatPage = document.getElementById('chatPage');
+  const headerTitle = document.getElementById('headerTitle');
+  const headerBackBtn = document.getElementById('headerBackBtn');
+  const userPointBadge = document.getElementById('userPointBadge');
+
+  // アイコン選択肢生成
   const iconSelector = document.getElementById('iconSelector');
   for (let i = 1; i <= 8; i++) {
     const num = String(i).padStart(2, '0');
@@ -335,35 +650,91 @@
     iconSelector.appendChild(label);
   }
 
-  let currentRoomCode = localStorage.getItem('user_room_code') || '';
-  let unsubscribe = null;
-
-  const roomCodeInput = document.getElementById('roomCodeInput');
-  const setRoomBtn = document.getElementById('setRoomBtn');
-  const currentRoomText = document.getElementById('currentRoomText');
-  const requestList = document.getElementById('requestList');
-
-  if (currentRoomCode) {
-    roomCodeInput.value = currentRoomCode;
-    updateRoomDisplay();
-    setupSnapshotListener();
+  // 自動ログイン確認
+  const savedCode = localStorage.getItem('user_room_code');
+  const savedName = localStorage.getItem('user_name');
+  const savedIcon = localStorage.getItem('user_icon');
+  if (savedCode && savedName) {
+    document.getElementById('roomCodeInput').value = savedCode;
+    document.getElementById('nameInput').value = savedName;
+    if (savedIcon) {
+      const radio = document.querySelector(`input[name="iconSelect"][value="${savedIcon}"]`);
+      if (radio) radio.checked = true;
+    }
   }
 
-  setRoomBtn.addEventListener('click', () => {
-    const code = roomCodeInput.value.trim();
+  // --- ログイン処理 ---
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const code = document.getElementById('roomCodeInput').value.trim();
+    const name = document.getElementById('nameInput').value.trim() || '匿名';
+    const icon = document.querySelector('input[name="iconSelect"]:checked')?.value || 'icon01.png';
+
     if (!code) {
       alert("クラスコードを入力してください。");
       return;
     }
-    currentRoomCode = code;
-    localStorage.setItem('user_room_code', currentRoomCode);
-    updateRoomDisplay();
-    setupSnapshotListener();
+
+    currentUser = { roomCode: code, name: name, icon: icon, points: 3 };
+
+    localStorage.setItem('user_room_code', code);
+    localStorage.setItem('user_name', name);
+    localStorage.setItem('user_icon', icon);
+
+    await initUserAccount();
+    showMainPage();
   });
 
-  function updateRoomDisplay() {
-    currentRoomText.textContent = `現在のクラスコード: ${currentRoomCode}`;
+  // ユーザーアカウント初期化・リアルタイム監視（ポイント管理）
+  async function initUserAccount() {
+    const userDocRef = doc(db, "rooms", currentUser.roomCode, "users", currentUser.name);
+    const docSnap = await getDoc(userDocRef);
+
+    if (!docSnap.exists()) {
+      // 初期作成（初回3ptを付与）
+      await setDoc(userDocRef, {
+        name: currentUser.name,
+        icon: currentUser.icon,
+        points: 3
+      });
+    }
+
+    if (userUnsubscribe) userUnsubscribe();
+    userUnsubscribe = onSnapshot(userDocRef, (snap) => {
+      if (snap.exists()) {
+        currentUser.points = snap.data().points || 0;
+        userPointBadge.textContent = `${currentUser.points}pt`;
+      }
+    });
   }
+
+  function showMainPage() {
+    loginPage.classList.remove('active');
+    chatPage.classList.remove('active');
+    mainPage.classList.add('active');
+
+    headerTitle.textContent = `クラス ${currentUser.roomCode}`;
+    headerBackBtn.style.display = 'block';
+    headerBackBtn.textContent = '退室';
+    userPointBadge.style.display = 'inline-block';
+
+    setupMainSnapshot();
+    initCanvas();
+  }
+
+  // 退室・戻るボタン
+  headerBackBtn.addEventListener('click', () => {
+    if (chatPage.classList.contains('active')) {
+      showMainPage();
+    } else {
+      mainPage.classList.remove('active');
+      loginPage.classList.add('active');
+      headerTitle.textContent = '質問掲示板';
+      headerBackBtn.style.display = 'none';
+      userPointBadge.style.display = 'none';
+      if (mainUnsubscribe) mainUnsubscribe();
+      if (userUnsubscribe) userUnsubscribe();
+    }
+  });
 
   // --- 手書きCanvas機能 ---
   const canvas = document.getElementById('drawCanvas');
@@ -371,14 +742,14 @@
   let isDrawing = false;
 
   function initCanvas() {
-    canvas.width = canvas.parentElement.clientWidth - 4;
-    canvas.height = 180;
-    ctx.lineWidth = 2;
+    if (!canvas.parentElement) return;
+    canvas.width = canvas.parentElement.clientWidth - 6;
+    canvas.height = 160;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = '#5c4b37';
+    ctx.strokeStyle = '#4a3e31';
   }
   window.addEventListener('resize', initCanvas);
-  initCanvas();
 
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
@@ -423,82 +794,141 @@
     return canvas.toDataURL() === blank.toDataURL();
   }
 
-  // --- Firestore リアルタイム取得 ---
-  function setupSnapshotListener() {
-    if (unsubscribe) unsubscribe();
-
-    if (!currentRoomCode) {
-      requestList.innerHTML = '<p>クラスコードを入力すると質問が表示されます。</p>';
-      return;
-    }
+  // --- 質問一覧リアルタイム取得 ---
+  function setupMainSnapshot() {
+    if (mainUnsubscribe) mainUnsubscribe();
 
     const q = query(
       collection(db, "requests"),
-      where("roomCode", "==", currentRoomCode),
+      where("roomCode", "==", currentUser.roomCode),
       orderBy("createdAt", "desc")
     );
 
-    unsubscribe = onSnapshot(q, (snapshot) => {
+    const requestList = document.getElementById('requestList');
+
+    mainUnsubscribe = onSnapshot(q, (snapshot) => {
       requestList.innerHTML = '';
 
       if (snapshot.empty) {
-        requestList.innerHTML = '<p>質問はありません。</p>';
+        requestList.innerHTML = '<p style="text-align:center; color:#888;">質問はまだありません。</p>';
         return;
       }
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const id = docSnap.id;
         const div = document.createElement('div');
-        div.className = `request-item ${data.isEmergency ? 'emergency' : ''}`;
+        
+        const isSolved = data.isSolved || false;
+        const isOwner = data.name === currentUser.name;
+        div.className = `request-item ${data.isEmergency ? 'emergency' : ''} ${isSolved ? 'solved' : ''}`;
 
         const iconFile = data.icon || 'icon01.png';
-        const imgHtml = data.imageData ? `<br><img src="${data.imageData}" class="item-image">` : '';
+        const imgHtml = data.imageData ? `<img src="${data.imageData}" class="item-image">` : '';
+
+        let statusBadge = isSolved 
+          ? '<span class="status-badge badge-solved">解決済み</span>'
+          : '<span class="status-badge badge-unsolved">未解決</span>';
+
+        if (data.isEmergency && !isSolved) {
+          statusBadge += '<span class="status-badge badge-emergency">緊急</span>';
+        }
+
+        const deleteBtnHtml = isOwner ? `<button class="delete-btn" data-id="${id}">削除 (-3pt)</button>` : '';
 
         div.innerHTML = `
-          <img src="${ICON_BASE_URL}${iconFile}" class="item-avatar" alt="icon" onerror="this.src='${ICON_BASE_URL}icon01.png'">
-          <div class="item-body">
-            <div class="item-header">
+          <div class="item-header">
+            <img src="${ICON_BASE_URL}${iconFile}" class="item-avatar" onerror="this.src='${ICON_BASE_URL}icon01.png'">
+            <div class="item-user-info">
               <span class="item-name">${escapeHtml(data.name)}</span>
-              ${data.isEmergency ? '<span class="emergency-badge">[緊急]</span>' : ''}
+              ${statusBadge}
             </div>
-            <div class="item-text">${escapeHtml(data.text)}</div>
-            ${imgHtml}
+          </div>
+          <div class="item-text">${escapeHtml(data.text)}</div>
+          ${imgHtml}
+          <div class="action-row">
+            <button class="visit-btn" data-id="${id}">見に行く</button>
+            ${deleteBtnHtml}
           </div>
         `;
+
+        div.querySelector('.visit-btn').addEventListener('click', () => {
+          openChatPage(id, data);
+        });
+
+        if (isOwner) {
+          div.querySelector('.delete-btn').addEventListener('click', () => {
+            deleteRequestItem(id);
+          });
+        }
+
         requestList.appendChild(div);
       });
     });
   }
 
-  // --- 送信処理 ---
-  document.getElementById('sendBtn').addEventListener('click', async () => {
-    if (!currentRoomCode) {
-      alert("クラスコードを入力・決定してください。");
+  // 質問削除機能（投稿主のみ・3pt消費）
+  async function deleteRequestItem(requestId) {
+    if (currentUser.points < 3) {
+      alert("削除には3pt必要です。ポイントが不足しています。");
       return;
     }
 
-    const nameInput = document.getElementById('nameInput');
+    if (!confirm("投稿を削除しますか？(3pt消費されます)")) return;
+
+    try {
+      // 3ptを減算
+      const userDocRef = doc(db, "rooms", currentUser.roomCode, "users", currentUser.name);
+      await updateDoc(userDocRef, {
+        points: increment(-3)
+      });
+
+      // ドキュメントを削除
+      await deleteDoc(doc(db, "requests", requestId));
+      alert("投稿を削除しました。");
+    } catch (e) {
+      console.error("Delete error: ", e);
+      alert("削除処理に失敗しました。");
+    }
+  }
+
+  // 新規質問送信（緊急は3pt消費）
+  document.getElementById('sendBtn').addEventListener('click', async () => {
     const textInput = document.getElementById('textInput');
     const emergencyCheck = document.getElementById('emergencyCheck');
-    const selectedIcon = document.querySelector('input[name="iconSelect"]:checked')?.value || 'icon01.png';
 
-    const name = nameInput.value.trim() || '匿名';
     const text = textInput.value.trim();
     const hasCanvas = !isCanvasBlank();
+    const isEmergency = emergencyCheck.checked;
 
     if (!text && !hasCanvas) {
       alert("質問内容または手書き入力をしてください。");
       return;
     }
 
+    // 緊急投稿時のポイントチェック
+    if (isEmergency && currentUser.points < 3) {
+      alert("緊急投稿には3pt必要です。ポイントが不足しています。");
+      return;
+    }
+
     try {
+      if (isEmergency) {
+        // 3pt減算
+        const userDocRef = doc(db, "rooms", currentUser.roomCode, "users", currentUser.name);
+        await updateDoc(userDocRef, {
+          points: increment(-3)
+        });
+      }
+
       await addDoc(collection(db, "requests"), {
-        roomCode: currentRoomCode,
-        name: name,
-        icon: selectedIcon,
+        roomCode: currentUser.roomCode,
+        name: currentUser.name,
+        icon: currentUser.icon,
         text: text,
         imageData: hasCanvas ? canvas.toDataURL() : null,
-        isEmergency: emergencyCheck.checked,
+        isEmergency: isEmergency,
+        isSolved: false,
         createdAt: serverTimestamp()
       });
 
@@ -510,6 +940,209 @@
     } catch (e) {
       console.error("Error: ", e);
       alert("送信に失敗しました。");
+    }
+  });
+
+  // --- チャット機能 ---
+  function openChatPage(reqId, reqData) {
+    currentRequestId = reqId;
+    currentRequestData = reqData;
+
+    mainPage.classList.remove('active');
+    chatPage.classList.add('active');
+
+    headerTitle.textContent = '質問チャット';
+    headerBackBtn.textContent = '戻る';
+
+    updateChatHeaderInfo();
+    setupChatSnapshot();
+  }
+
+  function updateChatHeaderInfo() {
+    const chatInfoArea = document.getElementById('chatInfoArea');
+    const iconFile = currentRequestData.icon || 'icon01.png';
+    const imgHtml = currentRequestData.imageData ? `<br><img src="${currentRequestData.imageData}" class="item-image" style="max-height:100px;">` : '';
+    const isOwner = currentRequestData.name === currentUser.name;
+
+    chatInfoArea.innerHTML = `
+      <div class="item-header" style="margin-bottom:4px;">
+        <img src="${ICON_BASE_URL}${iconFile}" class="item-avatar" onerror="this.src='${ICON_BASE_URL}icon01.png'">
+        <div class="item-user-info">
+          <span class="item-name">${escapeHtml(currentRequestData.name)} さんの質問</span>
+          ${currentRequestData.isSolved 
+            ? '<span class="status-badge badge-solved">解決済み</span>' 
+            : '<span class="status-badge badge-unsolved">未解決</span>'}
+        </div>
+      </div>
+      <div style="font-size:0.85rem; color:#555;">${escapeHtml(currentRequestData.text)} ${imgHtml}</div>
+      ${isOwner ? `<button id="toggleSolveBtn" class="solve-toggle-btn">${currentRequestData.isSolved ? '未解決に戻す' : '解決済みにする'}</button>` : ''}
+    `;
+
+    if (isOwner) {
+      document.getElementById('toggleSolveBtn').addEventListener('click', async () => {
+        const newStatus = !currentRequestData.isSolved;
+        try {
+          await updateDoc(doc(db, "requests", currentRequestId), {
+            isSolved: newStatus
+          });
+          currentRequestData.isSolved = newStatus;
+          updateChatHeaderInfo();
+        } catch (e) {
+          console.error("Status update error: ", e);
+        }
+      });
+    }
+  }
+
+  // チャットメッセージ取得
+  function setupChatSnapshot() {
+    if (chatUnsubscribe) chatUnsubscribe();
+
+    const chatMessages = document.getElementById('chatMessages');
+    const q = query(
+      collection(db, "requests", currentRequestId, "messages"),
+      orderBy("createdAt", "asc")
+    );
+
+    chatUnsubscribe = onSnapshot(q, (snapshot) => {
+      chatMessages.innerHTML = '';
+
+      if (snapshot.empty) {
+        chatMessages.innerHTML = '<p style="text-align:center; color:#888; font-size:0.85rem;">メッセージはまだありません。</p>';
+        return;
+      }
+
+      const isQuestionOwner = currentRequestData.name === currentUser.name;
+
+      snapshot.forEach((docSnap) => {
+        const msg = docSnap.data();
+        const msgId = docSnap.id;
+        const isMyMsg = msg.name === currentUser.name;
+        const iconFile = msg.icon || 'icon01.png';
+        const isBestAnswer = msg.isBestAnswer || false;
+
+        const container = document.createElement('div');
+        container.className = 'chat-bubble-container';
+
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${isMyMsg ? 'my-msg' : ''}`;
+
+        let bestTagHtml = isBestAnswer ? '<div class="best-answer-tag">ベストアンサー</div>' : '';
+
+        bubble.innerHTML = `
+          <img src="${ICON_BASE_URL}${iconFile}" class="chat-avatar" onerror="this.src='${ICON_BASE_URL}icon01.png'">
+          <div>
+            <div class="chat-name">${escapeHtml(msg.name)}</div>
+            <div class="chat-content ${isBestAnswer ? 'best-answer-content' : ''}">
+              ${bestTagHtml}
+              ${escapeHtml(msg.text)}
+            </div>
+          </div>
+        `;
+
+        container.appendChild(bubble);
+
+        // 削除ボタン（自分が送信したメッセージ）
+        if (isMyMsg) {
+          const msgDeleteBtn = document.createElement('button');
+          msgDeleteBtn.className = 'msg-delete-btn';
+          msgDeleteBtn.textContent = '削除 (-3pt)';
+          msgDeleteBtn.addEventListener('click', () => deleteChatMessage(msgId));
+          container.appendChild(msgDeleteBtn);
+        }
+
+        // ベストアンサーボタン（質問者かつ自分以外の回答メッセージ）
+        if (isQuestionOwner && !isMyMsg && !isBestAnswer) {
+          const baBtn = document.createElement('button');
+          baBtn.className = 'best-answer-btn';
+          baBtn.textContent = 'ベストアンサーに選ぶ';
+          baBtn.addEventListener('click', () => selectBestAnswer(msgId, msg.name));
+          container.appendChild(baBtn);
+        }
+
+        chatMessages.appendChild(container);
+      });
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+  }
+
+  // チャットメッセージ削除（3pt消費）
+  async function deleteChatMessage(msgId) {
+    if (currentUser.points < 3) {
+      alert("削除には3pt必要です。ポイントが不足しています。");
+      return;
+    }
+
+    if (!confirm("メッセージを削除しますか？(3pt消費されます)")) return;
+
+    try {
+      const userDocRef = doc(db, "rooms", currentUser.roomCode, "users", currentUser.name);
+      await updateDoc(userDocRef, {
+        points: increment(-3)
+      });
+
+      await deleteDoc(doc(db, "requests", currentRequestId, "messages", msgId));
+    } catch (e) {
+      console.error("Message delete error: ", e);
+      alert("削除に失敗しました。");
+    }
+  }
+
+  // ベストアンサー選定処理（回答者に通常1pt / 緊急3pt付与）
+  async function selectBestAnswer(msgId, answererName) {
+    const isEmergency = currentRequestData.isEmergency || false;
+    const rewardPoints = isEmergency ? 3 : 1;
+
+    if (!confirm(`この回答をベストアンサーに選びますか？\n回答者の ${answererName} さんに +${rewardPoints}pt 付与され、質問が「解決済み」になります。`)) return;
+
+    try {
+      // 該当メッセージをベストアンサーに更新
+      await updateDoc(doc(db, "requests", currentRequestId, "messages", msgId), {
+        isBestAnswer: true
+      });
+
+      // 質問自体を「解決済み」へ更新
+      await updateDoc(doc(db, "requests", currentRequestId), {
+        isSolved: true
+      });
+
+      // 回答者にポイントを加算 (+1pt または +3pt)
+      const answererUserRef = doc(db, "rooms", currentUser.roomCode, "users", answererName);
+      await updateDoc(answererUserRef, {
+        points: increment(rewardPoints)
+      });
+
+      currentRequestData.isSolved = true;
+      updateChatHeaderInfo();
+      alert(`ベストアンサーを設定しました！(${answererName} さんに +${rewardPoints}pt 加算されました)`);
+
+    } catch (e) {
+      console.error("Best Answer Error: ", e);
+      alert("設定に失敗しました。");
+    }
+  }
+
+  // チャット送信
+  document.getElementById('chatSendBtn').addEventListener('click', async () => {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    try {
+      await addDoc(collection(db, "requests", currentRequestId, "messages"), {
+        name: currentUser.name,
+        icon: currentUser.icon,
+        text: text,
+        isBestAnswer: false,
+        createdAt: serverTimestamp()
+      });
+
+      input.value = '';
+    } catch (e) {
+      console.error("Error: ", e);
+      alert("メッセージ送信に失敗しました。");
     }
   });
 
