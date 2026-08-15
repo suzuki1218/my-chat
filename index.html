@@ -1,586 +1,3 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>質問掲示板</title>
-  <!-- どうぶつの森風の丸みのあるフォント -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --bg-color: #f2ede1;         /* 温かみのあるクリームベージュ */
-      --main-green: #58a969;       /* どうぶつの森風のやさしい緑 */
-      --dark-green: #3d7948;       /* 濃い緑（枠線・ボタン shadow） */
-      --header-green: #488b56;     /* ヘッダー用緑 */
-      --card-bg: #fffdf9;          /* カード背景 */
-      --border-color: #d8cdb8;     /* 枠線ベージュ */
-      --text-color: #4a3e31;       /* ダークブラウン（文字） */
-      --chat-bg: #e5edd7;          /* チャットエリア背景 */
-      --bubble-bg: #ffffff;        /* チャット吹き出し */
-      --emergency-bg: #fde8e8;     /* 緊急時背景 */
-      --emergency-border: #e06d6d;
-      --solved-bg: #e2f0d9;        /* 解決済み用緑系背景 */
-      --solved-border: #70ad47;
-      --gold-star: #f1c40f;        /* ベストアンサー用ゴールド */
-    }
-
-    body {
-      font-family: 'M PLUS Rounded 1c', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      letter-spacing: 0.02em;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: var(--bg-color);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 0 15px rgba(74, 62, 49, 0.1);
-    }
-
-    /* ヘッダー */
-    .header {
-      background-color: var(--header-green);
-      color: #ffffff;
-      padding: 12px 16px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 4px solid var(--dark-green);
-    }
-
-    .header-left, .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 1.15rem;
-      font-weight: 800;
-    }
-
-    .point-badge {
-      background-color: #f39c12;
-      color: #ffffff;
-      padding: 4px 10px;
-      border-radius: 16px;
-      font-size: 0.85rem;
-      font-weight: 800;
-      border: 2px solid #d35400;
-    }
-
-    .header-btn {
-      background: var(--dark-green);
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      font-family: inherit;
-      font-weight: 700;
-      width: auto;
-      box-shadow: none;
-    }
-
-    /* 画面切り替え制御 */
-    .page {
-      display: none;
-      padding: 20px;
-      flex: 1;
-    }
-
-    .page.active {
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ログイン画面カード */
-    .login-card {
-      background: var(--card-bg);
-      border: 3px solid var(--border-color);
-      border-radius: 20px;
-      padding: 24px;
-      margin: auto 0;
-      box-shadow: 0 6px 0 var(--border-color);
-    }
-
-    .login-title {
-      text-align: center;
-      color: var(--dark-green);
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
-
-    /* フォームパーツ */
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 700;
-      color: var(--text-color);
-      font-size: 0.95rem;
-    }
-
-    input[type="text"], textarea {
-      width: 100%;
-      padding: 12px;
-      box-sizing: border-box;
-      border: 3px solid var(--border-color);
-      border-radius: 12px;
-      background-color: #ffffff;
-      color: var(--text-color);
-      font-size: 1rem;
-      font-family: inherit;
-      outline: none;
-    }
-
-    input[type="text"]:focus, textarea:focus {
-      border-color: var(--main-green);
-    }
-
-    /* アイコン選択ラジオボタン */
-    .icon-selector {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .icon-option {
-      cursor: pointer;
-    }
-
-    .icon-option input[type="radio"] {
-      display: none;
-    }
-
-    .icon-option img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: 3px solid var(--border-color);
-      background-color: #ffffff;
-      transition: all 0.15s ease;
-      box-sizing: border-box;
-    }
-
-    .icon-option input[type="radio"]:checked + img {
-      border-color: var(--main-green);
-      border-width: 4px;
-      transform: scale(1.1);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    /* ボタン共通 */
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: var(--main-green);
-      color: white;
-      border: none;
-      border-radius: 14px;
-      font-size: 1.05rem;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 4px 0 var(--dark-green);
-      font-family: inherit;
-      transition: background-color 0.1s, transform 0.1s;
-    }
-
-    button:hover {
-      background-color: var(--dark-green);
-    }
-
-    button:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 var(--dark-green);
-    }
-
-    /* キャンバス */
-    canvas {
-      border: 3px solid var(--border-color);
-      border-radius: 12px;
-      cursor: crosshair;
-      touch-action: none;
-      width: 100%;
-      height: 160px;
-      display: block;
-      background-color: #ffffff;
-    }
-
-    .clear-btn {
-      background-color: #d98880;
-      box-shadow: 0 3px 0 #b35e56;
-      margin-top: 6px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      width: auto;
-    }
-
-    .clear-btn:hover {
-      background-color: #b35e56;
-    }
-
-    /* 質問投稿フォームエリア */
-    .post-card {
-      background: var(--card-bg);
-      border: 3px solid var(--border-color);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 0 var(--border-color);
-    }
-
-    .section-title {
-      color: var(--dark-green);
-      font-size: 1.15rem;
-      font-weight: 800;
-      margin-top: 0;
-      margin-bottom: 12px;
-      border-bottom: 2px dashed var(--border-color);
-      padding-bottom: 6px;
-    }
-
-    /* 質問一覧アイテム */
-    .request-item {
-      background: var(--card-bg);
-      border: 3px solid var(--border-color);
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 0 var(--border-color);
-      position: relative;
-    }
-
-    .request-item.emergency {
-      background-color: var(--emergency-bg);
-      border-color: var(--emergency-border);
-    }
-
-    .request-item.solved {
-      background-color: var(--solved-bg);
-      border-color: var(--solved-border);
-    }
-
-    .item-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .item-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 2px solid var(--border-color);
-      background-color: #ffffff;
-    }
-
-    .item-user-info {
-      flex: 1;
-    }
-
-    .item-name {
-      font-weight: 800;
-      font-size: 0.95rem;
-    }
-
-    .status-badge {
-      font-size: 0.75rem;
-      font-weight: bold;
-      padding: 2px 8px;
-      border-radius: 8px;
-      margin-left: 6px;
-      color: #ffffff;
-    }
-
-    .badge-emergency { background-color: var(--emergency-border); }
-    .badge-unsolved { background-color: #e67e22; }
-    .badge-solved { background-color: var(--solved-border); }
-
-    .item-text {
-      font-size: 0.95rem;
-      line-height: 1.4;
-      white-space: pre-wrap;
-      word-break: break-all;
-      margin-bottom: 10px;
-    }
-
-    .item-image {
-      max-width: 100%;
-      border-radius: 10px;
-      border: 2px solid var(--border-color);
-      margin-bottom: 10px;
-    }
-
-    .action-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .visit-btn {
-      background-color: var(--main-green);
-      box-shadow: 0 3px 0 var(--dark-green);
-      font-size: 0.9rem;
-      padding: 8px;
-      flex: 1;
-    }
-
-    .delete-btn {
-      background-color: #e74c3c;
-      box-shadow: 0 3px 0 #c0392b;
-      font-size: 0.85rem;
-      padding: 8px 12px;
-      width: auto;
-    }
-
-    /* チャット画面 */
-    .chat-info-card {
-      background: #ffffff;
-      border: 2px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-
-    .chat-area {
-      flex: 1;
-      background-color: var(--chat-bg);
-      border: 3px solid var(--border-color);
-      border-radius: 16px;
-      padding: 14px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 12px;
-      max-height: 350px;
-    }
-
-    .chat-bubble-container {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 4px;
-    }
-
-    .chat-bubble {
-      display: flex;
-      gap: 8px;
-      max-width: 85%;
-    }
-
-    .chat-bubble.my-msg {
-      align-self: flex-end;
-      flex-direction: row-reverse;
-    }
-
-    .chat-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1px solid var(--border-color);
-      background-color: #fff;
-    }
-
-    .chat-content {
-      background: var(--bubble-bg);
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 2px solid var(--border-color);
-      font-size: 0.9rem;
-      line-height: 1.4;
-      word-break: break-all;
-      white-space: pre-wrap;
-      position: relative;
-    }
-
-    .chat-bubble.my-msg .chat-content {
-      background-color: #d2f0d4;
-      border-color: #92ca96;
-    }
-
-    /* ベストアンサー表示 */
-    .best-answer-content {
-      border: 3px solid var(--gold-star) !important;
-      background-color: #fffdf0 !important;
-    }
-
-    .best-answer-tag {
-      background-color: var(--gold-star);
-      color: #333;
-      font-size: 0.75rem;
-      font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 4px;
-      display: inline-block;
-      margin-bottom: 4px;
-    }
-
-    .best-answer-btn {
-      background-color: #f39c12;
-      box-shadow: 0 2px 0 #d35400;
-      font-size: 0.75rem;
-      padding: 4px 8px;
-      border-radius: 6px;
-      margin-top: 4px;
-      width: auto;
-      align-self: flex-start;
-    }
-
-    .msg-delete-btn {
-      background-color: #e74c3c;
-      box-shadow: 0 2px 0 #c0392b;
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-top: 4px;
-      width: auto;
-      align-self: flex-end;
-    }
-
-    .chat-name {
-      font-size: 0.75rem;
-      font-weight: bold;
-      color: #666;
-      margin-bottom: 2px;
-    }
-
-    .chat-input-area {
-      display: flex;
-      gap: 8px;
-    }
-
-    .chat-input-area input {
-      flex: 1;
-    }
-
-    .chat-send-btn {
-      width: 80px;
-      padding: 10px;
-      font-size: 0.9rem;
-    }
-
-    .solve-toggle-btn {
-      background-color: #70ad47;
-      box-shadow: 0 3px 0 #4e7a32;
-      font-size: 0.85rem;
-      padding: 6px 12px;
-      margin-top: 8px;
-      width: auto;
-    }
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <!-- ヘッダー -->
-  <div class="header">
-    <div class="header-left">
-      <h1 id="headerTitle">質問掲示板</h1>
-    </div>
-    <div class="header-right">
-      <span id="userPointBadge" class="point-badge" style="display: none;">0pt</span>
-      <button id="headerBackBtn" class="header-btn" style="display: none;">退室</button>
-    </div>
-  </div>
-
-  <!-- 1. ログイン画面 -->
-  <div id="loginPage" class="page active">
-    <div class="login-card">
-      <div class="login-title">掲示板に入る</div>
-      
-      <div class="form-group">
-        <label for="roomCodeInput">クラスコード</label>
-        <input type="text" id="roomCodeInput" placeholder="例: 0105" maxlength="10">
-      </div>
-
-      <div class="form-group">
-        <label for="nameInput">お名前</label>
-        <input type="text" id="nameInput" placeholder="名前を入力">
-      </div>
-
-      <div class="form-group">
-        <label>アイコンを選択</label>
-        <div class="icon-selector" id="iconSelector">
-          <!-- icon01.png 〜 icon08.png 自動生成 -->
-        </div>
-      </div>
-
-      <button id="loginBtn">入室する</button>
-    </div>
-  </div>
-
-  <!-- 2. 質問投稿・一覧画面 -->
-  <div id="mainPage" class="page">
-    <!-- 新規質問投稿エリア -->
-    <div class="post-card">
-      <div class="section-title">質問を投稿する</div>
-      
-      <div class="form-group">
-        <label for="textInput">質問内容</label>
-        <textarea id="textInput" rows="3" placeholder="質問を入力してください"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>手書きメモ</label>
-        <canvas id="drawCanvas"></canvas>
-        <button type="button" id="clearCanvasBtn" class="clear-btn">手書きをクリア</button>
-      </div>
-
-      <div class="form-group">
-        <label style="color: #c0392b; cursor: pointer;">
-          <input type="checkbox" id="emergencyCheck"> 緊急質問 (要 3pt消費)
-        </label>
-      </div>
-
-      <button id="sendBtn">送信する</button>
-    </div>
-
-    <!-- 質問一覧エリア -->
-    <div class="section-title">質問一覧</div>
-    <div id="requestList">
-      <!-- 投稿された質問がここに表示されます -->
-    </div>
-  </div>
-
-  <!-- 3. チャット画面（見に行く選択時） -->
-  <div id="chatPage" class="page">
-    <div class="chat-info-card" id="chatInfoArea">
-      <!-- 選択された質問内容の要約が表示されます -->
-    </div>
-
-    <div class="section-title">チャット</div>
-    <div class="chat-area" id="chatMessages">
-      <!-- メッセージが表示されます -->
-    </div>
-
-    <div class="chat-input-area">
-      <input type="text" id="chatInput" placeholder="メッセージを入力...">
-      <button id="chatSendBtn" class="chat-send-btn">送信</button>
-    </div>
-  </div>
-</div>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { 
@@ -599,6 +16,12 @@
     onSnapshot, 
     serverTimestamp 
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // HTMLエスケープ関数（呼び出し前に定義）
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+  }
 
   // ★ご自身のFirebase設定情報
   const firebaseConfig = {
@@ -645,7 +68,7 @@
     label.className = 'icon-option';
     label.innerHTML = `
       <input type="radio" name="iconSelect" value="${fileName}" ${i === 1 ? 'checked' : ''}>
-      <img src="${ICON_BASE_URL}${fileName}" alt="icon${num}" onerror="this.style.visibility='hidden'">
+      <img src="${ICON_BASE_URL}${fileName}" alt="icon${num}" onerror="this.onerror=null; this.style.visibility='hidden'">
     `;
     iconSelector.appendChild(label);
   }
@@ -680,8 +103,13 @@
     localStorage.setItem('user_name', name);
     localStorage.setItem('user_icon', icon);
 
-    await initUserAccount();
-    showMainPage();
+    try {
+      await initUserAccount();
+      showMainPage();
+    } catch (error) {
+      console.error("Login Error:", error);
+      alert("ログイン処理中にエラーが発生しました。");
+    }
   });
 
   // ユーザーアカウント初期化・リアルタイム監視（ポイント管理）
@@ -838,7 +266,7 @@
 
         div.innerHTML = `
           <div class="item-header">
-            <img src="${ICON_BASE_URL}${iconFile}" class="item-avatar" onerror="this.src='${ICON_BASE_URL}icon01.png'">
+            <img src="${ICON_BASE_URL}${iconFile}" class="item-avatar" onerror="this.onerror=null; this.src='${ICON_BASE_URL}icon01.png'">
             <div class="item-user-info">
               <span class="item-name">${escapeHtml(data.name)}</span>
               ${statusBadge}
@@ -864,6 +292,8 @@
 
         requestList.appendChild(div);
       });
+    }, (error) => {
+      console.error("Snapshot error:", error);
     });
   }
 
@@ -877,13 +307,11 @@
     if (!confirm("投稿を削除しますか？(3pt消費されます)")) return;
 
     try {
-      // 3ptを減算
       const userDocRef = doc(db, "rooms", currentUser.roomCode, "users", currentUser.name);
       await updateDoc(userDocRef, {
         points: increment(-3)
       });
 
-      // ドキュメントを削除
       await deleteDoc(doc(db, "requests", requestId));
       alert("投稿を削除しました。");
     } catch (e) {
@@ -906,7 +334,6 @@
       return;
     }
 
-    // 緊急投稿時のポイントチェック
     if (isEmergency && currentUser.points < 3) {
       alert("緊急投稿には3pt必要です。ポイントが不足しています。");
       return;
@@ -914,7 +341,6 @@
 
     try {
       if (isEmergency) {
-        // 3pt減算
         const userDocRef = doc(db, "rooms", currentUser.roomCode, "users", currentUser.name);
         await updateDoc(userDocRef, {
           points: increment(-3)
@@ -966,7 +392,7 @@
 
     chatInfoArea.innerHTML = `
       <div class="item-header" style="margin-bottom:4px;">
-        <img src="${ICON_BASE_URL}${iconFile}" class="item-avatar" onerror="this.src='${ICON_BASE_URL}icon01.png'">
+        <img src="${ICON_BASE_URL}${iconFile}" class="item-avatar" onerror="this.onerror=null; this.src='${ICON_BASE_URL}icon01.png'">
         <div class="item-user-info">
           <span class="item-name">${escapeHtml(currentRequestData.name)} さんの質問</span>
           ${currentRequestData.isSolved 
@@ -1030,7 +456,7 @@
         let bestTagHtml = isBestAnswer ? '<div class="best-answer-tag">ベストアンサー</div>' : '';
 
         bubble.innerHTML = `
-          <img src="${ICON_BASE_URL}${iconFile}" class="chat-avatar" onerror="this.src='${ICON_BASE_URL}icon01.png'">
+          <img src="${ICON_BASE_URL}${iconFile}" class="chat-avatar" onerror="this.onerror=null; this.src='${ICON_BASE_URL}icon01.png'">
           <div>
             <div class="chat-name">${escapeHtml(msg.name)}</div>
             <div class="chat-content ${isBestAnswer ? 'best-answer-content' : ''}">
@@ -1042,7 +468,6 @@
 
         container.appendChild(bubble);
 
-        // 削除ボタン（自分が送信したメッセージ）
         if (isMyMsg) {
           const msgDeleteBtn = document.createElement('button');
           msgDeleteBtn.className = 'msg-delete-btn';
@@ -1051,7 +476,6 @@
           container.appendChild(msgDeleteBtn);
         }
 
-        // ベストアンサーボタン（質問者かつ自分以外の回答メッセージ）
         if (isQuestionOwner && !isMyMsg && !isBestAnswer) {
           const baBtn = document.createElement('button');
           baBtn.className = 'best-answer-btn';
@@ -1089,7 +513,7 @@
     }
   }
 
-  // ベストアンサー選定処理（回答者に通常1pt / 緊急3pt付与）
+  // ベストアンサー選定処理
   async function selectBestAnswer(msgId, answererName) {
     const isEmergency = currentRequestData.isEmergency || false;
     const rewardPoints = isEmergency ? 3 : 1;
@@ -1097,17 +521,14 @@
     if (!confirm(`この回答をベストアンサーに選びますか？\n回答者の ${answererName} さんに +${rewardPoints}pt 付与され、質問が「解決済み」になります。`)) return;
 
     try {
-      // 該当メッセージをベストアンサーに更新
       await updateDoc(doc(db, "requests", currentRequestId, "messages", msgId), {
         isBestAnswer: true
       });
 
-      // 質問自体を「解決済み」へ更新
       await updateDoc(doc(db, "requests", currentRequestId), {
         isSolved: true
       });
 
-      // 回答者にポイントを加算 (+1pt または +3pt)
       const answererUserRef = doc(db, "rooms", currentUser.roomCode, "users", answererName);
       await updateDoc(answererUserRef, {
         points: increment(rewardPoints)
@@ -1145,12 +566,4 @@
       alert("メッセージ送信に失敗しました。");
     }
   });
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-  }
 </script>
-
-</body>
-</html>
