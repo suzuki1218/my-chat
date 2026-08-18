@@ -623,35 +623,74 @@
     </div>
   </header>
 
-  <!-- プロフィール設定モーダル -->
-  <div id="login-overlay" class="login-overlay" style="display: none;">
-    <div class="login-card">
-      <h2>プロフィール設定</h2>
-      <div class="form-group">
-        <label>表示名</label>
-        <input type="text" id="inputName" class="form-control" placeholder="名前を入力">
-      </div>
-      <div class="form-group">
-        <label>所属クラス</label>
-        <select id="inputClass" class="form-control">
-          <option value="">クラスを選択してください</option>
-          <option value="1-A">1年 A組</option>
-          <option value="1-B">1年 B組</option>
-          <option value="2-A">2年 A組</option>
-          <option value="2-B">2年 B組</option>
-          <option value="3-A">3年 A組</option>
-          <option value="3-B">3年 B組</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>アイコン選択</label>
-        <div class="icon-selector">
-          <img class="icon-option" src="icon01.png" onclick="selectIcon('icon01.png', this)">
-          <img class="icon-option" src="icon02.png" onclick="selectIcon('icon02.png', this)">
-          <img class="icon-option" src="icon03.png" onclick="selectIcon('icon03.png', this)">
+  <header id="main-header">
+    <h1>学習サポート掲示板</h1>
+    <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
+      <span id="badge-class" class="class-room-tag">1-5</span>
+      <img id="badge-icon" class="badge-avatar-img" src="icon01.png" alt="icon">
+      <span id="badge-name">ゲスト</span>
+      <span id="badge-solve-count" class="solve-count-tag">解決: 0</span>
+    </div>
+  </header>
+
+  <!-- ==================== 0. ログイン / ルーム（クラス）選択画面 ==================== -->
+  <div id="login-section">
+    <div class="card" style="text-align: center; max-width: 420px; margin: 30px auto;">
+      <h2></h2>
+      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;"></p>
+      
+      <p style="font-weight:bold; color:var(--primary); margin-bottom:16px;">現在の解決pt: <span id="user-solve-display">0</span> pt</p>
+
+      <!-- クラス選択 -->
+      <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">参加するクラスルーム：</label>
+      <select id="userClassSelect" onchange="toggleCustomClassInput(this)">
+        <option value="">クラスを選択</option>
+        <option value="1-5">1-5</option>
+        <option value="1-6">1-6</option>
+        <option value="1-7">1-7</option>
+        <option value="1-8">1-8</option>
+        <option value="1-9">1-9</option>
+        <option value="1-10">1-10</option>
+        <option value="3-10">3-10</option>
+        <option value="3-11">3-11</option>
+      </select>
+
+      <input type="text" id="customClassInput" placeholder="" style="display:none;">
+
+      <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">ユーザーネーム</label>
+      <input type="text" id="userNameInput" placeholder="">
+
+      <span class="icon-selector-label">アイコンを選択：</span>
+      <div class="icon-selector" id="login-icon-selector">
+        <div class="icon-wrapper">
+          <img class="icon-option selected" src="icon01.png" data-min="0" onclick="selectLoginIcon('icon01.png', this)" alt="アイコン1">
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option" src="icon02.png" data-min="0" onclick="selectLoginIcon('icon02.png', this)" alt="アイコン2">
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon03.png" data-min="20" onclick="selectLoginIcon('icon03.png', this)" alt="アイコン3">
+          <span class="lock-badge" id="lock-icon03">20pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon04.png" data-min="40" onclick="selectLoginIcon('icon04.png', this)" alt="アイコン4">
+          <span class="lock-badge" id="lock-icon04">40pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon05.png" data-min="60" onclick="selectLoginIcon('icon05.png', this)" alt="アイコン5">
+          <span class="lock-badge" id="lock-icon05">60pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon08.png" data-min="80" onclick="selectLoginIcon('icon08.png', this)" alt="アイコン6">
+          <span class="lock-badge" id="lock-icon06">80pt〜</span>
+        </div>
+        <div class="icon-wrapper">
+          <img class="icon-option locked" src="icon07.png" data-min="100" onclick="selectLoginIcon('icon07.png', this)" alt="アイコン7">
+          <span class="lock-badge" id="lock-icon07">100pt〜</span>
         </div>
       </div>
-      <button class="btn-primary" onclick="saveProfile()">保存して開始</button>
+
+      <button id="btn-login-submit">入室</button>
     </div>
   </div>
 
