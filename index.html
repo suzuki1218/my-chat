@@ -722,8 +722,8 @@
       <!-- パスワード入力エリア -->
       <div id="admin-auth-sec">
         <div class="form-group">
-          <label>パスワード (月日4桁)</label>
-          <input type="password" id="adminPassInput" class="form-control" placeholder="例: 0818" maxlength="4" style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
+          <label>パスワード </label>
+          <input type="password" id="adminPassInput" class="form-control" placeholder="" maxlength="4" style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
         </div>
         <button class="btn-primary" onclick="checkAdminPassword()">認証</button>
       </div>
@@ -795,8 +795,8 @@
         </div>
         <div class="chat-controls">
           <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
-          <button class="tool-btn" onclick="document.getElementById('imageInput').click()" title="写真を添付">📷</button>
-          <button class="tool-btn" onclick="openCanvasModal()" title="手書きで投稿">✏️</button>
+          <button class="tool-btn" onclick="document.getElementById('imageInput').click()" title="写真を添付">＋</button>
+          <button class="tool-btn" onclick="openCanvasModal()" title="手書きで投稿">✐</button>
           <input type="text" id="messageText" class="chat-input-text" placeholder="メッセージを入力..." onkeydown="if(event.key==='Enter') sendMessage()">
           <button id="btn-send" class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="sendMessage()">送信</button>
         </div>
@@ -819,7 +819,7 @@
         <button class="btn-back" onclick="closeCanvasModal()">✕</button>
       </div>
       <canvas id="drawCanvas"></canvas>
-      <button class="btn-primary" onclick="saveCanvasImage()">この手書き画像を添付する</button>
+      <button class="btn-primary" onclick="saveCanvasImage()">添付する</button>
     </div>
   </div>
 
