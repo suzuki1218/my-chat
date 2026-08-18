@@ -2,14 +2,13 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>学習サポート掲示板</title>
-  
-  <!-- Google Fonts: Zen Maru Gothic -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クラス質問掲示板</title>
+  <!-- Zen Maru Gothic フォントの読み込み -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-
+  
   <style>
     :root {
       --bg-color: #f2ebd9;        /* ナチュラルベージュ背景 */
@@ -17,6 +16,7 @@
       --text-main: #332f2b;       /* 濃いブラウン */
       --text-sub: #7a7369;        /* アースグレー */
       --primary: #2e7d32;          /* ナチュラルグリーン */
+      --primary-hover: #1b5e20;
       --primary-light: #e8f5e9;
       --success: #4caf50;          /* ライトグリーン */
       --danger: #d32f2f;           /* アースレッド */
@@ -25,6 +25,12 @@
       --chat-bg: #e2d9c4;          /* トーク画面背景 */
       --gold: #fbc02d;              /* ベストアンサー用カラー */
       --my-card-bg: #eaf5ea;      /* 自分の投稿カード背景 */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
@@ -37,6 +43,7 @@
       padding: 16px;
       box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
+      padding-bottom: 40px;
     }
 
     header {
@@ -44,6 +51,11 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      background-color: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
 
     h1 {
@@ -52,6 +64,9 @@
       margin: 0;
       color: #1b5e20;
       letter-spacing: 0.05em;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
     }
 
     .user-profile-badge {
@@ -73,410 +88,377 @@
       object-fit: cover;
     }
 
-    .solve-count-tag {
-      background: #2e7d32;
-      color: white;
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-    }
-
-    .class-room-tag {
-      background: #1565c0;
-      color: white;
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-    }
-
-    h2 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--text-main);
-    }
-
-    .card {
-      background: var(--card-bg);
-      padding: 20px;
-      border-radius: 18px;
-      box-shadow: 0 4px 16px rgba(60, 50, 30, 0.06);
-      margin-bottom: 20px;
-      border: 1px solid var(--border);
-    }
-
-    /* フォーム要素 */
-    input[type="text"], textarea, select {
-      font-family: inherit;
-      font-weight: 700;
+    /* モーダル背景全般 */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      padding: 14px 16px;
-      font-size: 16px;
-      margin-bottom: 12px;
-      box-sizing: border-box;
-      background-color: #e8e0ce;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      color: var(--text-main);
-      outline: none;
-    }
-
-    /* 緊急チェックボックスのスタイル */
-    .urgent-option-label {
+      height: 100%;
+      background: rgba(51, 47, 43, 0.6);
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 14px;
-      font-size: 0.95rem;
-      color: var(--danger);
-      cursor: pointer;
-      user-select: none;
+      z-index: 200;
+      backdrop-filter: blur(2px);
     }
 
-    .urgent-option-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--danger);
-      cursor: pointer;
+    .login-card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border: 1px solid var(--border);
     }
 
-    button {
-      font-family: inherit;
-      width: 100%;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 700;
-      color: white;
-      background-color: var(--primary);
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
+    .login-card h2 {
+      margin-bottom: 16px;
+      font-size: 1.2rem;
+      text-align: center;
+      color: var(--primary);
     }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .form-group {
+      margin-bottom: 16px;
     }
 
-    button:active:not(:disabled) { 
-      opacity: 0.8; 
-      transform: scale(0.98);
-    }
-
-    /* 画像アイコン選択エリア */
-    .icon-selector-label {
-      font-size: 0.9rem;
-      color: var(--text-sub);
-      margin-bottom: 12px;
+    .form-group label {
       display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-sub);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background-color: #fff;
+      font-family: inherit;
+      color: var(--text-main);
     }
 
     .icon-selector {
       display: flex;
-      gap: 16px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-top: 8px;
       justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .icon-wrapper {
-      position: relative;
-      display: inline-block;
     }
 
     .icon-option {
-      width: 60px;
-      height: 60px;
-      padding: 4px;
-      background: #e8e0ce;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       cursor: pointer;
       border: 3px solid transparent;
-      transition: all 0.2s;
       object-fit: cover;
+      background: #eee;
     }
 
     .icon-option.selected {
       border-color: var(--primary);
-      background: #ffffff;
-      transform: scale(1.1);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
-    .icon-option.locked {
-      filter: grayscale(100%) opacity(0.5);
-      cursor: not-allowed;
-    }
-
-    .lock-badge {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: #333;
-      color: #fff;
-      font-size: 10px;
-      padding: 2px 5px;
-      border-radius: 8px;
-    }
-
-    /* 募集一覧アイテム */
-    .request-item {
-      border-bottom: 1px solid var(--border);
-      padding: 14px 12px;
-      margin: 0 -12px;
-      border-radius: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      transition: background-color 0.2s, opacity 0.3s;
-    }
-    
-    .request-item:last-child {
-      border-bottom: none;
-    }
-
-    .request-item.my-request {
-      background-color: var(--my-card-bg);
-      border-left: 4px solid var(--primary);
-      padding-left: 10px;
-    }
-
-    .my-badge {
+    .btn-primary {
+      width: 100%;
       background-color: var(--primary);
       color: white;
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 6px;
-      margin-right: 6px;
-      vertical-align: middle;
-      font-weight: bold;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background-color 0.2s;
     }
 
-    .request-item.solved .request-info {
-      opacity: 0.55;
-    }
-
-    .solved-label {
-      color: var(--danger);
-      font-weight: bold;
-      margin-right: 6px;
-      font-size: 0.9rem;
-      opacity: 1 !important;
-    }
-
-    .urgent-label {
-      color: var(--danger);
-      font-weight: 900;
-      margin-right: 6px;
-      font-size: 0.95rem;
-      animation: pulse 1.5s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { opacity: 0.8; }
-      to { opacity: 1; }
-    }
-
-    .request-info { 
-      flex-grow: 1; 
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .request-avatar-img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1px solid var(--border);
-    }
-
-    .request-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
-    .request-meta { font-size: 0.75rem; color: var(--text-sub); display: flex; gap: 8px; align-items: center; }
-
-    .request-actions {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .btn-chat {
-      background-color: var(--success);
-      width: auto;
-      padding: 10px 14px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      white-space: nowrap;
-      opacity: 1 !important;
-    }
-
-    .btn-delete {
-      background-color: var(--danger);
-      width: auto;
-      padding: 10px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      white-space: nowrap;
-      opacity: 0.9;
-    }
-
-    /* チャット画面 */
-    #chat-section, #login-section, #matching-section { display: none; }
-    
-    .chat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
     }
 
     .btn-back {
-      background-color: var(--text-sub);
-      width: auto;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-    }
-
-    .btn-chat-delete {
-      background-color: var(--danger);
-      width: auto;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-    }
-
-    #chat-title {
-      font-size: 1.15rem;
-      font-weight: 900;
-      margin-bottom: 12px;
-    }
-
-    #chat-box {
+      background: var(--card-bg);
       border: 1px solid var(--border);
-      height: 440px;
-      overflow-y: auto;
-      padding: 16px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+      font-family: inherit;
+    }
+
+    /* 質問投稿カード */
+    .post-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      margin-bottom: 20px;
+    }
+
+    .post-card textarea {
+      width: 100%;
+      height: 80px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      resize: vertical;
+      font-size: 0.95rem;
       margin-bottom: 12px;
-      background: var(--chat-bg);
-      border-radius: 18px;
+      font-family: inherit;
+      background: #fff;
+    }
+
+    .post-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--danger);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* 受付停止案内メッセージ */
+    .post-disabled-msg {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      color: #8d6e63;
+      padding: 16px;
+      border-radius: 16px;
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    /* 質問リスト */
+    .request-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
+    }
+
+    .request-item {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      cursor: pointer;
+      border-left: 6px solid var(--primary);
+      transition: transform 0.1s ease;
+    }
+
+    .request-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .request-item.my-post {
+      background-color: var(--my-card-bg);
+    }
+
+    .request-item.urgent {
+      border-left-color: var(--danger);
+      background-color: #fbe9e7;
+    }
+
+    .request-item.solved {
+      border-left-color: var(--text-sub);
+      background-color: #efebe9;
+      opacity: 0.8;
+    }
+
+    .request-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .request-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    .request-badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .badge-urgent {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .badge-solved {
+      background-color: var(--text-sub);
+      color: white;
+    }
+
+    .request-body {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    /* チャット画面 */
+    #chat-section {
+      display: none;
+    }
+
+    .chat-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .chat-title-info {
+      flex: 1;
+    }
+
+    .chat-title-info h3 {
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+
+    .chat-box {
+      background: var(--chat-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      height: 450px;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
     .msg-row {
       display: flex;
-      width: 100%;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 8px;
-      animation: fadeIn 0.2s ease-in-out;
+      max-width: 85%;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
+    .msg-row.my-msg {
+      align-self: flex-end;
+      flex-direction: row-reverse;
     }
 
-    .msg-row.my-msg { flex-direction: row-reverse; }
-    .msg-row.other-msg { flex-direction: row; }
+    .msg-row.other-msg {
+      align-self: flex-start;
+    }
 
     .msg-avatar-img {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       object-fit: cover;
-      margin-bottom: 2px;
-      border: 1px solid var(--border);
-    }
-
-    .msg-row.my-msg .msg-avatar-img {
-      transform: scaleX(-1);
     }
 
     .msg-content-wrapper {
       display: flex;
       flex-direction: column;
-      max-width: 75%;
     }
 
     .msg-sender-name {
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--text-sub);
       margin-bottom: 2px;
-      padding: 0 4px;
     }
 
-    .my-msg .msg-sender-name { text-align: right; }
+    .my-msg .msg-sender-name {
+      text-align: right;
+    }
 
     .msg-bubble {
-      padding: 10px 16px;
-      border-radius: 18px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      padding: 10px 14px;
+      border-radius: 16px;
       font-size: 0.95rem;
-      line-height: 1.5;
-      word-break: break-word;
-      font-weight: 500;
-    }
-
-    .msg-image {
-      max-width: 100%;
-      max-height: 250px;
-      border-radius: 12px;
-      margin-top: 8px;
-      display: block;
-      cursor: pointer;
+      word-break: break-all;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     .my-msg .msg-bubble {
-      background: var(--my-msg-bg);
-      color: #113013;
-      border-bottom-right-radius: 4px;
+      background-color: var(--my-msg-bg);
+      color: #1b4332;
+      border-top-right-radius: 4px;
     }
 
     .other-msg .msg-bubble {
-      background: var(--card-bg);
+      background-color: var(--card-bg);
       color: var(--text-main);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
+      border-top-left-radius: 4px;
+    }
+
+    .msg-image {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 12px;
+      margin-top: 6px;
+      cursor: pointer;
     }
 
     .msg-meta {
-      display: flex;
-      flex-direction: column;
       font-size: 0.7rem;
-      color: #666055;
-      line-height: 1.2;
-      margin-bottom: 2px;
-      font-weight: 700;
+      color: var(--text-sub);
+      align-self: flex-end;
+      margin: 0 4px;
     }
 
     .btn-best-answer {
       background-color: var(--gold);
       color: #5d4037;
       border: none;
-      padding: 6px 12px;
-      border-radius: 12px;
+      padding: 6px 10px;
+      border-radius: 8px;
       font-size: 0.75rem;
-      font-weight: bold;
+      font-weight: 700;
       cursor: pointer;
       margin-top: 6px;
-      display: inline-block;
       align-self: flex-start;
+      font-family: inherit;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* チャット入力エリア */
+    .chat-input-area {
+      background: var(--card-bg);
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .image-preview-container {
       display: none;
       align-items: center;
       gap: 8px;
-      margin-bottom: 8px;
-      background: #e8e0ce;
-      padding: 6px 12px;
+      padding: 6px;
+      background: #f5f0e6;
       border-radius: 10px;
     }
 
@@ -487,108 +469,74 @@
       border-radius: 6px;
     }
 
-    .btn-remove-image {
-      background: none;
-      border: none;
-      color: var(--danger);
-      font-size: 1rem;
-      padding: 0;
-      width: auto;
-      cursor: pointer;
-    }
-
-    .chat-input-area {
+    .chat-controls {
       display: flex;
-      flex-direction: column;
-    }
-
-    .input-group {
-      display: flex;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
     }
 
-    .input-group input[type="text"] { margin-bottom: 0; flex-grow: 1; }
-    
-    .btn-attach-img, .btn-draw-open {
-      background-color: #e8e0ce;
-      color: var(--text-main);
+    .chat-input-text {
+      flex: 1;
+      padding: 10px 14px;
       border: 1px solid var(--border);
-      width: 44px;
-      height: 44px;
-      padding: 0;
-      border-radius: 12px;
-      font-size: 1.2rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .tool-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-      font-weight: bold;
+      color: var(--text-main);
+      font-size: 1.1rem;
+      background-color: #fff;
     }
 
-    .input-group button.btn-send-msg { 
-      width: auto; 
-      white-space: nowrap; 
-      padding: 0 16px; 
-      height: 44px;
+    .tool-btn:hover {
+      background-color: var(--primary-light);
     }
 
-    /* ==================== 手書き（Canvas）モーダル ==================== */
-    .modal-overlay {
-      display: none;
+    /* キャンバスモーダル */
+    .canvas-modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.6);
-      z-index: 9999;
+      background: rgba(51, 47, 43, 0.6);
+      display: none;
       justify-content: center;
       align-items: center;
-      padding: 12px;
-      box-sizing: border-box;
+      z-index: 300;
     }
 
-    .modal-content {
+    .canvas-card {
       background: var(--card-bg);
-      width: 100%;
+      padding: 20px;
+      border-radius: 20px;
+      width: 95%;
       max-width: 600px;
-      border-radius: 18px;
-      padding: 16px;
-      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
     }
 
-    .canvas-container {
-      width: 100%;
-      background: #ffffff;
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      touch-action: none;
-    }
-
-    #drawCanvas {
-      width: 100%;
-      height: 320px;
-      display: block;
-      border-radius: 10px;
-      cursor: crosshair;
+    .canvas-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .canvas-tools {
       display: flex;
       gap: 8px;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
-
-    .tool-group {
-      display: flex;
-      gap: 6px;
       align-items: center;
     }
 
@@ -596,494 +544,557 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      border: 2px solid #ccc;
       cursor: pointer;
+      border: 3px solid transparent;
     }
 
     .color-picker-dot.active {
-      border-color: var(--primary);
-      transform: scale(1.15);
+      border-color: var(--text-main);
     }
 
-    .btn-canvas-tool {
-      background-color: #e8e0ce;
-      color: var(--text-main);
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      width: auto;
-      border-radius: 8px;
+    #drawCanvas {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      touch-action: none;
+      background-color: #ffffff;
+      width: 100%;
+      height: 320px;
     }
 
-    .btn-canvas-tool.active {
+    /* トグルスイッチのデザイン */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 26px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .3s;
+      border-radius: 26px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
       background-color: var(--primary);
-      color: white;
     }
 
-    .modal-actions {
-      display: flex;
-      gap: 8px;
+    input:checked + .slider:before {
+      transform: translateX(24px);
     }
-
-    .btn-modal-cancel { background-color: var(--text-sub); }
-    .btn-modal-submit { background-color: var(--primary); }
   </style>
 </head>
 <body>
 
-  <header id="main-header">
-    <h1>学習サポート掲示板</h1>
-    <div id="user-badge" class="user-profile-badge" style="display:none;" onclick="showLoginScreen()">
-      <span id="badge-class" class="class-room-tag">1-5</span>
-      <img id="badge-icon" class="badge-avatar-img" src="icon01.png" alt="icon">
-      <span id="badge-name">ゲスト</span>
-      <span id="badge-solve-count" class="solve-count-tag">解決: 0</span>
+  <!-- ヘッダー -->
+  <header>
+    <h1 id="app-title-logo" title="長押しで教師用設定">クラス質問掲示板</h1>
+    <div class="user-profile-badge" onclick="showLoginScreen()">
+      <img id="header-user-icon" class="badge-avatar-img" src="icon01.png" alt="User Icon">
+      <div>
+        <span id="header-user-name">ゲスト</span>
+        <span style="margin: 0 4px; color: var(--border);">|</span>
+        <span style="color: var(--primary);" id="header-user-pt">0</span> <span style="font-size: 0.75rem;">pt</span>
+      </div>
     </div>
   </header>
 
-  <!-- ==================== 0. ログイン / ルーム（クラス）選択画面 ==================== -->
-  <div id="login-section">
-    <div class="card" style="text-align: center; max-width: 420px; margin: 30px auto;">
-      <h2></h2>
-      <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;"></p>
-      
-      <p style="font-weight:bold; color:var(--primary); margin-bottom:16px;">現在の解決pt: <span id="user-solve-display">0</span> pt</p>
-
-      <!-- クラス選択 -->
-      <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">参加するクラスルーム：</label>
-      <select id="userClassSelect" onchange="toggleCustomClassInput(this)">
-        <option value="">クラスを選択</option>
-        <option value="1-5">1-5</option>
-        <option value="1-6">1-6</option>
-        <option value="1-7">1-7</option>
-        <option value="1-8">1-8</option>
-        <option value="1-9">1-9</option>
-        <option value="1-10">1-10</option>
-        <option value="3-10">3-10</option>
-        <option value="3-11">3-11</option>
-      </select>
-
-      <input type="text" id="customClassInput" placeholder="" style="display:none;">
-
-      <label style="font-size: 0.85rem; color: var(--text-sub); text-align: left; display: block; margin-bottom: 4px;">ユーザーネーム</label>
-      <input type="text" id="userNameInput" placeholder="">
-
-      <span class="icon-selector-label">アイコンを選択：</span>
-      <div class="icon-selector" id="login-icon-selector">
-        <div class="icon-wrapper">
-          <img class="icon-option selected" src="icon01.png" data-min="0" onclick="selectLoginIcon('icon01.png', this)" alt="アイコン1">
-        </div>
-        <div class="icon-wrapper">
-          <img class="icon-option" src="icon02.png" data-min="0" onclick="selectLoginIcon('icon02.png', this)" alt="アイコン2">
-        </div>
-        <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon03.png" data-min="20" onclick="selectLoginIcon('icon03.png', this)" alt="アイコン3">
-          <span class="lock-badge" id="lock-icon03">20pt〜</span>
-        </div>
-        <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon04.png" data-min="40" onclick="selectLoginIcon('icon04.png', this)" alt="アイコン4">
-          <span class="lock-badge" id="lock-icon04">40pt〜</span>
-        </div>
-        <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon05.png" data-min="60" onclick="selectLoginIcon('icon05.png', this)" alt="アイコン5">
-          <span class="lock-badge" id="lock-icon05">60pt〜</span>
-        </div>
-        <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon08.png" data-min="80" onclick="selectLoginIcon('icon08.png', this)" alt="アイコン6">
-          <span class="lock-badge" id="lock-icon06">80pt〜</span>
-        </div>
-        <div class="icon-wrapper">
-          <img class="icon-option locked" src="icon07.png" data-min="100" onclick="selectLoginIcon('icon07.png', this)" alt="アイコン7">
-          <span class="lock-badge" id="lock-icon07">100pt〜</span>
+  <!-- プロフィール設定モーダル -->
+  <div id="login-overlay" class="login-overlay" style="display: none;">
+    <div class="login-card">
+      <h2>プロフィール設定</h2>
+      <div class="form-group">
+        <label>表示名</label>
+        <input type="text" id="inputName" class="form-control" placeholder="名前を入力">
+      </div>
+      <div class="form-group">
+        <label>所属クラス</label>
+        <select id="inputClass" class="form-control">
+          <option value="">クラスを選択してください</option>
+          <option value="1-A">1年 A組</option>
+          <option value="1-B">1年 B組</option>
+          <option value="2-A">2年 A組</option>
+          <option value="2-B">2年 B組</option>
+          <option value="3-A">3年 A組</option>
+          <option value="3-B">3年 B組</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>アイコン選択</label>
+        <div class="icon-selector">
+          <img class="icon-option" src="icon01.png" onclick="selectIcon('icon01.png', this)">
+          <img class="icon-option" src="icon02.png" onclick="selectIcon('icon02.png', this)">
+          <img class="icon-option" src="icon03.png" onclick="selectIcon('icon03.png', this)">
         </div>
       </div>
-
-      <button id="btn-login-submit">入室</button>
+      <button class="btn-primary" onclick="saveProfile()">保存して開始</button>
     </div>
   </div>
 
+  <!-- 教師用設定モーダル (長押しで表示) -->
+  <div id="admin-modal" class="login-overlay" style="display: none;">
+    <div class="login-card">
+      <h2 style="margin-bottom: 8px;">教師用コントロール</h2>
+      <p style="font-size: 0.8rem; color: var(--text-sub); text-align: center; margin-bottom: 16px;">
+        パスワードは今日の日付4桁です（例: 0818）
+      </p>
 
-  <!-- ==================== 1. 一覧画面 ==================== -->
-  <div id="matching-section">
-    <div class="card">
-      <h2><span id="current-room-name-display" style="color:var(--primary);">クラス</span> の掲示板に投稿</h2>
-      <input type="text" id="reqSubject" placeholder="質問内容">
-      
-      <!-- 緊急チェックボックス -->
-      <label class="urgent-option-label">
-        <input type="checkbox" id="reqIsUrgent"> 緊急
-      </label>
+      <!-- パスワード入力エリア -->
+      <div id="admin-auth-sec">
+        <div class="form-group">
+          <label>パスワード (MMDD)</label>
+          <input type="password" id="adminPassInput" class="form-control" placeholder="4桁の数字" maxlength="4" style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
+        </div>
+        <button class="btn-primary" onclick="checkAdminPassword()">認証</button>
+      </div>
 
-      <button id="btn-create-request">投稿する</button>
-    </div>
+      <!-- スイッチ操作エリア (認証成功後に表示) -->
+      <div id="admin-control-sec" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 16px;">
+          <div>
+            <div style="font-weight: 700;">質問投稿の受付</div>
+            <div style="font-size: 0.75rem; color: var(--text-sub);">OFFにすると生徒は投稿できなくなります</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="togglePostingSwitch" onchange="togglePostingState(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
 
-    <div class="card">
-      <h2>質問一覧 (<span id="current-room-name-display-2">クラス</span>)</h2>
-      <div id="request-list">読み込み中...</div>
+      <button class="btn-back" style="width: 100%; margin-top: 10px;" onclick="closeAdminModal()">閉じる</button>
     </div>
   </div>
 
-
-  <!-- ==================== 2. チャット画面 ==================== -->
-  <div id="chat-section">
-    <div class="chat-header">
-      <button id="btn-back-to-list" class="btn-back">← 一覧に戻る</button>
-      <button id="btn-chat-delete" class="btn-chat-delete" style="display:none;" onclick="deleteCurrentRequest()">この質問を削除 (1pt)</button>
-    </div>
-
-    <div class="card">
-      <div style="text-align: center;">
-        <h2 id="chat-title">質問</h2>
-        <p id="chat-sub-hint" style="font-size:0.8rem; color:var(--text-sub); margin:-8px 0 12px 0; display:none;">
-          質問者は一番参考になった「ベストアンサー」を選ぶ
-        </p>
+  <div class="container">
+    <!-- 質問投稿・一覧セクション -->
+    <div id="matching-section">
+      <!-- 投稿機能（ONのとき表示） -->
+      <div class="post-card" id="post-card-form">
+        <textarea id="reqSubject" placeholder="質問したい内容を入力してください..."></textarea>
+        <div class="post-actions">
+          <label class="checkbox-label">
+            <input type="checkbox" id="reqIsUrgent"> 【緊急】ポイントを消費して強調表示 (5pt)
+          </label>
+          <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="createRequest()">質問する</button>
+        </div>
       </div>
 
-      <div id="chat-box"></div>
+      <!-- 受付停止中メッセージ（OFFのとき表示） -->
+      <div id="post-disabled-card" class="post-disabled-msg" style="display: none;">
+        🔒 現在、質問の新規投稿受付は停止されています。（授業中など）
+      </div>
 
-      <div class="chat-input-area" id="chat-input-wrapper">
+      <div class="request-list" id="request-list">
+        <!-- 質問一覧が動的に読み込まれます -->
+      </div>
+    </div>
+
+    <!-- チャットセクション -->
+    <div id="chat-section">
+      <div class="chat-header-bar">
+        <button class="btn-back" onclick="backToList()">← 戻る</button>
+        <div class="chat-title-info">
+          <h3 id="chat-title">質問タイトル</h3>
+          <div id="chat-sub-hint" style="font-size: 0.75rem; color: var(--text-sub); display: none;">
+            ※解決したら、回答の「★ ベストアンサーに選ぶ」を押してください
+          </div>
+        </div>
+        <button id="btn-chat-delete" class="btn-back" style="color: var(--danger); border-color: var(--danger); display: none;" onclick="deleteCurrentRequest()">削除 (2pt)</button>
+      </div>
+
+      <div class="chat-box" id="chat-box">
+        <!-- メッセージが動的に表示されます -->
+      </div>
+
+      <div class="chat-input-area">
         <div id="image-preview-container" class="image-preview-container">
-          <img id="image-preview-thumb" class="image-preview-thumb" src="" alt="preview">
-          <span style="font-size:0.8rem; flex-grow:1;">画像を添付中</span>
-          <button type="button" class="btn-remove-image" onclick="clearSelectedImage()">削除</button>
+          <img id="image-preview-thumb" class="image-preview-thumb" src="">
+          <span style="font-size: 0.8rem; color: var(--text-sub);">画像が選択されています</span>
+          <button style="background: none; border: none; cursor: pointer; color: var(--danger); margin-left: auto; font-weight:700;" onclick="clearSelectedImage()">✕ 削除</button>
         </div>
-
-        <div class="input-group">
-          <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
-          <button type="button" class="btn-attach-img" onclick="document.getElementById('imageInput').click()" title="画像を選択">＋</button>
-          
-          <button type="button" class="btn-draw-open" onclick="openCanvasModal()" title="手書き">✎</button>
-
-          <input type="text" id="messageText" placeholder="メッセージを入力">
-          <button id="btn-send" class="btn-send-msg">送信</button>
+        <div class="chat-controls">
+          <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+          <button class="tool-btn" onclick="document.getElementById('imageInput').click()" title="写真を添付">📷</button>
+          <button class="tool-btn" onclick="openCanvasModal()" title="手書きで投稿">✏️</button>
+          <input type="text" id="messageText" class="chat-input-text" placeholder="メッセージを入力..." onkeydown="if(event.key==='Enter') sendMessage()">
+          <button id="btn-send" class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="sendMessage()">送信</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== 3. 手書き（Canvas）モーダル ==================== -->
-  <div id="canvas-modal" class="modal-overlay">
-    <div class="modal-content">
-      <h3 style="margin:0; font-size:1.1rem; text-align:center;">手書きで描く</h3>
-      
-      <div class="canvas-container">
-        <canvas id="drawCanvas"></canvas>
-      </div>
-
-      <div class="canvas-tools">
-        <div class="tool-group">
-          <div class="color-picker-dot active" style="background:#000000;" onclick="setPenColor('#000000', this)"></div>
-          <div class="color-picker-dot" style="background:#d32f2f;" onclick="setPenColor('#d32f2f', this)"></div>
-          <div class="color-picker-dot" style="background:#1976d2;" onclick="setPenColor('#1976d2', this)"></div>
-          <div class="color-picker-dot" style="background:#388e3c;" onclick="setPenColor('#388e3c', this)"></div>
+  <!-- 手書きモーダル -->
+  <div id="canvas-modal" class="canvas-modal-overlay">
+    <div class="canvas-card">
+      <div class="canvas-toolbar">
+        <div class="canvas-tools">
+          <div class="color-picker-dot active" style="background: #332f2b;" onclick="setPenColor('#332f2b', this)"></div>
+          <div class="color-picker-dot" style="background: #d32f2f;" onclick="setPenColor('#d32f2f', this)"></div>
+          <div class="color-picker-dot" style="background: #1976d2;" onclick="setPenColor('#1976d2', this)"></div>
+          <button class="tool-btn" id="tool-pen" onclick="usePen()">ペン</button>
+          <button class="tool-btn" id="tool-eraser" onclick="useEraser()">消しゴム</button>
+          <button class="tool-btn" onclick="clearCanvas()">全消去</button>
         </div>
-
-        <div class="tool-group">
-          <button type="button" class="btn-canvas-tool active" id="tool-pen" onclick="usePen()">ペン</button>
-          <button type="button" class="btn-canvas-tool" id="tool-eraser" onclick="useEraser()">消しゴム</button>
-          <button type="button" class="btn-canvas-tool" onclick="clearCanvas()">全消去</button>
-        </div>
+        <button class="btn-back" onclick="closeCanvasModal()">✕</button>
       </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-modal-cancel" onclick="closeCanvasModal()">キャンセル</button>
-        <button type="button" class="btn-modal-submit" onclick="saveCanvasImage()">添付する</button>
-      </div>
+      <canvas id="drawCanvas"></canvas>
+      <button class="btn-primary" onclick="saveCanvasImage()">この手書き画像を添付する</button>
     </div>
   </div>
 
-
-  <!-- Firebase (v10) SDK -->
+  <!-- Firebase SDK (v9/v10 Modular) -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, getDoc, setDoc, increment } 
-      from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, deleteDoc, 
+      query, where, onSnapshot, serverTimestamp, increment 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // TODO: ご自身の Firebase 設定に置き換えてください
     const firebaseConfig = {
-      apiKey: "AIzaSyAkGHvYqrhlu3bF_P6LIXk0YjmSAfyFj08",
-      authDomain: "study-matching-test.firebaseapp.com",
-      projectId: "study-matching-test",
-      storageBucket: "study-matching-test.firebasestorage.app",
-      messagingSenderId: "720859286999",
-      appId: "1:720859286999:web:9f61a8a71989db79d94f92",
-      measurementId: "G-62FYMVGYFY"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 定数設定
-    const DELETE_COST = 1;
-    const URGENT_COST = 3;
-    const URGENT_REWARD = 3;
+    // --- 定数・グローバル変数 ---
+    const URGENT_COST = 5;
+    const DELETE_COST = 2;
+    const URGENT_REWARD = 5;
 
-    // ユーザー識別用ID
-    let senderId = localStorage.getItem("senderId");
+    let senderId = localStorage.getItem("app_user_id");
     if (!senderId) {
       senderId = "user_" + Math.random().toString(36).substring(2, 9);
-      localStorage.setItem("senderId", senderId);
+      localStorage.setItem("app_user_id", senderId);
     }
 
-    let myClass = localStorage.getItem("myClass") || "";
-    let myIcon = localStorage.getItem("myIcon") || "icon01.png";
-    let myName = localStorage.getItem("myName") || "";
+    let myName = localStorage.getItem("app_user_name") || "";
+    let myClass = localStorage.getItem("app_user_class") || "";
+    let myIcon = localStorage.getItem("app_user_icon") || "icon01.png";
     let mySolveCount = 0;
+    
+    // 投稿の受付許可状態フラグ
+    let isPostingEnabled = true;
 
     let currentRoomId = null;
     let currentDocId = null;
     let currentOwnerId = null;
     let currentIsSolved = false;
     let currentIsUrgent = false;
+
+    let selectedBase64Image = null;
     let unsubscribeRequests = null;
     let unsubscribeChat = null;
-    let unsubscribeUser = null;
-    let selectedBase64Image = null;
+    let unsubscribeClassSettings = null;
 
-    // イベントリスナーの登録
-    document.getElementById("btn-login-submit").addEventListener("click", saveProfileAndStart);
-    document.getElementById("btn-create-request").addEventListener("click", createRequest);
-    document.getElementById("btn-send").addEventListener("click", sendMessage);
-    document.getElementById("btn-back-to-list").addEventListener("click", backToList);
-
-    // 自由入力のクラス切替
-    window.toggleCustomClassInput = function(selectEl) {
-      const customInput = document.getElementById("customClassInput");
-      if (selectEl.value === "custom") {
-        customInput.style.display = "block";
-      } else {
-        customInput.style.display = "none";
-      }
-    };
-
-    // Enterキー送信対応
-    document.getElementById("messageText").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendMessage();
+    // --- 初期化 ---
+    window.addEventListener("DOMContentLoaded", () => {
+      initUserProfile();
+      setupLongPressForAdmin();
     });
 
-    // ユーザーデータ（解決数）をリアルタイムで監視・取得
-    function listenUserData() {
-      const userRef = doc(db, "users", senderId);
-
-      if (unsubscribeUser) unsubscribeUser();
-
-      unsubscribeUser = onSnapshot(userRef, async (userSnap) => {
-        if (userSnap.exists()) {
-          mySolveCount = userSnap.data().solveCount || 0;
-        } else {
-          await setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() });
-          mySolveCount = 0;
-        }
-        updateUIWithUserData();
-      });
-    }
-
-    function updateUIWithUserData() {
-      document.getElementById("user-solve-display").innerText = mySolveCount;
-      document.getElementById("badge-solve-count").innerText = `解決: ${mySolveCount}`;
-
-      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
-        const minReq = parseInt(opt.getAttribute("data-min") || "0", 10);
-        if (mySolveCount >= minReq) {
-          opt.classList.remove('locked');
-          const badge = opt.parentElement.querySelector('.lock-badge');
-          if (badge) badge.style.display = 'none';
-        } else {
-          opt.classList.add('locked');
-        }
-      });
-    }
-
-    // ログイン・設定画面
-    window.selectLoginIcon = function(iconSrc, element) {
-      const minReq = parseInt(element.getAttribute("data-min") || "0", 10);
-      if (mySolveCount < minReq) {
-        alert(`このアイコンを使うには「解決pt」が ${minReq} pt以上必要です！（現在の解決pt: ${mySolveCount} pt）`);
-        return;
+    function initUserProfile() {
+      if (!myName || !myClass) {
+        showLoginScreen();
+      } else {
+        updateHeaderUI();
+        syncUserData();
+        listenClassSettings();
+        listenRequests();
       }
+    }
 
-      myIcon = iconSrc;
-      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
-        opt.classList.remove('selected');
-      });
-      element.classList.add('selected');
-    };
+    function updateHeaderUI() {
+      document.getElementById("header-user-name").innerText = `${myName} (${myClass})`;
+      document.getElementById("header-user-icon").src = myIcon;
+      document.getElementById("header-user-pt").innerText = mySolveCount;
+    }
 
     window.showLoginScreen = function() {
-      updateUIWithUserData();
-      document.getElementById("login-section").style.display = "block";
-      document.getElementById("matching-section").style.display = "none";
-      document.getElementById("chat-section").style.display = "none";
-      document.getElementById("user-badge").style.display = "none";
+      document.getElementById("inputName").value = myName;
+      document.getElementById("inputClass").value = myClass;
       
-      document.getElementById("userNameInput").value = myName;
-
-      const selectEl = document.getElementById("userClassSelect");
-      const customInput = document.getElementById("customClassInput");
-
-      if (myClass) {
-        let matched = false;
-        for (let i = 0; i < selectEl.options.length; i++) {
-          if (selectEl.options[i].value === myClass) {
-            selectEl.selectedIndex = i;
-            matched = true;
-            break;
-          }
-        }
-        if (!matched) {
-          selectEl.value = "custom";
-          customInput.style.display = "block";
-          customInput.value = myClass;
-        }
-      }
-
-      document.querySelectorAll('#login-icon-selector .icon-option').forEach(opt => {
-        if (opt.getAttribute("src") === myIcon) opt.classList.add('selected');
-        else opt.classList.remove('selected');
+      const dots = document.querySelectorAll(".icon-option");
+      dots.forEach(img => {
+        img.classList.toggle("selected", img.getAttribute("src") === myIcon);
       });
+
+      document.getElementById("login-overlay").style.display = "flex";
     };
 
-    function saveProfileAndStart() {
-      const selectEl = document.getElementById("userClassSelect");
-      let selectedClass = selectEl.value;
+    window.selectIcon = function(iconSrc, el) {
+      myIcon = iconSrc;
+      document.querySelectorAll(".icon-option").forEach(img => img.classList.remove("selected"));
+      el.classList.add("selected");
+    };
 
-      if (selectedClass === "custom") {
-        selectedClass = document.getElementById("customClassInput").value.trim();
-      }
+    window.saveProfile = async function() {
+      const nameVal = document.getElementById("inputName").value.trim();
+      const classVal = document.getElementById("inputClass").value;
 
-      const nameVal = document.getElementById("userNameInput").value.trim();
-
-      if (!selectedClass) {
-        alert("参加するクラスを選択（または入力）してください。");
-        return;
-      }
       if (!nameVal) {
-        alert("名前または出席番号を入力してください。");
+        alert("名前を入力してください。");
+        return;
+      }
+      if (!classVal) {
+        alert("クラスを選択してください。");
         return;
       }
 
-      myClass = selectedClass;
       myName = nameVal;
+      myClass = classVal;
 
-      localStorage.setItem("myClass", myClass);
-      localStorage.setItem("myIcon", myIcon);
-      localStorage.setItem("myName", myName);
+      localStorage.setItem("app_user_name", myName);
+      localStorage.setItem("app_user_class", myClass);
+      localStorage.setItem("app_user_icon", myIcon);
 
-      document.getElementById("badge-class").innerText = myClass;
-      document.getElementById("badge-icon").src = myIcon;
-      document.getElementById("badge-name").innerText = myName;
-      document.getElementById("user-badge").style.display = "flex";
+      document.getElementById("login-overlay").style.display = "none";
+      updateHeaderUI();
 
-      document.getElementById("current-room-name-display").innerText = myClass;
-      document.getElementById("current-room-name-display-2").innerText = myClass;
+      try {
+        const userRef = doc(db, "users", senderId);
+        await setDoc(userRef, {
+          name: myName,
+          classId: myClass,
+          icon: myIcon
+        }, { merge: true });
+      } catch (e) {
+        console.error("ユーザー設定保存エラー:", e);
+      }
 
-      document.getElementById("login-section").style.display = "none";
-      document.getElementById("matching-section").style.display = "block";
-
-      // 該当クラスの質問一覧を監視開始
+      listenClassSettings();
       listenRequests();
+    };
+
+    // ユーザーポイントデータ等のリアルタイム同期
+    function syncUserData() {
+      const userRef = doc(db, "users", senderId);
+      onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          mySolveCount = data.solveCount || 0;
+          document.getElementById("header-user-pt").innerText = mySolveCount;
+        } else {
+          setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() }, { merge: true });
+        }
+      });
     }
 
-    // 起動時にリアルタイム監視を開始
-    listenUserData();
+    // クラスごとの投稿ON/OFF設定を監視
+    function listenClassSettings() {
+      if (!myClass) return;
+      if (unsubscribeClassSettings) unsubscribeClassSettings();
 
-    if (!myName || !myClass) {
-      showLoginScreen();
-    } else {
-      document.getElementById("badge-class").innerText = myClass;
-      document.getElementById("badge-icon").src = myIcon;
-      document.getElementById("badge-name").innerText = myName;
-      document.getElementById("user-badge").style.display = "flex";
-
-      document.getElementById("current-room-name-display").innerText = myClass;
-      document.getElementById("current-room-name-display-2").innerText = myClass;
-
-      document.getElementById("matching-section").style.display = "block";
-      listenRequests();
+      const settingsRef = doc(db, "classSettings", myClass);
+      unsubscribeClassSettings = onSnapshot(settingsRef, (docSnap) => {
+        if (docSnap.exists()) {
+          isPostingEnabled = docSnap.data().isPostingEnabled !== false;
+        } else {
+          isPostingEnabled = true;
+        }
+        applyPostingUI();
+      });
     }
 
-    // --- クラス別の質問一覧をリアルタイム取得 ---
+    // 受付状態に合わせて画面表示を変更
+    function applyPostingUI() {
+      const formEl = document.getElementById("post-card-form");
+      const disabledEl = document.getElementById("post-disabled-card");
+      const toggleSwitch = document.getElementById("togglePostingSwitch");
+
+      if (isPostingEnabled) {
+        formEl.style.display = "block";
+        disabledEl.style.display = "none";
+        if (toggleSwitch) toggleSwitch.checked = true;
+      } else {
+        formEl.style.display = "none";
+        disabledEl.style.display = "block";
+        if (toggleSwitch) toggleSwitch.checked = false;
+      }
+    }
+
+    // 長押し処理 (教師用設定画面起動)
+    function setupLongPressForAdmin() {
+      const titleEl = document.getElementById("app-title-logo");
+      let pressTimer = null;
+
+      const startPress = () => {
+        pressTimer = setTimeout(() => {
+          openAdminModal();
+        }, 1000); // 1秒間長押しで起動
+      };
+
+      const cancelPress = () => {
+        if (pressTimer) clearTimeout(pressTimer);
+      };
+
+      titleEl.addEventListener("mousedown", startPress);
+      titleEl.addEventListener("mouseup", cancelPress);
+      titleEl.addEventListener("mouseleave", cancelPress);
+
+      titleEl.addEventListener("touchstart", startPress, { passive: true });
+      titleEl.addEventListener("touchend", cancelPress);
+      titleEl.addEventListener("touchcancel", cancelPress);
+    }
+
+    function openAdminModal() {
+      document.getElementById("adminPassInput").value = "";
+      document.getElementById("admin-auth-sec").style.display = "block";
+      document.getElementById("admin-control-sec").style.display = "none";
+      document.getElementById("admin-modal").style.display = "flex";
+    }
+
+    window.closeAdminModal = function() {
+      document.getElementById("admin-modal").style.display = "none";
+    };
+
+    // 今日付4桁パスワード認証 (例: 8月18日 -> 0818)
+    window.checkAdminPassword = function() {
+      const inputPass = document.getElementById("adminPassInput").value.trim();
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const correctPass = month + date;
+
+      if (inputPass === correctPass) {
+        document.getElementById("admin-auth-sec").style.display = "none";
+        document.getElementById("admin-control-sec").style.display = "block";
+        document.getElementById("togglePostingSwitch").checked = isPostingEnabled;
+      } else {
+        alert("パスワードが違います。");
+      }
+    };
+
+    // ON/OFF切り替え保存 (Firestoreへ書き込み)
+    window.togglePostingState = async function(enabled) {
+      if (!myClass) {
+        alert("クラスが設定されていません。");
+        return;
+      }
+      try {
+        const settingsRef = doc(db, "classSettings", myClass);
+        await setDoc(settingsRef, {
+          isPostingEnabled: enabled,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch (e) {
+        alert("設定の更新に失敗しました: " + e.message);
+      }
+    };
+
+    // --- 質問リストの同期 ---
     function listenRequests() {
       if (!myClass) return;
-
       if (unsubscribeRequests) unsubscribeRequests();
 
-      // インデックスエラー回避のため、classId条件で絞り込み、JS側で降順ソート
-      const qRequests = query(
+      const q = query(
         collection(db, "requests"),
         where("classId", "==", myClass)
       );
 
-      unsubscribeRequests = onSnapshot(qRequests, (snapshot) => {
+      unsubscribeRequests = onSnapshot(q, (snapshot) => {
         const listEl = document.getElementById("request-list");
         listEl.innerHTML = "";
 
         if (snapshot.empty) {
-          listEl.innerHTML = `<p style='color: var(--text-sub); text-align: center; font-size: 0.9rem;'>現在【${myClass}】に質問はありません。</p>`;
+          listEl.innerHTML = "<p style='color: var(--text-sub); text-align: center; margin-top: 20px;'>現在、質問はありません。</p>";
           return;
         }
 
-        // Firestoreドキュメントを配列化して最新順（createdAt降順）にソート
-        const docsArray = [];
+        const items = [];
         snapshot.forEach((docSnap) => {
-          docsArray.push({ id: docSnap.id, ...docSnap.data() });
+          items.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        docsArray.sort((a, b) => {
+        items.sort((a, b) => {
+          if (a.isSolved !== b.isSolved) return a.isSolved ? 1 : -1;
+          if (a.isUrgent !== b.isUrgent) return b.isUrgent ? 1 : -1;
           const tA = a.createdAt ? (a.createdAt.toMillis ? a.createdAt.toMillis() : a.createdAt) : 0;
           const tB = b.createdAt ? (b.createdAt.toMillis ? b.createdAt.toMillis() : b.createdAt) : 0;
           return tB - tA;
         });
 
-        docsArray.forEach((data) => {
-          const reqId = data.id;
-          const isMyReq = data.ownerId === senderId;
-          const isSolved = data.isSolved || false;
-          const isUrgent = data.isUrgent || false;
+        items.forEach((item) => {
+          const div = document.createElement("div");
+          let classNames = "request-item";
+          if (item.ownerId === senderId) classNames += " my-post";
+          if (item.isSolved) classNames += " solved";
+          else if (item.isUrgent) classNames += " urgent";
 
-          const item = document.createElement("div");
-          item.className = `request-item ${isMyReq ? "my-request" : ""} ${isSolved ? "solved" : ""}`;
+          div.className = classNames;
+          div.onclick = () => window.openChatRoom(item.roomId, item.id, item.ownerId, item.subject, item.isSolved, item.isUrgent);
 
-          let statusTag = "";
-          if (isSolved) statusTag += `<span class="solved-label">[解決済]</span>`;
-          if (isUrgent && !isSolved) statusTag += `<span class="urgent-label">【緊急】</span>`;
-
-          let deleteBtnHtml = "";
-          if (isMyReq) {
-            deleteBtnHtml = `<button class="btn-delete" onclick="deleteRequest('${reqId}', '${data.ownerId}')">削除</button>`;
+          let badgeHtml = "";
+          if (item.isSolved) {
+            badgeHtml = `<span class="request-badge badge-solved">解決済み</span>`;
+          } else if (item.isUrgent) {
+            badgeHtml = `<span class="request-badge badge-urgent">至急 (5pt)</span>`;
           }
 
-          item.innerHTML = `
-            <div class="request-info">
-              <img class="request-avatar-img" src="${data.ownerIcon || 'icon01.png'}" alt="icon">
-              <div>
-                <div class="request-title">
-                  ${isMyReq ? '<span class="my-badge">自分</span>' : ''}
-                  ${statusTag}${escapeHtml(data.subject)}
-                </div>
-                <div class="request-meta">
-                  <span>投稿者: ${escapeHtml(data.ownerName || "匿名")}</span>
-                </div>
+          const iconSrc = item.ownerIcon || "icon01.png";
+
+          div.innerHTML = `
+            <div class="request-header">
+              <div class="request-user">
+                <img src="${iconSrc}" class="badge-avatar-img">
+                <span>${escapeHtml(item.ownerName || "匿名")}</span>
               </div>
+              ${badgeHtml}
             </div>
-            <div class="request-actions">
-              <button class="btn-chat" onclick="openChatRoom('${data.roomId}', '${reqId}', '${data.ownerId}', '${escapeHtml(data.subject)}', ${isSolved}, ${isUrgent})">
-                ${isSolved ? "閲覧" : "回答する"}
-              </button>
-              ${deleteBtnHtml}
-            </div>
+            <div class="request-body">${escapeHtml(item.subject)}</div>
           `;
-          listEl.appendChild(item);
+          listEl.appendChild(div);
         });
       });
     }
 
     function escapeHtml(str) {
-      return String(str || "").replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      })[m]);
+      if (!str) return "";
+      return str.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
     }
 
-    // --- 質問新規投稿 (クラスIDを付与) ---
+    // --- 質問新規投稿 ---
     async function createRequest() {
+      if (!isPostingEnabled) {
+        alert("現在、質問の受付は停止されています。");
+        return;
+      }
+
       const subjectInput = document.getElementById("reqSubject");
       const isUrgentInput = document.getElementById("reqIsUrgent");
       const subject = subjectInput.value.trim();
@@ -1153,14 +1164,14 @@
       joinChatRoom(roomId);
     };
 
-    function backToList() {
+    window.backToList = function() {
       if (unsubscribeChat) unsubscribeChat();
       currentRoomId = null;
       currentDocId = null;
       currentOwnerId = null;
       document.getElementById("chat-section").style.display = "none";
       document.getElementById("matching-section").style.display = "block";
-    }
+    };
 
     // --- 画像選択＆圧縮処理 ---
     window.handleImageSelect = function(e) {
@@ -1207,7 +1218,7 @@
     // ==================== 手書き（Canvas）制御処理 ====================
     let canvas, ctx;
     let isDrawing = false;
-    let penColor = "#000000";
+    let penColor = "#332f2b";
     let penWidth = 3;
     let isEraser = false;
 
@@ -1433,7 +1444,6 @@
           msgArray.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        // 古い順（timestamp昇順）にソート
         msgArray.sort((a, b) => {
           const tA = a.timestamp ? (a.timestamp.toMillis ? a.timestamp.toMillis() : a.timestamp) : 0;
           const tB = b.timestamp ? (b.timestamp.toMillis ? b.timestamp.toMillis() : b.timestamp) : 0;
@@ -1492,7 +1502,7 @@
     }
 
     // --- メッセージ送信 ---
-    async function sendMessage() {
+    window.sendMessage = async function() {
       const textInput = document.getElementById("messageText");
       const text = textInput.value.trim();
 
@@ -1519,7 +1529,7 @@
       } finally {
         btn.disabled = false;
       }
-    }
+    };
   </script>
 </body>
 </html>
