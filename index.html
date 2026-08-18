@@ -1,21 +1,110 @@
-// 修正前: 保存データがあれば自動で掲示板画面へ移動する処理
-function initUserProfile() {
-  if (!myName || !myClass) {
-    showLoginScreen();
-  } else {
-    enterBoardView();
-    syncUserData();
-    listenClassSettings();
-    listenRequests();
-  }
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クラス質問掲示板</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #f2ebd9;        /* ナチュラルベージュ背景 */
+      --card-bg: #fffdf7;          /* カードアイボリー */
+      --text-main: #332f2b;       /* 濃いブラウン */
+      --text-sub: #7a7369;        /* アースグレー */
+      --primary: #2e7d32;          /* ナチュラルグリーン */
+      --primary-hover: #1b5e20;
+      --primary-light: #e8f5e9;
+      --success: #4caf50;          /* ライトグリーン */
+      --danger: #d32f2f;           /* アースレッド */
+      --border: #dcd4c3;          /* 境界線 */
+      --my-msg-bg: #81c784;       /* 自分の吹き出し */
+      --chat-bg: #e2d9c4;        /* トーク画面背景 */
+      --gold: #fbc02d;              /* ベストアンサー用カラー */
+      --my-card-bg: #eaf5ea;        /* 自分の投稿カード背景 */
+    }
 
-// 修正後: 常にログイン画面を最初に表示したい場合
-function initUserProfile() {
-  // 保存されている名前やクラスがあればフォームに初期入力しておく
-  if (myName) document.getElementById("userNameInput").value = myName;
-  if (myClass) document.getElementById("userClassSelect").value = myClass;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  // ログイン画面を強制的に表示
-  showLoginScreen();
-}
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+      font-weight: 700;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      max-width: 768px;
+      margin: 0 auto;
+      padding: 16px;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      background-color: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin: 0;
+      color: #1b5e20;
+      letter-spacing: 0.05em;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
+    }
+
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #e8e0ce;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+
+    .badge-avatar-img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(51, 47, 43, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+      backdrop-filter: blur(2px);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(
