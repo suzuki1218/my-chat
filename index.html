@@ -694,19 +694,19 @@
     </div>
   </div>
 
-  <!-- 教師用設定モーダル (長押しで表示) -->
+  <!-- 教師用設定モーダル -->
   <div id="admin-modal" class="login-overlay" style="display: none;">
     <div class="login-card">
-      <h2 style="margin-bottom: 8px;">教師用コントロール</h2>
+      <h2 style="margin-bottom: 8px;">管理者権限</h2>
       <p style="font-size: 0.8rem; color: var(--text-sub); text-align: center; margin-bottom: 16px;">
-        パスワードは今日の日付4桁です（例: 0818）
+        
       </p>
 
       <!-- パスワード入力エリア -->
       <div id="admin-auth-sec">
         <div class="form-group">
-          <label>パスワード (MMDD)</label>
-          <input type="password" id="adminPassInput" class="form-control" placeholder="4桁の数字" maxlength="4" style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
+          <label>パスワード</label>
+          <input type="password" id="adminPassInput" class="form-control" placeholder="" maxlength="4" style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
         </div>
         <button class="btn-primary" onclick="checkAdminPassword()">認証</button>
       </div>
@@ -737,7 +737,7 @@
         <textarea id="reqSubject" placeholder="質問したい内容を入力してください..."></textarea>
         <div class="post-actions">
           <label class="checkbox-label">
-            <input type="checkbox" id="reqIsUrgent"> 【緊急】ポイントを消費して強調表示 (5pt)
+            <input type="checkbox" id="reqIsUrgent"> 【緊急】(5pt)
           </label>
           <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="createRequest()">質問する</button>
         </div>
@@ -745,7 +745,7 @@
 
       <!-- 受付停止中メッセージ（OFFのとき表示） -->
       <div id="post-disabled-card" class="post-disabled-msg" style="display: none;">
-        🔒 現在、質問の新規投稿受付は停止されています。（授業中など）
+        現在、質問の新規投稿受付は停止されています。
       </div>
 
       <div class="request-list" id="request-list">
@@ -760,7 +760,7 @@
         <div class="chat-title-info">
           <h3 id="chat-title">質問タイトル</h3>
           <div id="chat-sub-hint" style="font-size: 0.75rem; color: var(--text-sub); display: none;">
-            ※解決したら、回答の「★ ベストアンサーに選ぶ」を押してください
+            ※解決したら「ベストアンサーに選ぶ」を押してください
           </div>
         </div>
         <button id="btn-chat-delete" class="btn-back" style="color: var(--danger); border-color: var(--danger); display: none;" onclick="deleteCurrentRequest()">削除 (2pt)</button>
@@ -1399,7 +1399,7 @@
         return;
       }
 
-      const confirmDelete = confirm(`${DELETE_COST} pt を消費して、この質問を削除しますか？\n（現在の所持pt: ${mySolveCount} pt）`);
+      const confirmDelete = confirm(`${DELETE_COST} ptを消費して、この質問を削除しますか？\n（現在の所持pt: ${mySolveCount} pt）`);
       if (!confirmDelete) return;
 
       try {
