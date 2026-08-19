@@ -827,7 +827,7 @@
             ※解決したら「ベストアンサーに選ぶ」を押してください
           </div>
         </div>
-        <button id="btn-chat-delete" class="btn-back" style="color: var(--danger); border-color: var(--danger); display: none;" onclick="deleteCurrentRequest()">削除 (2pt)</button>
+        <button id="btn-chat-delete" class="btn-back" style="color: var(--danger); border-color: var(--danger); display: none;" onclick="deleteCurrentRequest()">削除</button>
       </div>
 
       <div class="chat-box" id="chat-box">
@@ -893,8 +893,8 @@
     const db = getFirestore(app);
 
     // --- 定数・グローバル変数 ---
-    const URGENT_COST = 5;
-    const DELETE_COST = 2;
+    const URGENT_COST = 3;
+    const DELETE_COST = 3;
     const URGENT_REWARD = 3;
 
     let senderId = localStorage.getItem("app_user_id");
