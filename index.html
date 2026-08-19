@@ -330,17 +330,25 @@
       color: white;
     }
 
+    /* タイトル（本文）とボタンを横並びにするレイアウト */
+    .request-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
     .request-body {
       font-size: 1rem;
       font-weight: 700;
       line-height: 1.4;
-      margin-bottom: 12px;
+      flex: 1;
+      margin-bottom: 0;
     }
 
-    /* 右端に配置する要素のスタイル */
     .request-footer {
-      display: flex;
-      justify-content: flex-end;
+      flex-shrink: 0;
     }
 
     .btn-view-chat {
@@ -771,7 +779,7 @@
         <textarea id="reqSubject" placeholder="質問したい内容を入力してください..."></textarea>
         <div class="post-actions">
           <label class="checkbox-label">
-            <input type="checkbox" id="reqIsUrgent"> 【緊急】(5pt)
+            <input type="checkbox" id="reqIsUrgent"> 緊急
           </label>
           <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="createRequest()">質問する</button>
         </div>
@@ -812,8 +820,8 @@
         </div>
         <div class="chat-controls">
           <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
-          <button class="tool-btn" onclick="document.getElementById('imageInput').click()" title="写真を添付">📷</button>
-          <button class="tool-btn" onclick="openCanvasModal()" title="手書きで投稿">✏️</button>
+          <button class="tool-btn" onclick="document.getElementById('imageInput').click()" title="写真を添付">＋</button>
+          <button class="tool-btn" onclick="openCanvasModal()" title="手書きで投稿">✑</button>
           <input type="text" id="messageText" class="chat-input-text" placeholder="メッセージを入力..." onkeydown="if(event.key==='Enter') sendMessage()">
           <button id="btn-send" class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="sendMessage()">送信</button>
         </div>
@@ -863,8 +871,8 @@
     const db = getFirestore(app);
 
     // --- 定数・グローバル変数 ---
-    const URGENT_COST = 5;
-    const DELETE_COST = 2;
+    const URGENT_COST = 3;
+    const DELETE_COST = 3;
     const URGENT_REWARD = 3; // 緊急の質問の解決ptを3ptに変更
 
     let senderId = localStorage.getItem("app_user_id");
@@ -1144,7 +1152,7 @@
           if (item.isSolved) {
             badgeHtml = `<span class="request-badge badge-solved">解決済み</span>`;
           } else if (item.isUrgent) {
-            badgeHtml = `<span class="request-badge badge-urgent">至急 (5pt)</span>`;
+            badgeHtml = `<span class="request-badge badge-urgent">緊急</span>`;
           }
 
           const iconSrc = item.ownerIcon || "icon01.png";
@@ -1159,9 +1167,11 @@
               </div>
               ${badgeHtml}
             </div>
-            <div class="request-body">${escapeHtml(item.subject)}</div>
-            <div class="request-footer">
-              <button class="btn-view-chat" onclick="openChatRoom('${item.roomId}', '${item.id}', '${item.ownerId}', '${escapeHtml(item.subject)}', ${item.isSolved}, ${item.isUrgent})">${buttonText}</button>
+            <div class="request-content">
+              <div class="request-body">${escapeHtml(item.subject)}</div>
+              <div class="request-footer">
+                <button class="btn-view-chat" onclick="openChatRoom('${item.roomId}', '${item.id}', '${item.ownerId}', '${escapeHtml(item.subject)}', ${item.isSolved}, ${item.isUrgent})">${buttonText}</button>
+              </div>
             </div>
           `;
 
@@ -1305,7 +1315,7 @@
           // ベストアンサーボタン（質問者本人のみ表示＆相手のメッセージ＆未解決の場合）
           let bestAnswerBtnHtml = "";
           if (currentOwnerId === senderId && !isMyMsg && !currentIsSolved) {
-            bestAnswerBtnHtml = `<button class="btn-best-answer" onclick="selectBestAnswer('${msg.senderId}')">★ ベストアンサーに選ぶ</button>`;
+            bestAnswerBtnHtml = `<button class="btn-best-answer" onclick="selectBestAnswer('${msg.senderId}')">ベストアンサーに選ぶ</button>`;
           }
 
           row.innerHTML = `
