@@ -337,6 +337,7 @@
       margin-bottom: 12px;
     }
 
+    /* 右端に配置する要素のスタイル */
     .request-footer {
       display: flex;
       justify-content: flex-end;
@@ -1147,6 +1148,8 @@
           }
 
           const iconSrc = item.ownerIcon || "icon01.png";
+          // 解決済みなら「閲覧する」、未解決なら「見に行く」に設定
+          const buttonText = item.isSolved ? "閲覧する" : "見に行く";
 
           div.innerHTML = `
             <div class="request-header">
@@ -1158,7 +1161,7 @@
             </div>
             <div class="request-body">${escapeHtml(item.subject)}</div>
             <div class="request-footer">
-              <button class="btn-view-chat" onclick="openChatRoom('${item.roomId}', '${item.id}', '${item.ownerId}', '${escapeHtml(item.subject)}', ${item.isSolved}, ${item.isUrgent})">見に行く</button>
+              <button class="btn-view-chat" onclick="openChatRoom('${item.roomId}', '${item.id}', '${item.ownerId}', '${escapeHtml(item.subject)}', ${item.isSolved}, ${item.isUrgent})">${buttonText}</button>
             </div>
           `;
 
