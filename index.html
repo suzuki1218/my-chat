@@ -982,38 +982,62 @@
     };
 
     window.saveProfile = async function() {
-      const nameVal = document.getElementById("userNameInput").value.trim();
-      const classVal = document.getElementById("userClassSelect").value;
+  const nameVal = document.getElementById("userNameInput").value.trim();
+  const classVal = document.getElementById("userClassSelect").value;
 
-      if (!nameVal) {
-        alert("名前を入力してください。");
-        return;
-      }
-      if (!classVal) {
-        alert("クラスを選択してください。");
-        return;
-      }
+  if (!nameVal) {
+    alert("名前を入力してください。");
+    return;
+  }
+  if (!classVal) {
+    alert("クラスを選択してください。");
+    return;
+  }
 
-      myName = nameVal;
-      myClass = classVal;
+  myName = nameVal;
+  myClass = classVal;
 
-      localStorage.setItem("app_user_name", myName);
-      localStorage.setItem("app_user_class", myClass);
-      localStorage.setItem("app_user_icon", myIcon);
+  // --- 本日の「MMDDteacher」判定と100pt付与処理 ---
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const date = String(now.getDate()).padStart(2, '0');
+  const teacherKeyword = `${month}${date}teacher`; // 例: 8/22なら "0822teacher"
 
-      document.getElementById("login-overlay").style.display = "none";
-      updateHeaderUI();
+  let addBonusPt = false;
+  if (myName === teacherKeyword) {
+    mySolveCount += 100; // ローカルのポイントを100加算
+    addBonusPt = true;
+  }
+  // ------------------------------------------------
 
-      try {
-        const userRef = doc(db, "users", senderId);
-        await setDoc(userRef, { name: myName, classId: myClass, icon: myIcon }, { merge: true });
-      } catch (e) {
-        console.error("ユーザー設定保存エラー:", e);
-      }
+  localStorage.setItem("app_user_name", myName);
+  localStorage.setItem("app_user_class", myClass);
+  localStorage.setItem("app_user_icon", myIcon);
 
-      listenClassSettings();
-      listenRequests();
-    };
+  document.getElementById("login-overlay").style.display = "none";
+  updateHeaderUI();
+
+  try {
+    const userRef = doc(db, "users", senderId);
+    const updateData = { name: myName, classId: myClass, icon: myIcon };
+    
+    // キーワード一致時はFirestoreのポイントも更新
+    if (addBonusPt) {
+      updateData.solveCount = mySolveCount;
+    }
+
+    await setDoc(userRef, updateData, { merge: true });
+
+    if (addBonusPt) {
+      alert(`教師用キーワードが確認されました。100ptを付与しました！（現在: ${mySolveCount}pt）`);
+    }
+  } catch (e) {
+    console.error("ユーザー設定保存エラー:", e);
+  }
+
+  listenClassSettings();
+  listenRequests();
+};
 
    // ユーザーポイントデータ等のリアルタイム同期
 function syncUserData() {
@@ -1026,7 +1050,7 @@ function syncUserData() {
           document.getElementById("user-solve-display").innerText = mySolveCount;
           updateIconLockState();
         } else {
-          setDoc(userRef, { solveCount: 3, createdAt: serverTimestamp() }, { merge: true });
+          setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() }, { merge: true });
         }
       });
 }
