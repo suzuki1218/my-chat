@@ -1026,7 +1026,8 @@
           document.getElementById("user-solve-display").innerText = mySolveCount;
           updateIconLockState();
         } else {
-          setDoc(userRef, { solveCount: 0, createdAt: serverTimestamp() }, { merge: true });
+          //　初期値
+          setDoc(userRef, { solveCount: 10, createdAt: serverTimestamp() }, { merge: true });
         }
       });
     }
