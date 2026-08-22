@@ -1017,26 +1017,18 @@
 
    // ユーザーポイントデータ等のリアルタイム同期
 function syncUserData() {
-  const userRef = doc(db, "users", senderId);
-  onSnapshot(userRef, (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      mySolveCount = data.solveCount || 0;
-
-      // 既存ユーザーのptが3未満の場合、強制的に3ptに更新する
-      if (mySolveCount < 3) {
-        updateDoc(userRef, { solveCount: 3 });
-        return; // 次のonSnapshot発火で更新後の数値が読み込まれます
-      }
-
-      document.getElementById("header-user-pt").innerText = mySolveCount;
-      document.getElementById("user-solve-display").innerText = mySolveCount;
-      updateIconLockState();
-    } else {
-      // 新規ユーザー作成時の初期値も3ptに設定
-      setDoc(userRef, { solveCount: 10, createdAt: serverTimestamp() }, { merge: true });
-    }
-  });
+      const userRef = doc(db, "users", senderId);
+      onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          mySolveCount = data.solveCount || 0;
+          document.getElementById("header-user-pt").innerText = mySolveCount;
+          document.getElementById("user-solve-display").innerText = mySolveCount;
+          updateIconLockState();
+        } else {
+          setDoc(userRef, { solveCount: 3, createdAt: serverTimestamp() }, { merge: true });
+        }
+      });
 }
 
     // クラスごとの投稿ON/OFF設定を監視
