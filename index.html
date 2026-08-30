@@ -989,12 +989,13 @@ const CLASS_PASSCODES = {
       el.classList.add("selected");
     };
 
-   // --- プロフィール保存・ログイン関数内 ---
+// --- プロフィール保存・ログイン関数内 ---
 window.saveProfile = async function() {
-  const nameInput = document.getElementById("input-name").value.trim();
-  const selectedClass = document.getElementById("select-class").value;
+  // ★ HTMLのID名（userNameInput, userClassSelect）に合わせる
+  const nameInput = document.getElementById("userNameInput").value.trim();
+  const selectedClass = document.getElementById("userClassSelect").value;
   
-  // ★追加: 入力されたパスコードを取得
+  // 入力されたパスコードを取得
   const inputCode = document.getElementById("input-class-code").value.trim();
 
   if (!nameInput) {
@@ -1002,35 +1003,33 @@ window.saveProfile = async function() {
     return;
   }
 
-  // ★追加: パスコードの照合処理
+  if (!selectedClass) {
+    alert("クラスを選択してください。");
+    return;
+  }
+
+  // パスコードの照合処理
   const correctCode = CLASS_PASSCODES[selectedClass];
   if (inputCode !== correctCode) {
     alert(`${selectedClass} のパスコードが正しくありません。`);
     return; // 不一致ならここで処理をストップ
   }
 
-  // --- 既存の保存処理（ローカルストレージへの書き込みや画面遷移など） ---
+  // --- 保存処理 ---
   myName = nameInput;
   myClass = selectedClass;
   
-  localStorage.setItem("study_matching_name", myName);
-  localStorage.setItem("study_matching_class", myClass);
-
-  alert(`${myClass} にログインしました！`);
-  showMatchingSection();
-
-  // --- 本日の「MMDDteacher」判定と100pt付与処理 ---
+  // 本日の「MMDDteacher」判定と100pt付与処理
   const now = new Date();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const date = String(now.getDate()).padStart(2, '0');
-  const teacherKeyword = `${month}${date}teacher`; // 例: 8/22なら "0822teacher"
+  const teacherKeyword = `${month}${date}teacher`;
 
   let addBonusPt = false;
   if (myName === teacherKeyword) {
-    mySolveCount += 100; // ローカルのポイントを100加算
+    mySolveCount += 100;
     addBonusPt = true;
   }
-  // ------------------------------------------------
 
   localStorage.setItem("app_user_name", myName);
   localStorage.setItem("app_user_class", myClass);
@@ -1043,7 +1042,6 @@ window.saveProfile = async function() {
     const userRef = doc(db, "users", senderId);
     const updateData = { name: myName, classId: myClass, icon: myIcon };
     
-    // キーワード一致時はFirestoreのポイントも更新
     if (addBonusPt) {
       updateData.solveCount = mySolveCount;
     }
@@ -1052,6 +1050,8 @@ window.saveProfile = async function() {
 
     if (addBonusPt) {
       alert(`教師用キーワードが確認されました。100ptを付与しました！（現在: ${mySolveCount}pt）`);
+    } else {
+      alert(`${myClass} の ${myName} として設定を保存しました！`);
     }
   } catch (e) {
     console.error("ユーザー設定保存エラー:", e);
