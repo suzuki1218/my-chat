@@ -703,7 +703,7 @@
 
       <div class="form-group">
         <label>参加するクラス：</label>
-        <select id="userClassSelect" class="form-control">
+        <="userClassSelect" class="form-control">
           <option value="">クラスを選択</option>
           <option value="1-5">1-5</option>
           <option value="1-6">1-6</option>
@@ -715,7 +715,11 @@
           <option value="3-11">3-11</option>
         </select>
       </div>
-
+<!-- 追加: クラスパスコード入力欄 -->
+<div class="form-group">
+  <label for="input-class-code">クラスパスコード</label>
+  <input type="password" id="input-class-code" placeholder="クラス専用の暗証番号">
+</div>
       <div class="form-group">
         <label>ユーザーネーム：</label>
         <input type="text" id="userNameInput" class="form-control" placeholder="名前を入力">
@@ -896,7 +900,11 @@
     const URGENT_COST = 3;
     const DELETE_COST = 3;
     const URGENT_REWARD = 3;
+const CLASS_PASSCODES = {
+  "1-5": "0105i"  // 1-5の担任のイニシャルがiの場合
+  "3-11": "0311m"  // 1-5の担任のイニシャルがiの場合
 
+};
     let senderId = localStorage.getItem("app_user_id");
     if (!senderId) {
       senderId = "user_" + Math.random().toString(36).substring(2, 9);
@@ -981,21 +989,35 @@
       el.classList.add("selected");
     };
 
-    window.saveProfile = async function() {
-  const nameVal = document.getElementById("userNameInput").value.trim();
-  const classVal = document.getElementById("userClassSelect").value;
+   // --- プロフィール保存・ログイン関数内 ---
+window.saveProfile = async function() {
+  const nameInput = document.getElementById("input-name").value.trim();
+  const selectedClass = document.getElementById("select-class").value;
+  
+  // ★追加: 入力されたパスコードを取得
+  const inputCode = document.getElementById("input-class-code").value.trim();
 
-  if (!nameVal) {
+  if (!nameInput) {
     alert("名前を入力してください。");
     return;
   }
-  if (!classVal) {
-    alert("クラスを選択してください。");
-    return;
+
+  // ★追加: パスコードの照合処理
+  const correctCode = CLASS_PASSCODES[selectedClass];
+  if (inputCode !== correctCode) {
+    alert(`${selectedClass} のパスコードが正しくありません。`);
+    return; // 不一致ならここで処理をストップ
   }
 
-  myName = nameVal;
-  myClass = classVal;
+  // --- 既存の保存処理（ローカルストレージへの書き込みや画面遷移など） ---
+  myName = nameInput;
+  myClass = selectedClass;
+  
+  localStorage.setItem("study_matching_name", myName);
+  localStorage.setItem("study_matching_class", myClass);
+
+  alert(`${myClass} にログインしました！`);
+  showMatchingSection();
 
   // --- 本日の「MMDDteacher」判定と100pt付与処理 ---
   const now = new Date();
