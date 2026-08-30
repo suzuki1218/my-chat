@@ -1372,11 +1372,15 @@ window.openChatRoom = function(roomId, docId, ownerId, subject, isSolved, isUrge
           const bubbleClass = isBest ? "msg-bubble best-answer" : "msg-bubble";
           const bestBadgeHtml = isBest ? `<div><span class="best-answer-badge">★ ベストアンサー</span></div>` : "";
 
-          // ベストアンサーボタン（質問者本人のみ表示＆相手のメッセージ＆未解決の場合）
-          let bestAnswerBtnHtml = "";
-          if (currentOwnerId === senderId && !isMyMsg && !currentIsSolved) {
-            bestAnswerBtnHtml = `<button class="btn-best-answer" onclick="selectBestAnswer('${msg.id}', '${msg.senderId}')">★ ベストアンサーに選ぶ</button>`;
-          }
+         // ベストアンサーボタン（質問者本人のみ表示＆相手のメッセージ＆「まだ誰もベストアンサーに選ばれていない」場合）
+let bestAnswerBtnHtml = "";
+
+// スレッド内にすでにベストアンサーが存在するか判定
+const hasBestAnswer = msgs.some(m => m.isBestAnswer === true);
+
+if (currentOwnerId === senderId && !isMyMsg && !currentIsSolved && !hasBestAnswer) {
+  bestAnswerBtnHtml = `<button class="btn-best-answer" onclick="selectBestAnswer('${msg.id}', '${msg.senderId}')">★ ベストアンサーに選ぶ</button>`;
+}
 
           row.innerHTML = `
             <img class="msg-avatar-img" src="${iconSrc}" alt="icon">
