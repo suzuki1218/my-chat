@@ -1569,7 +1569,7 @@ window.deleteCurrentRequest = async function() {
     let penColor = "#332f2b";
     let isEraser = false;
 
-    function initCanvas() {
+ function initCanvas() {
       canvas = document.getElementById("drawCanvas");
       if (!canvas) return;
       ctx = canvas.getContext("2d");
@@ -1584,7 +1584,8 @@ window.deleteCurrentRequest = async function() {
 
       const getPos = (e) => {
         const r = canvas.getBoundingClientRect();
-        if (e.touches && e.touches[0]) {
+        // タッチ操作の場合は touches[0] を参照（離れた瞬間は touches が空になるためガード）
+        if (e.touches && e.touches.length > 0) {
           return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
         }
         return { x: e.clientX - r.left, y: e.clientY - r.top };
@@ -1599,6 +1600,10 @@ window.deleteCurrentRequest = async function() {
 
       const moveDraw = (e) => {
         if (!isDrawing) return;
+        
+        // タッチ移動中の画面スクロールを防止
+        if (e.cancelable) e.preventDefault();
+
         const pos = getPos(e);
         ctx.strokeStyle = isEraser ? "#ffffff" : penColor;
         ctx.lineWidth = isEraser ? 16 : 3;
@@ -1607,17 +1612,25 @@ window.deleteCurrentRequest = async function() {
         ctx.stroke();
       };
 
-      const endDraw = () => { isDrawing = false; };
+      const endDraw = (e) => {
+        if (isDrawing) {
+          ctx.closePath();
+          isDrawing = false;
+        }
+      };
 
+      // マウスイベント
       canvas.addEventListener("mousedown", startDraw);
       canvas.addEventListener("mousemove", moveDraw);
       canvas.addEventListener("mouseup", endDraw);
+      canvas.addEventListener("mouseleave", endDraw); // キャンバス外に出た時の判定を追加
 
-      canvas.addEventListener("touchstart", startDraw);
-      canvas.addEventListener("touchmove", moveDraw);
+      // タッチイベント (passive: false でスクロール干渉を防止)
+      canvas.addEventListener("touchstart", startDraw, { passive: false });
+      canvas.addEventListener("touchmove", moveDraw, { passive: false });
       canvas.addEventListener("touchend", endDraw);
+      canvas.addEventListener("touchcancel", endDraw); // タッチ中断時も確実に終了
     }
-
     window.openCanvasModal = function() {
       document.getElementById("canvas-modal").style.display = "flex";
     };
