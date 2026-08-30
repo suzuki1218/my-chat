@@ -1220,7 +1220,7 @@ function syncUserData() {
           if (item.isSolved) {
             badgeHtml = `<span class="request-badge badge-solved">解決済み</span>`;
           } else if (item.isUrgent) {
-            badgeHtml = `<span class="request-badge badge-urgent">至急 (5pt)</span>`;
+            badgeHtml = `<span class="request-badge badge-urgent">緊急</span>`;
           }
 
           const iconSrc = item.ownerIcon || "icon01.png";
