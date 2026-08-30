@@ -842,8 +842,8 @@
         </div>
         <div class="chat-controls">
           <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
-          <button class="tool-btn" onclick="document.getElementById('imageInput').click()" title="写真を添付">📷</button>
-          <button class="tool-btn" onclick="openCanvasModal()" title="手書きで投稿">✏️</button>
+          <button class="tool-btn" onclick="document.getElementById('imageInput').click()" title="写真を添付">＋</button>
+          <button class="tool-btn" onclick="openCanvasModal()" title="手書きで投稿">✑</button>
           <input type="text" id="messageText" class="chat-input-text" placeholder="メッセージを入力..." onkeydown="if(event.key==='Enter') sendMessage()">
           <button id="btn-send" class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="sendMessage()">送信</button>
         </div>
@@ -1290,26 +1290,36 @@ function syncUserData() {
     };
 
     // --- チャットルームを開く ---
-    window.openChatRoom = function(roomId, docId, ownerId, subject, isSolved, isUrgent) {
-      currentRoomId = roomId;
-      currentDocId = docId;
-      currentOwnerId = ownerId;
-      currentIsSolved = isSolved;
-      currentIsUrgent = isUrgent;
+   // --- チャットルームを開く ---
+window.openChatRoom = function(roomId, docId, ownerId, subject, isSolved, isUrgent) {
+  currentRoomId = roomId;
+  currentDocId = docId;
+  currentOwnerId = ownerId;
+  currentIsSolved = isSolved;
+  currentIsUrgent = isUrgent;
 
-      document.getElementById("chat-title").innerText = subject;
-      document.getElementById("matching-section").style.display = "none";
-      document.getElementById("chat-section").style.display = "block";
+  document.getElementById("chat-title").innerText = subject;
+  document.getElementById("matching-section").style.display = "none";
+  document.getElementById("chat-section").style.display = "block";
 
-      const isMyReq = ownerId === senderId;
-      const deleteBtn = document.getElementById("btn-chat-delete");
-      deleteBtn.style.display = isMyReq ? "block" : "none";
+  // --- 教師判定（今日のMMDDteacherと一致するか） ---
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const date = String(now.getDate()).padStart(2, '0');
+  const teacherKeyword = `${month}${date}teacher`;
+  const isTeacher = (myName === teacherKeyword);
 
-      const hintEl = document.getElementById("chat-sub-hint");
-      hintEl.style.display = (isMyReq && !isSolved) ? "block" : "none";
+  const isMyReq = ownerId === senderId;
 
-      joinChatRoom(roomId);
-    };
+  // 自分の投稿、または教師アカウントの場合に削除ボタンを表示
+  const deleteBtn = document.getElementById("btn-chat-delete");
+  deleteBtn.style.display = (isMyReq || isTeacher) ? "block" : "none";
+
+  const hintEl = document.getElementById("chat-sub-hint");
+  hintEl.style.display = (isMyReq && !isSolved) ? "block" : "none";
+
+  joinChatRoom(roomId);
+};
 
     window.backToList = function() {
       if (unsubscribeChat) unsubscribeChat();
@@ -1489,28 +1499,44 @@ function syncUserData() {
       }
     };
 
-    // --- 質問の削除 ---
-    window.deleteCurrentRequest = async function() {
-      if (mySolveCount < DELETE_COST) {
-        alert(`削除には ${DELETE_COST} pt 必要です。（所持: ${mySolveCount} pt）`);
-        return;
-      }
+    // ---  ---
+   // --- 質問の削除 ---
+window.deleteCurrentRequest = async function() {
+  // 教師判定
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const date = String(now.getDate()).padStart(2, '0');
+  const teacherKeyword = `${month}${date}teacher`;
+  const isTeacher = (myName === teacherKeyword);
 
-      if (!confirm(`質問を削除しますか？ (${DELETE_COST} pt 消費します)`)) return;
+  // 教師でない場合はポイントチェックを行う
+  if (!isTeacher && mySolveCount < DELETE_COST) {
+    alert(`削除には ${DELETE_COST} pt 必要です。（所持: ${mySolveCount} pt）`);
+    return;
+  }
 
-      try {
-        const userRef = doc(db, "users", senderId);
-        await updateDoc(userRef, { solveCount: increment(-DELETE_COST) });
+  const confirmMsg = isTeacher 
+    ? "【管理者権限】この質問を削除しますか？（pt消費なし）" 
+    : `質問を削除しますか？ (${DELETE_COST} pt 消費します)`;
 
-        const reqRef = doc(db, "requests", currentDocId);
-        await deleteDoc(reqRef);
+  if (!confirm(confirmMsg)) return;
 
-        alert("質問を削除しました。");
-        backToList();
-      } catch (e) {
-        alert("削除エラー: " + e.message);
-      }
-    };
+  try {
+    // 生徒が自分の投稿を消す場合のみポイントを減算
+    if (!isTeacher) {
+      const userRef = doc(db, "users", senderId);
+      await updateDoc(userRef, { solveCount: increment(-DELETE_COST) });
+    }
+
+    const reqRef = doc(db, "requests", currentDocId);
+    await deleteDoc(reqRef);
+
+    alert("質問を削除しました。");
+    backToList();
+  } catch (e) {
+    alert("削除エラー: " + e.message);
+  }
+};
 
     // --- 手書きキャンバス機能 ---
     let canvas, ctx, isDrawing = false;
