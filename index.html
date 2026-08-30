@@ -701,20 +701,21 @@
         現在の解決pt: <span id="user-solve-display">0</span> pt
       </p>
 
-      <div class="form-group">
-        <label>参加するクラス：</label>
-        <="userClassSelect" class="form-control">
-          <option value="">クラスを選択</option>
-          <option value="1-5">1-5</option>
-          <option value="1-6">1-6</option>
-          <option value="1-7">1-7</option>
-          <option value="1-8">1-8</option>
-          <option value="1-9">1-9</option>
-          <option value="1-10">1-10</option>
-          <option value="3-10">3-10</option>
-          <option value="3-11">3-11</option>
-        </select>
-      </div>
+    
+<div class="form-group">
+  <label>参加するクラス：</label>
+  <select id="userClassSelect" class="form-control">
+    <option value="">クラスを選択</option>
+    <option value="1-5">1-5</option>
+    <option value="1-6">1-6</option>
+    <option value="1-7">1-7</option>
+    <option value="1-8">1-8</option>
+    <option value="1-9">1-9</option>
+    <option value="1-10">1-10</option>
+    <option value="3-10">3-10</option>
+    <option value="3-11">3-11</option>
+  </select>
+</div>
 <!-- 追加: クラスパスコード入力欄 -->
 <div class="form-group">
   <label for="input-class-code">クラスパスコード</label>
@@ -901,9 +902,8 @@
     const DELETE_COST = 3;
     const URGENT_REWARD = 3;
 const CLASS_PASSCODES = {
-  "1-5": "0105i"  // 1-5の担任のイニシャルがiの場合
-  "3-11": "0311m"  // 1-5の担任のイニシャルがiの場合
-
+  "1-5": "0105i",
+  "3-11": "0311m"
 };
     let senderId = localStorage.getItem("app_user_id");
     if (!senderId) {
