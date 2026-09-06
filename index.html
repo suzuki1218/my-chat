@@ -36,7 +36,22 @@
       margin: 0;
       padding: 0;
     }
+/* 1. 質問ラベル全体のスタイリング */
+    .label-question-container {
+      background-color: #f3e8ff; /* 薄いパープル */
+      border: 1px solid #e9d5ff;
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
 
+    /* 2. 「秘密」ラベルのスタイリング（「緊急」と同じ赤を設定） */
+    .badge-secret {
+      background-color: #ef4444; /* 緊急と同じ赤色 */
+      color: #ffffff;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
     body {
       font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
       font-weight: 700;
