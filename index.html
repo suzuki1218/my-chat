@@ -1469,7 +1469,6 @@ window.openChatRoom = async function(roomId, requestId, ownerId, subject, isSolv
           const row = document.createElement("div");
           row.className = `msg-row ${isMyMsg ? 'my-msg' : 'other-msg'}`;
 
-          // ★先生（今日のMMDDteacher）かどうかの判定準備
           const now = new Date();
           const month = String(now.getMonth() + 1).padStart(2, '0');
           const date = String(now.getDate()).padStart(2, '0');
@@ -1478,49 +1477,34 @@ window.openChatRoom = async function(roomId, requestId, ownerId, subject, isSolv
           const iconSrc = msg.icon || "icon01.png";
           let senderName = msg.senderName || "匿名";
 
-          // ★送信者名が先生キーワードの場合は「先生」に変更
           if (senderName === teacherKeyword) {
             senderName = "先生";
           }
-         // --- チャットメッセージ描画 ---
-    function renderMessages(messages) {
-      const container = document.getElementById("chat-messages");
-      container.innerHTML = "";
 
-      messages.forEach(msg => {
-        // 年月日と時間を取得する処理
-        let timeStr = "";
-        if (msg.timestamp) {
-          const d = msg.timestamp.toDate();
-          const year = d.getFullYear();
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const date = String(d.getDate()).padStart(2, '0');
-          const hours = String(d.getHours()).padStart(2, '0');
-          const minutes = String(d.getMinutes()).padStart(2, '0');
-          timeStr = `${year}/${month}/${date} ${hours}:${minutes}`;
-        }
-
-        const isMe = (msg.senderId === senderId);
-        
-        // ...（以下、吹き出しのHTML生成処理はそのまま）
+          let timeStr = "";
+          if (msg.timestamp) {
+            const d = msg.timestamp.toDate();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const date = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            timeStr = `${year}/${month}/${date} ${hours}:${minutes}`;
+          }
 
           let textHtml = msg.text ? `<div>${escapeHtml(msg.text)}</div>` : "";
           let imageHtml = msg.imageUrl ? `<img src="${msg.imageUrl}" class="msg-image" onclick="window.open('${msg.imageUrl}')">` : "";
 
-          // ベストアンサーフラグ判定
           const isBest = msg.isBestAnswer === true;
           const bubbleClass = isBest ? "msg-bubble best-answer" : "msg-bubble";
           const bestBadgeHtml = isBest ? `<div><span class="best-answer-badge">★ ベストアンサー</span></div>` : "";
 
-         // ベストアンサーボタン（質問者本人のみ表示＆相手のメッセージ＆「まだ誰もベストアンサーに選ばれていない」場合）
-let bestAnswerBtnHtml = "";
+          let bestAnswerBtnHtml = "";
+          const hasBestAnswer = msgs.some(m => m.isBestAnswer === true);
 
-// スレッド内にすでにベストアンサーが存在するか判定
-const hasBestAnswer = msgs.some(m => m.isBestAnswer === true);
-
-if (currentOwnerId === senderId && !isMyMsg && !currentIsSolved && !hasBestAnswer) {
-  bestAnswerBtnHtml = `<button class="btn-best-answer" onclick="selectBestAnswer('${msg.id}', '${msg.senderId}')">★ ベストアンサーに選ぶ</button>`;
-}
+          if (currentOwnerId === senderId && !isMyMsg && !currentIsSolved && !hasBestAnswer) {
+            bestAnswerBtnHtml = `<button class="btn-best-answer" onclick="selectBestAnswer('${msg.id}', '${msg.senderId}')">★ ベストアンサーに選ぶ</button>`;
+          }
 
           row.innerHTML = `
             <img class="msg-avatar-img" src="${iconSrc}" alt="icon">
