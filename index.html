@@ -808,6 +808,9 @@
           <label class="checkbox-label">
             <input type="checkbox" id="reqIsUrgent"> 【緊急】
           </label>
+          <label class="checkbox-label" style="color: #673ab7;">
+              <input type="checkbox" id="reqIsSecret"> 【秘密】
+            </label>
           <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="createRequest()">質問する</button>
         </div>
       </div>
@@ -1186,6 +1189,12 @@ function syncUserData() {
       if (!myClass) return;
       if (unsubscribeRequests) unsubscribeRequests();
 
+      // ★今日のMMDDteacherキーワードと一致するか判定
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const isTeacher = (myName === `${month}${date}teacher`);
+
       const q = query(
         collection(db, "requests"),
         where("classId", "==", myClass)
@@ -1202,7 +1211,15 @@ function syncUserData() {
 
         const items = [];
         snapshot.forEach((docSnap) => {
-          items.push({ id: docSnap.id, ...docSnap.data() });
+          const data = docSnap.data();
+          const isMyPost = (data.ownerId === senderId);
+
+          // ★【閲覧制限】秘密投稿で「自分のではない」かつ「先生でもない」場合は表示しない
+          if (data.isSecret && !isMyPost && !isTeacher) {
+            return;
+          }
+
+          items.push({ id: docSnap.id, ...data });
         });
 
         items.sort((a, b) => {
@@ -1222,23 +1239,34 @@ function syncUserData() {
 
           div.className = classNames;
 
-          let badgeHtml = "";
-          if (item.isSolved) {
-            badgeHtml = `<span class="request-badge badge-solved">解決済み</span>`;
-          } else if (item.isUrgent) {
-            badgeHtml = `<span class="request-badge badge-urgent">緊急</span>`;
+          // ★表示名とアイコンの匿名化設定
+          let displayName = item.ownerName || "匿名";
+          let displayIcon = item.ownerIcon || "icon01.png";
+
+          if (item.isSecret) {
+            displayName = "匿名（秘密の質問）";
           }
 
-          const iconSrc = item.ownerIcon || "icon01.png";
+          // ★バッジ表示に「秘密」を追加
+          let badgeHtml = "";
+          if (item.isSecret) {
+            badgeHtml += `<span class="request-badge" style="background-color: #673ab7; color: white; margin-right:4px;">秘密</span>`;
+          }
+          if (item.isSolved) {
+            badgeHtml += `<span class="request-badge badge-solved">解決済み</span>`;
+          } else if (item.isUrgent) {
+            badgeHtml += `<span class="request-badge badge-urgent">緊急</span>`;
+          }
+
           const buttonText = item.isSolved ? "閲覧する" : "見に行く";
 
           div.innerHTML = `
             <div class="request-header">
               <div class="request-user">
-                <img src="${iconSrc}" class="badge-avatar-img" alt="icon">
-                <span>${escapeHtml(item.ownerName || "匿名")}</span>
+                <img src="${displayIcon}" class="badge-avatar-img" alt="icon">
+                <span>${escapeHtml(displayName)}</span>
               </div>
-              ${badgeHtml}
+              <div>${badgeHtml}</div>
             </div>
             <div class="request-content">
               <div class="request-body">${escapeHtml(item.subject)}</div>
@@ -1271,9 +1299,11 @@ function syncUserData() {
 
       const subjectInput = document.getElementById("reqSubject");
       const isUrgentInput = document.getElementById("reqIsUrgent");
+      const isSecretInput = document.getElementById("reqIsSecret"); // ★追加
       const subject = subjectInput.value.trim();
       const isUrgent = isUrgentInput.checked;
-
+      const isSecret = isSecretInput.checked; // ★追加
+      
       if (!subject) {
         alert("質問内容を入力してください。");
         return;
@@ -1306,12 +1336,14 @@ function syncUserData() {
           ownerIcon: myIcon,
           roomId: roomId,
           isSolved: false,
+          isSecret: isSecret, // ★追加
           isUrgent: isUrgent,
           createdAt: serverTimestamp()
         });
 
         subjectInput.value = "";
         isUrgentInput.checked = false;
+        isSecretInput.checked = false; // ★追加（チェック解除）
       } catch (e) {
         alert("投稿に失敗しました: " + e.message);
       }
@@ -1383,8 +1415,19 @@ window.openChatRoom = function(roomId, docId, ownerId, subject, isSolved, isUrge
           const row = document.createElement("div");
           row.className = `msg-row ${isMyMsg ? 'my-msg' : 'other-msg'}`;
 
+          // ★先生（今日のMMDDteacher）かどうかの判定準備
+          const now = new Date();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const date = String(now.getDate()).padStart(2, '0');
+          const teacherKeyword = `${month}${date}teacher`;
+
           const iconSrc = msg.icon || "icon01.png";
-          const senderName = msg.senderName || "匿名";
+          let senderName = msg.senderName || "匿名";
+
+          // ★送信者名が先生キーワードの場合は「先生」に変更
+          if (senderName === teacherKeyword) {
+            senderName = "先生";
+          }
           
           let timeStr = "";
           if (msg.timestamp) {
