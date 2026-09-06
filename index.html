@@ -1366,36 +1366,45 @@ function syncUserData() {
     };
 
     // --- チャットルームを開く ---
+// --- チャットルームを開く ---
 window.openChatRoom = async function(roomId, requestId, ownerId, subject, isSolved, isUrgent) {
-      currentRoomId = roomId;
-      currentRequestId = requestId;
-      currentOwnerId = ownerId;
+  currentRoomId = roomId;
+  currentDocId = requestId; // currentRequestId から currentDocId に修正
+  currentOwnerId = ownerId;
+  currentIsSolved = isSolved;
+  currentIsUrgent = isUrgent;
 
-      document.getElementById("chat-title").innerText = subject;
-      document.getElementById("chat-screen").classList.add("active");
+  // 1. ヘッダー情報の更新
+  document.getElementById("chat-title").innerText = subject;
+  
+  // ヒント表示の制御
+  const hintEl = document.getElementById("chat-sub-hint");
+  if (hintEl) {
+    hintEl.style.display = (!isSolved && ownerId === senderId) ? "block" : "none";
+  }
 
-      const solveBtnArea = document.getElementById("solve-btn-area");
-      solveBtnArea.innerHTML = "";
+  // 削除ボタンの表示制御（投稿者本人、または先生の場合に表示）
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const date = String(now.getDate()).padStart(2, '0');
+  const isTeacher = (myName === `${month}${date}teacher`);
+  
+  const deleteBtn = document.getElementById("btn-chat-delete");
+  if (deleteBtn) {
+    if (ownerId === senderId || isTeacher) {
+      deleteBtn.style.display = "block";
+    } else {
+      deleteBtn.style.display = "none";
+    }
+  }
 
-      const isMyPost = (ownerId === senderId);
+  // 2. 画面の表示切り替え（一覧を隠してチャットを表示）
+  document.getElementById("matching-section").style.display = "none";
+  document.getElementById("chat-section").style.display = "block";
 
-      // ★投稿のデータを取得して秘密の質問かどうか判定
-      const reqDoc = await getDoc(doc(db, "requests", requestId));
-      const reqData = reqDoc.exists() ? reqDoc.data() : {};
-      const isSecret = reqData.isSecret || false;
-
-      if (isMyPost && !isSolved) {
-        if (isSecret) {
-          // ★秘密の質問の場合：ベストアンサーなしで直接解決済みにするボタン
-          solveBtnArea.innerHTML = `<button class="btn-primary" onclick="markAsSolvedDirect('${requestId}')" style="background-color: #4caf50;">解決済みにする</button>`;
-        } else {
-          // 通常の質問の場合：ベストアンサー選択ボタン
-          solveBtnArea.innerHTML = `<button class="btn-primary" onclick="openBASelectModal()">ベストアンサーを選んで解決</button>`;
-        }
-      }
-
-      joinChatRoom(roomId);
-    };
+  // 3. メッセージデータの受信開始
+  joinChatRoom(roomId);
+};
 
     // ★秘密の質問用：直接解決済みに更新する処理
     window.markAsSolvedDirect = async function(requestId) {
