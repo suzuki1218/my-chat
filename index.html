@@ -1531,7 +1531,7 @@ if (currentOwnerId === senderId && !isMyMsg && !currentIsSolved && !hasBestAnswe
     }
 
     // --- メッセージ送信 ---
-    window.sendMessage = async function() {
+       window.sendMessage = async function() {
       const textInput = document.getElementById("messageText");
       const text = textInput.value.trim();
 
@@ -1541,12 +1541,21 @@ if (currentOwnerId === senderId && !isMyMsg && !currentIsSolved && !hasBestAnswe
       const btn = document.getElementById("btn-send");
       btn.disabled = true;
 
+      // ★ 先生キーワードの判定
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const teacherKeyword = `${month}${date}teacher`;
+      
+      // 送信者が先生の場合は表示名を「先生」に設定する
+      const replySenderName = (myName === teacherKeyword) ? "先生" : myName;
+
       try {
         await addDoc(collection(db, "rooms", currentRoomId, "messages"), {
           text: text,
           imageUrl: selectedBase64Image || null,
           senderId: senderId,
-          senderName: myName,
+          senderName: replySenderName, // ★ 判定後の名前を設定
           icon: myIcon,
           timestamp: serverTimestamp()
         });
