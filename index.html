@@ -1058,7 +1058,7 @@ window.saveProfile = async function() {
     await setDoc(userRef, updateData, { merge: true });
 
     if (addBonusPt) {
-      alert(`教師用キーワードが確認されました。100ptを付与しました！（現在: ${mySolveCount}pt）`);
+      alert(`教師用アカウントでログインしました`);
     } else {
       alert(`${myClass} の ${myName} として設定を保存しました！`);
     }
@@ -1244,15 +1244,15 @@ function syncUserData() {
             displayName = "匿名（秘密の質問）";
           }
 
-          // 制限対象の一般生徒の場合、タイトルを置き換え
+          // 制限対象の一般生徒の場合、タイトルを置き換え（絵文字なし）
           if (isSecretRestricted) {
-            displaySubject = "🔒 秘密の質問のため表示されません";
+            displaySubject = "秘密の質問のため表示されません";
           }
 
-          // バッジ生成
+          // バッジ生成（薄いパープル：#e1bee7 / 文字色：#4a148c）
           let badgeHtml = "";
           if (item.isSecret) {
-            badgeHtml += `<span class="request-badge" style="background-color: #673ab7; color: white; margin-right:4px;">秘密</span>`;
+            badgeHtml += `<span class="request-badge" style="background-color: #e1bee7; color: #4a148c; margin-right:4px;">秘密</span>`;
           }
           if (item.isSolved) {
             badgeHtml += `<span class="request-badge badge-solved">解決済み</span>`;
@@ -1260,7 +1260,7 @@ function syncUserData() {
             badgeHtml += `<span class="request-badge badge-urgent">緊急</span>`;
           }
 
-          // ボタン生成（制限対象の場合は無効化ボタンにする）
+          // ボタン生成
           let buttonHtml = "";
           if (isSecretRestricted) {
             buttonHtml = `<button class="btn-view-chat" style="background-color: #ccc; cursor: not-allowed;" disabled>閲覧不可</button>`;
@@ -1278,7 +1278,7 @@ function syncUserData() {
               <div>${badgeHtml}</div>
             </div>
             <div class="request-content">
-              <div class="request-body" style="${isSecretRestricted ? 'color: #888; font-style: italic;' : ''}">${escapeHtml(displaySubject)}</div>
+              <div class="request-body">${escapeHtml(displaySubject)}</div>
               <div class="request-footer">
                 ${buttonHtml}
               </div>
@@ -1324,18 +1324,25 @@ function syncUserData() {
         return;
       }
 
+    const SECRET_COST = 3;
       if (isUrgent && mySolveCount < URGENT_COST) {
         alert(`緊急で投稿するには ${URGENT_COST} pt 必要です。（現在の所持pt: ${mySolveCount} pt）`);
         return;
       }
+      if (isSecret && mySolveCount < SECRET_COST) {
+        alert(`秘密で投稿するには ${SECRET_COST} pt 必要です。（現在の所持pt: ${mySolveCount} pt）`);
+        return;
+      }
 
       try {
-        if (isUrgent) {
+        // ★ポイント減算処理
+        if (isUrgent || isSecret) {
+          const cost = isUrgent ? URGENT_COST : SECRET_COST;
           const userRef = doc(db, "users", senderId);
-          await updateDoc(userRef, { solveCount: increment(-URGENT_COST) });
+          await updateDoc(userRef, { solveCount: increment(-cost) });
         }
 
-        const roomId = "room_" + Math.random().toString(36).substring(2, 9);
+       const roomId = "room_" + Math.random().toString(36).substring(2, 9);
 
         await addDoc(collection(db, "requests"), {
           classId: myClass,
@@ -1345,51 +1352,65 @@ function syncUserData() {
           ownerIcon: myIcon,
           roomId: roomId,
           isSolved: false,
-          isSecret: isSecret, // ★追加
           isUrgent: isUrgent,
+          isSecret: isSecret,
           createdAt: serverTimestamp()
         });
 
         subjectInput.value = "";
         isUrgentInput.checked = false;
-        isSecretInput.checked = false; // ★追加（チェック解除）
+        isSecretInput.checked = false;
       } catch (e) {
         alert("投稿に失敗しました: " + e.message);
       }
     };
 
     // --- チャットルームを開く ---
-   // --- チャットルームを開く ---
-window.openChatRoom = function(roomId, docId, ownerId, subject, isSolved, isUrgent) {
-  currentRoomId = roomId;
-  currentDocId = docId;
-  currentOwnerId = ownerId;
-  currentIsSolved = isSolved;
-  currentIsUrgent = isUrgent;
+window.openChatRoom = async function(roomId, requestId, ownerId, subject, isSolved, isUrgent) {
+      currentRoomId = roomId;
+      currentRequestId = requestId;
+      currentOwnerId = ownerId;
 
-  document.getElementById("chat-title").innerText = subject;
-  document.getElementById("matching-section").style.display = "none";
-  document.getElementById("chat-section").style.display = "block";
+      document.getElementById("chat-title").innerText = subject;
+      document.getElementById("chat-screen").classList.add("active");
 
-  // --- 教師判定（今日のMMDDteacherと一致するか） ---
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const date = String(now.getDate()).padStart(2, '0');
-  const teacherKeyword = `${month}${date}teacher`;
-  const isTeacher = (myName === teacherKeyword);
+      const solveBtnArea = document.getElementById("solve-btn-area");
+      solveBtnArea.innerHTML = "";
 
-  const isMyReq = ownerId === senderId;
+      const isMyPost = (ownerId === senderId);
 
-  // 自分の投稿、または教師アカウントの場合に削除ボタンを表示
-  const deleteBtn = document.getElementById("btn-chat-delete");
-  deleteBtn.style.display = (isMyReq || isTeacher) ? "block" : "none";
+      // ★投稿のデータを取得して秘密の質問かどうか判定
+      const reqDoc = await getDoc(doc(db, "requests", requestId));
+      const reqData = reqDoc.exists() ? reqDoc.data() : {};
+      const isSecret = reqData.isSecret || false;
 
-  const hintEl = document.getElementById("chat-sub-hint");
-  hintEl.style.display = (isMyReq && !isSolved) ? "block" : "none";
+      if (isMyPost && !isSolved) {
+        if (isSecret) {
+          // ★秘密の質問の場合：ベストアンサーなしで直接解決済みにするボタン
+          solveBtnArea.innerHTML = `<button class="btn-primary" onclick="markAsSolvedDirect('${requestId}')" style="background-color: #4caf50;">解決済みにする</button>`;
+        } else {
+          // 通常の質問の場合：ベストアンサー選択ボタン
+          solveBtnArea.innerHTML = `<button class="btn-primary" onclick="openBASelectModal()">ベストアンサーを選んで解決</button>`;
+        }
+      }
 
-  joinChatRoom(roomId);
-};
+      joinChatRoom(roomId);
+    };
 
+    // ★秘密の質問用：直接解決済みに更新する処理
+    window.markAsSolvedDirect = async function(requestId) {
+      if (!confirm("この質問を解決済みにしますか？")) return;
+      try {
+        await updateDoc(doc(db, "requests", requestId), {
+          isSolved: true
+        });
+        alert("解決済みにしました。");
+        closeChat();
+      } catch (e) {
+        alert("更新に失敗しました: " + e.message);
+      }
+    };
+    
     window.backToList = function() {
       if (unsubscribeChat) unsubscribeChat();
       currentRoomId = null;
